@@ -6,6 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import {IUnlockV11 as IUnlock} from  "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 
+// todo: ma che cazzo è sta roba...? sembra un bug di hardhat quando compila
+//import "../_unlock/PublicLockV10.sol";
+//import "../_unlock/UnlockV11.sol";
+
+
 import '../OutwaveOrganization.sol';
 import "./OEMixinCore.sol";
 
@@ -52,7 +57,7 @@ function updateLocksApi(
 // }
 
 function eventCreate(
-  uint eventId,
+  uint eventId, //todo: review this
   string[] memory names,
   uint[] memory keyprices,
   uint[] memory numberOfKeys,
