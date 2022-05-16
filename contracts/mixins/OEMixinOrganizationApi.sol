@@ -3,8 +3,8 @@
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "@unlock-protocol/contracts/dist/Unlock/UnlockV11.sol";
-import "@unlock-protocol/contracts/dist/PublicLock/PublicLockV10.sol";
+import {IUnlockV11 as IUnlock} from  "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
+import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 
 import '../OutwaveOrganization.sol';
 import "./OEMixinCore.sol";
@@ -19,6 +19,8 @@ import "hardhat/console.sol";
 
 */
 contract OEMixinOrganizationApi is OEMixinCore{
+
+ 
 
    // event LockCreated(address indexed lockOwner, address indexed lockAddress);
    // event LockConfigured(address indexed lockAddress, address indexed outwaveEventAddress);

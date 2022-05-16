@@ -3,7 +3,6 @@ pragma solidity ^0.8.7;
 // extenal
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
 // outwave
 import './mixins/OEMixinOrganizationApi.sol';
 import './mixins/OEMixinManage.sol';

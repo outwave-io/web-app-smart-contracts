@@ -3,7 +3,7 @@
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "@unlock-protocol/contracts/dist/PublicLock/PublicLockV10.sol";
+import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "@unlock-protocol/contracts/dist/PublicLock/ILockKeyPurchaseHookV7.sol";
 
 import "./OEMixinCore.sol";
@@ -16,7 +16,7 @@ import "./OEMixinCore.sol";
     - Payments and withdraw
 
 */
-contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHook {
+contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
 
     event OutwavePaymentTransfered(address from, uint amount);
 
@@ -62,7 +62,7 @@ contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHook {
     uint minKeyPrice,
     uint pricePaid
   ) external override{
-    IPublicLock lock = IPublicLock(msg.sender);
+    IPublicLockV10 lock = IPublicLockV10(msg.sender);
     uint fee = pricePaid - ((98 * pricePaid)/100);
     address tokenadd = lock.tokenAddress();
     lock.withdraw(tokenadd, fee);
