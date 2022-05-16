@@ -1,3 +1,32 @@
+const { copySync } = require('fs-extra')
+
+require('@nomiclabs/hardhat-ethers')
+require('@nomiclabs/hardhat-truffle5')
+
+// full stack trace if needed
+require('hardhat-tracer')
+
+// erc1820 deployment
+require('hardhat-erc1820')
+
+// for upgrades
+require('@openzeppelin/hardhat-upgrades')
+
+// debug storage
+require('hardhat-storage-layout')
+
+// gas reporting for tests
+require('hardhat-gas-reporter')
+
+// test coverage
+require('solidity-coverage')
+
+// eslint-disable-next-line global-require
+require('@nomiclabs/hardhat-etherscan')
+
+// check contract size
+require('hardhat-contract-sizer')
+
 const { getHardhatNetwork } = require('./helpers/network')
 
 const settings = {
