@@ -86,6 +86,7 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     var param3 = [100000];
     var param4 = [1];
 
+    
     //const tx = await outwave.eventCreate(param1, param2, param3);
     const tx = await outwave.eventCreate(1,["name"], [web3.utils.toWei('0.01', 'ether')], [100000], [1]);
     const receipt = await tx.wait()
