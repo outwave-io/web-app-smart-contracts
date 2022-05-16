@@ -44,7 +44,12 @@
   "devDependencies": {
     "chai": "4.3.4",
     "ethereum-waffle": "3.4.4",
-    "web3": "1.7.3"
+    "web3": "1.7.3",
+    "eslint": "8.10.0",
+    "eslint-plugin-prettier": "latest",
+    "husky": "7.0.4",
+    "lint-staged": "12.3.7",
+    "prettier": "2.6.2"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -64,7 +69,8 @@
     "build": "hardhat compile",
     "verify": "hardhat verify",
     "hardhat": "hardhat",
-    "deploy-all": "hardhat deploy"
+    "deploy-all": "hardhat deploy",
+    "postinstall": "husky install"
   },
   "author": "demind.io",
   "license": "ISC"
