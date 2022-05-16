@@ -58,6 +58,7 @@ require('./tasks/accounts')
 require('./tasks/balance')
 require('./tasks/config')
 require('./tasks/deploy')
+require('./tasks/set')
 
 //outwave
 require('./tasks/deploy-outwave')
