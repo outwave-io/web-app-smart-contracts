@@ -6,8 +6,10 @@ contract('OutwaveEvent', () => {
   let outwaveAddress
 
   beforeEach(async () => {
-    ;[unlockAddress, publicLockAddress, outwaveAddress] =
-      await require('./helpers/deploy').deployUnlock('10')
+    let addresses = await require('./helpers/deploy').deployUnlock('10')
+    unlockAddress = addresses.unlockAddress;
+    publicLockAddress = addresses.publicLockAddress;
+    outwaveAddress = addresses.outwaveAddress;
   })
 
   it('Should forbid non-managers to upgrade', async () => {

@@ -16,7 +16,7 @@ async function deployUnlock(unlockVersion) {
   let Outwave = await ethers.getContractFactory('OutwaveEvent')
   let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress)
   let outwaveAddress = outwave.address
-  return [unlockAddress, publicLockAddress, outwaveAddress]
+  return {unlockAddress, publicLockAddress, outwaveAddress}
 }
 
 module.exports = {
