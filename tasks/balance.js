@@ -8,4 +8,3 @@ task('balance', "Prints an account's ETH balance")
     // eslint-disable-next-line no-console
     console.log(web3.utils.fromWei(balance, 'ether'), 'ETH')
   })
-

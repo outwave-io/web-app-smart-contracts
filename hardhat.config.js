@@ -1,4 +1,4 @@
-const { copySync } = require('fs-extra')
+// const { copySync } = require('fs-extra')
 
 require('@nomiclabs/hardhat-ethers')
 require('@nomiclabs/hardhat-truffle5')
@@ -51,8 +51,6 @@ const etherscan = {
   },
 }
 
-
-
 // tasks
 require('./tasks/accounts')
 require('./tasks/balance')
@@ -60,10 +58,8 @@ require('./tasks/config')
 require('./tasks/deploy')
 require('./tasks/set')
 
-//outwave
+// outwave
 require('./tasks/deploy-outwave')
-
-
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -71,7 +67,7 @@ require('./tasks/deploy-outwave')
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
- module.exports = {
+module.exports = {
   networks,
   etherscan,
   gasReporter: {
@@ -80,9 +76,7 @@ require('./tasks/deploy-outwave')
     gasPrice: 5,
   },
   solidity: {
-    compilers: [
-      { version: '0.8.7', settings },
-    ],
+    compilers: [{ version: '0.8.7', settings }],
   },
   mocha: {
     timeout: 2000000,

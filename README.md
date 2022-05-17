@@ -1,8 +1,13 @@
-# Basic Sample Hardhat Project
+# Getting started
+This project uses husky to lint on pre-commit. You can always skip it with `git commit --no-verify`. 
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+- startup the local hardhat node run: `npx hardhat node`
+- compile to generate artifacts: `npx hardhat compile`
+- deploy outwave contracts and setup, in a separate terminal: `npx hardhat outwave:deploy:createlock --network localhost`
 
-Try running some of the following tasks:
+## Hardhat
+This project uses Hardhat.
+Try running some of the following tasks and always refer to official documentation for:
 
 ```shell
 npx hardhat accounts
