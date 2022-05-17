@@ -63,4 +63,9 @@ module.exports = {
     url: 'https://mainnet.optimism.io',
     name: 'optimism',
   },
+  mumbai: {
+    chainId: 80001,
+    name: 'mumbai',
+    url: 'https://polygon-mumbai.g.alchemy.com/v2/IFm_wxxCk2b0TFTQwPjDK6QXWFDjxer_',
+  },
 }
