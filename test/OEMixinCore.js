@@ -1,4 +1,4 @@
-const { ethers, run } = require('hardhat')
+// const { ethers, run } = require('hardhat')
 
 contract('OutwaveEvent', () => {
   let unlockAddress
@@ -6,24 +6,13 @@ contract('OutwaveEvent', () => {
   let outwaveAddress
 
   beforeEach(async () => {
-    let unlockVersion = '10'
-    const [owner] = await ethers.getSigners()
-
-    unlockAddress = await run('deploy:unlock')
-    publicLockAddress = await run('deploy:template')
-    let receivePaymentAddress = owner.address
-    await run('set:template', {
-      publicLockAddress,
-      unlockAddress,
-      unlockVersion,
-    })
-
-    let Outwave = await ethers.getContractFactory('OutwaveEvent')
-    let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress)
-    outwaveAddress = outwave.address
+    ;[unlockAddress, publicLockAddress, outwaveAddress] =
+      await require('./helpers/deploy').deployUnlock('10')
   })
 
   it('Should forbid non-managers to upgrade', async () => {
+    console.log(unlockAddress)
+    console.log(publicLockAddress)
     console.log(outwaveAddress)
   })
 })
