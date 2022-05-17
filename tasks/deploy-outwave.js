@@ -3,25 +3,27 @@
 
 const { task } = require('hardhat/config')
 
-task('outwave:deploy:setup', 'deploys unlock infrastructure')
+task('outwave:deploy', 'deploys unlock infrastructure')
   .setAction(async ({ }, { ethers }) => {
 
-  let unlockVersion = "10";
-  let unlockAddress = await run('deploy:unlock')
-  let publicLockAddress = await run('deploy:template')
-    // set lock template
-  await run('set:template', {
-    publicLockAddress,
-    unlockAddress,
-    unlockVersion,
-  });
+    let unlockVersion = "10";
+    let unlockAddress = await run('deploy:unlock')
+    let publicLockAddress = await run('deploy:template')
+    let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
+      // set lock template
+    await run('set:template', {
+      publicLockAddress,
+      unlockAddress,
+      unlockVersion,
+    });
 
-  let OutwaveOrg = await ethers.getContractFactory('OutwaveOrganization')
-  let outwaveorg = await OutwaveOrg.deploy(unlockAddress);
- 
-  console.log("unlock deployed: " +  unlockAddress);
-  console.log("publiclock template  deployed: " +  publicLockAddress);
-  console.log("outwave org deployed: " + outwaveorg.address);
+    let Outwave = await ethers.getContractFactory('OutwaveEvent')
+    let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress);
+
+    console.log("- unlock deployed: " +  unlockAddress);
+    console.log("- publiclock template deployed: " +  publicLockAddress);
+    console.log("- outwave org deployed: " + outwave.address);
+    console.log("To verify on blockchain: yarn verify " + outwave.address + " --network mumbai  "+ unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
 
 });
 

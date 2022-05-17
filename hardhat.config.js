@@ -1,4 +1,4 @@
-const { copySync } = require('fs-extra')
+// const { copySync } = require('fs-extra')
 
 require('@nomiclabs/hardhat-ethers')
 require('@nomiclabs/hardhat-truffle5')
@@ -43,16 +43,6 @@ const settings = {
 
 const networks = getHardhatNetwork()
 
-// Etherscan api for verification
-const etherscan = {
-  apiKey: {
-    // xdai requires only placeholder api key
-    xdai: 'api-key',
-  },
-}
-
-
-
 // tasks
 require('./tasks/accounts')
 require('./tasks/balance')
@@ -60,10 +50,8 @@ require('./tasks/config')
 require('./tasks/deploy')
 require('./tasks/set')
 
-//outwave
+// outwave
 require('./tasks/deploy-outwave')
-
-
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -71,18 +59,20 @@ require('./tasks/deploy-outwave')
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
- module.exports = {
+module.exports = {
   networks,
-  etherscan,
+  etherscan: {
+    apiKey: {
+      polygonMumbai: 'IES3ED9IU77E9TEWYUEJKTJEQG2DYFW4UF',
+    },
+  },
   gasReporter: {
     currency: 'USD',
     excludeContracts: ['Migrations', 'TestNoop'],
     gasPrice: 5,
   },
   solidity: {
-    compilers: [
-      { version: '0.8.7', settings },
-    ],
+    compilers: [{ version: '0.8.7', settings }],
   },
   mocha: {
     timeout: 2000000,
