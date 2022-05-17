@@ -23,7 +23,7 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     console.log("- unlock deployed: " +  unlockAddress);
     console.log("- publiclock template deployed: " +  publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
-    console.log("To verify on blockchain: yarn verify " + outwave.address + " --network mumbai  "+ unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
+    console.log("To verify on blockchain: yarn verify " + outwave.address + " "+ unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
 
 });
 
