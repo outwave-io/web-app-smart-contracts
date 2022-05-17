@@ -27,11 +27,10 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 
 });
 
-
 task('outwave:deploy:createlock', 'create lock and returns address')
- // .addParam('outwaveaddr', 'the address of the outwave organization')
+  // .addParam('outwaveaddr', 'the address of the outwave organization')
   .addOptionalParam('lockname', 'the lock name')
-  .setAction(async ({  lockname = 'New Outwave Lock' }, { ethers }) => {
+  .setAction(async ({ lockname = 'New Outwave Lock' }, { ethers }) => {
 
     const [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
@@ -46,7 +45,7 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     let unlockVersion = "10";
     let unlockAddress = await run('deploy:unlock')
     let publicLockAddress = await run('deploy:template')
-      // set lock template
+    // set lock template
     await run('set:template', {
       publicLockAddress,
       unlockAddress,
@@ -59,9 +58,9 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     let Outwave = await ethers.getContractFactory('OutwaveEvent')
     let outwave = await Outwave.deploy(unlockAddress, addr3.address);
 
-  
-    console.log("- unlock deployed: " +  unlockAddress);
-    console.log("- publiclock template deployed: " +  publicLockAddress);
+
+    console.log("- unlock deployed: " + unlockAddress);
+    console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
     // console.log("- outwave hook deployed: " +  outwavehook.address);
 
@@ -71,8 +70,8 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     // let evtOrg = orgReceipt.events.find((v) => v.event === 'OrganizationCreated')
     // console.log("- new outwave organizaton published at: " + evtOrg.args.newOrganizationAddress);
 
-   // console.log("organization created at: "+ addreOrg);
-    
+    // console.log("organization created at: "+ addreOrg);
+
     // const tx = await outwave.createLock(
     //   0 * 60 * 24 * 30, // expirationDuration: 30 days
     //   web3.utils.padLeft(0, 40), // token address
@@ -81,16 +80,22 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     //   lockname
     // )
 
-    console.log("create eve");
+    console.log("create event");
 
     var param1 = 5;
     var param2 = [web3.utils.toWei('0.01', 'ether')];
     var param3 = [100000];
     var param4 = [1];
 
-    
+
     //const tx = await outwave.eventCreate(param1, param2, param3);
-    const tx = await outwave.eventCreate(1,["name"], [web3.utils.toWei('0.01', 'ether')], [100000], [1]);
+    const tx = await outwave.eventCreate(
+      1,
+      ["name"],
+      [web3.utils.toWei('0.01', 'ether')],
+      [100000],
+      [1],
+      ["ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx"]);
     const receipt = await tx.wait()
     console.log(receipt)
     let evt = receipt.events.find((v) => v.event === 'LockRegistered')
@@ -116,14 +121,14 @@ task('outwave:deploy:createlock', 'create lock and returns address')
         value: web3.utils.toWei('0.01', 'ether'),
       }
     );
-    console.log("t"); 
+    console.log("t");
 
     const txpurrec = await txpurchase.wait();
-    console.log(txpurrec); 
+    console.log(txpurrec);
 
     let evt2 = txpurrec.events.find((v) => v.event === 'Transfer')
-    console.log("Transfer made from " + evt2.args.from); 
-    console.log("Transfer made to " + evt2.args.to); 
+    console.log("Transfer made from " + evt2.args.from);
+    console.log("Transfer made to " + evt2.args.to);
 
     console.log("###########")
     console.log("owner balance: " + await owner.getBalance());
@@ -132,7 +137,10 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     console.log("owner addr3 - outwave : " + await addr3.getBalance());
     console.log("###########")
 
-
+    console.log("##### SUMMARY #####")
+    console.log("unlock deployed at: " + unlockAddress);
+    console.log("utwave org deployed at: " + outwave.address);
+    console.log("public lock deployed at: " + newLockAddress);
   })
 
 task('outwave:call', 'create lock and returns address').setAction(
@@ -141,5 +149,105 @@ task('outwave:call', 'create lock and returns address').setAction(
   }
 )
 
+task('outwave:deploy:keyburner', 'deploys keyburner')
+  .addOptionalParam('unlockaddr', 'the unlock factory address')
+  .setAction(async ({ unlockaddr }, { run }) => {
+    // eslint-disable-next-line global-require
+    const keyBurnerDeployer = require('../scripts/deployments/outwaveKeyburner')
+    await keyBurnerDeployer({
+      unlockAddress: unlockaddr
+    })
+  })
+
+task('outwave:call:keyburner', 'mint some keys and burn them ??')
+  .addParam('keyburnaddr', 'the key burner address')
+  .addParam('lockaddr', 'the public lock address')
+  .addParam('outwaveaddr', 'the outwave facade address')
+  .setAction(async ({ keyburnaddr, lockaddr, outwaveaddr }, { ethers }) => {
+    const [lockOwner, addr1, addr2, outwaveOwner] = await ethers.getSigners();
+
+    const KeyBurner = await ethers.getContractFactory('OutwaveKeyBurner')
+    const keyBurner = KeyBurner.attach(keyburnaddr)
+
+    const outwave = await ethers.getContractAt('OutwaveEvent', outwaveaddr)
+    console.log(`outwave instantiated`)
+
+    await outwave.connect(lockOwner).setBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
+    console.log('set new base token uri on public lock')
+
+    // purchase key from lock
+    const publicLock = await ethers.getContractAt('PublicLock', lockaddr)
+    console.log(`public lock instantiated`)
+    const keyPrice = await publicLock.keyPrice()
+    // eslint-disable-next-line no-console
+    console.log(`Key price is ${keyPrice} WEI`)
+
+    const signers = (await ethers.getSigners()).slice(-10)
+
+    for (let index = 0; index < signers.length; index++) {
+      const signer = signers[index]
+      const signerKeyBalance = await publicLock.balanceOf(
+        signer.address
+      )
+      console.log(`Key balance of ${signer.address} is ${signerKeyBalance}`)
+
+      if (signerKeyBalance == 1) continue
+
+      const txPurchase = await publicLock
+        .connect(signer)
+        .purchase(
+          [],
+          [signer.address],
+          [web3.utils.padLeft(0, 40)],
+          [web3.utils.padLeft(0, 40)],
+          [[]],
+          {
+            value: keyPrice,
+          }
+        )
+
+      const txPurRec = await txPurchase.wait()
+      const evt = txPurRec.events.find((v) => v.event === 'Transfer')
+      // const tokenId = evt.args.tokenId
+      // eslint-disable-next-line no-console
+      console.log(`Token ${evt.args.tokenId} minted and sent to ${evt.args.to}`)
+      // eslint-disable-next-line no-console
+      console.log(
+        `Key balance of ${signer.address} is ${await publicLock.balanceOf(
+          signer.address
+        )}`
+      )
+
+      console.log('-----------------------------')
+    }
+
+    for (let index = 0; index < signers.length; index++) {
+      const signer = signers[index]
+      const tokenId = await publicLock
+        .connect(signer)
+        .tokenOfOwnerByIndex(signer.address, 0)
+
+      // approve key trasfer from keyBurner in publickLock
+      await publicLock.connect(signer).approve(keyBurner.address, tokenId)
+      console.log(
+        `One time trasfer of ERC721 '${tokenId}:${publicLock.address}' has been granted to keyBurner ${keyBurner.address}`
+      )
+
+      // burn the token
+      const txBurn = await keyBurner.connect(signer).burnKey(publicLock.address, tokenId)
+      const txBurnRec = await txBurn.wait()
+      const keyBurnEvent = txBurnRec.events.find((v) => v.event === 'KeyBurn')
+      const nftMintEvent = txBurnRec.events.find((v) => v.event === 'Transfer' && v.args.from == web3.utils.padLeft(0, 40))
+
+      console.log(
+        `Key '${keyBurnEvent.args.tokenId}:${keyBurnEvent.args.lock}' has been burned by keyBurner on behalf of user ${keyBurnEvent.args.from}`
+      )
+      console.log(
+        `User received the OPA NFT #${nftMintEvent.args.tokenId} in return, it's tokenUri is ${await keyBurner.tokenURI(nftMintEvent.args.tokenId)}`
+      )
+
+      console.log('-----------------------------')
+    }
+  })
 
 /* eslint-enable */

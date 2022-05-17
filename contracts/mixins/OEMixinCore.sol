@@ -30,6 +30,7 @@ contract OEMixinCore {
 
   //todo: waht is those become huge? do we even care?
   mapping(address => OrganizationData) private _userOrganizations;
+  address[] private _users;
 
   address internal _unlockAddr;
   bool internal _allowLockCreation;
@@ -41,7 +42,7 @@ contract OEMixinCore {
   }
 
   modifier onlyLockOwner(address lock) {
-    require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
+    // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
     require(_userOrganizations[msg.sender].locksEntity[lock].exists, "USER_NOT_OWNER");  //fast and 0 gas checks
     _;
   }
@@ -61,6 +62,7 @@ contract OEMixinCore {
     if(_userOrganizations[ownerAddress].exists) revert();
     _userOrganizations[ownerAddress].exists = true;
     _userOrganizations[ownerAddress].organizationAddress = entityAddress;
+    _users.push(ownerAddress);
   }
 
   function _isOrganizationAddressEntity(address ownerAddress) internal view returns(bool isIndeed) {
@@ -70,7 +72,6 @@ contract OEMixinCore {
   function locksGetAll() public view returns(Lock[] memory){
     return _userOrganizations[msg.sender].locks;  
   }
-
 
   function _isLockAddressEntity(address ownerAddress, address entityAddress) internal view returns(bool isIndeed) {
       return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists ;
@@ -85,11 +86,9 @@ contract OEMixinCore {
         _userOrganizations[ownerAddress].locksEntity[entityAdresses[i]] = newLock;
         emit LockRegistered(ownerAddress, _userOrganizations[ownerAddress].eventCounter, entityAdresses[i], address(this));
     }
-  
-
   }
 
-   function _eventLockDeregister(address ownerAddress, address entityAddress) internal {
+  function _eventLockDeregister(address ownerAddress, address entityAddress) internal {
       if(_isLockAddressEntity(ownerAddress, entityAddress)) revert();
       _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
       for(uint i=0; i < _userOrganizations[ownerAddress].locks.length ; i++){
@@ -101,4 +100,12 @@ contract OEMixinCore {
       }
   }
 
+  function isOutwaveLock(address _lockAddress) external view returns(bool isIndeed) {
+    for (uint i = 0; i < _users.length; i++) {
+      address ownerAddress = _users[i];
+      if(_userOrganizations[ownerAddress].locksEntity[_lockAddress].exists)
+        return true;
+    }
+    return false;
+  }
 }
