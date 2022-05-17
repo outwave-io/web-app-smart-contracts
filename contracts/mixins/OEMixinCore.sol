@@ -69,10 +69,6 @@ contract OEMixinCore {
       return _userOrganizations[ownerAddress].exists;
   }
 
-  function locksGetAll() public view returns(Lock[] memory){
-    return _userOrganizations[msg.sender].locks;  
-  }
-
   function _isLockAddressEntity(address ownerAddress, address entityAddress) internal view returns(bool isIndeed) {
       return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists ;
   }
@@ -98,6 +94,12 @@ contract OEMixinCore {
           break;
         }
       }
+  }
+
+  /* public */
+
+  function locksGetAll() public view returns(Lock[] memory){
+    return _userOrganizations[msg.sender].locks;  
   }
 
   function isOutwaveLock(address _lockAddress) external view returns(bool isIndeed) {
