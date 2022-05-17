@@ -60,22 +60,23 @@ function eventCreate(
   string[] memory names,
   uint[] memory keyprices,
   uint[] memory numberOfKeys,
-  uint8[] memory royalties
+  uint8[] memory royalties,
+  string[] memory baseTokenUris
 ) public lockAreEnabled returns(address[] memory) {
 
   console.log("event create called ");
   require(
     (names.length == keyprices.length) &&
     (keyprices.length == numberOfKeys.length) &&
-    (numberOfKeys.length == royalties.length), 
+    (numberOfKeys.length == royalties.length) && 
+    (royalties.length == baseTokenUris.length), 
     "NOTVALID");
 
   address[] memory result = new address[](numberOfKeys.length);
   for(uint i; i < keyprices.length; i++){
     address newAddr = _createLock(0, address(0), keyprices[i], numberOfKeys[i], names[i]);
     result[i] = newAddr;
-    console.log(newAddr);
-    console.log(result[i]);
+    IPublicLock(newAddr).setBaseTokenURI(baseTokenUris[i]);
   }
   _eventLockRegister(msg.sender,result,royalties);
   return result;

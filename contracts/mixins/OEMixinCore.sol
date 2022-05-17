@@ -42,7 +42,7 @@ contract OEMixinCore {
   }
 
   modifier onlyLockOwner(address lock) {
-    require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
+    // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
     require(_userOrganizations[msg.sender].locksEntity[lock].exists, "USER_NOT_OWNER");  //fast and 0 gas checks
     _;
   }
