@@ -67,5 +67,5 @@ module.exports = {
     'import/prefer-default-export': 'off',
     semi: ['error', 'never'],
     'import/extensions': [2, 'never'],
-  },
+  }
 }
