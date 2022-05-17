@@ -43,14 +43,6 @@ const settings = {
 
 const networks = getHardhatNetwork()
 
-// Etherscan api for verification
-const etherscan = {
-  apiKey: {
-    // xdai requires only placeholder api key
-    xdai: 'api-key',
-  },
-}
-
 // tasks
 require('./tasks/accounts')
 require('./tasks/balance')
@@ -69,7 +61,11 @@ require('./tasks/deploy-outwave')
  */
 module.exports = {
   networks,
-  etherscan,
+  etherscan: {
+    apiKey: {
+      polygonMumbai: 'IES3ED9IU77E9TEWYUEJKTJEQG2DYFW4UF',
+    },
+  },
   gasReporter: {
     currency: 'USD',
     excludeContracts: ['Migrations', 'TestNoop'],
