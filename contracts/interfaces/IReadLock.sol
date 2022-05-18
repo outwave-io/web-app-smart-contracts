@@ -13,7 +13,6 @@ interface IReadLock
   function beneficiary() external view returns (address );
   function expirationDuration() external view returns (uint256 );
   function freeTrialLength() external view returns (uint256 );
-  function isAlive() external view returns (bool );
   function tokenAddress() external view returns (address );
   function keyPrice() external view returns (uint256 );
   function maxNumberOfKeys() external view returns (uint256 );
