@@ -78,7 +78,7 @@ function eventCreate(
     result[i] = newAddr;
     IPublicLock(newAddr).setBaseTokenURI(baseTokenUris[i]);
   }
-  _eventLockRegister(msg.sender,result,royalties);
+  _eventLockRegister(msg.sender, eventId, result,royalties);
   return result;
 }
 

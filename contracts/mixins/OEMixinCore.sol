@@ -73,7 +73,8 @@ contract OEMixinCore {
       return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists ;
   }
   
-  function _eventLockRegister(address ownerAddress, address[] memory entityAdresses, uint8[] memory royalies) internal {
+  function _eventLockRegister(address ownerAddress, uint eventId, address[] memory entityAdresses, uint8[] memory royalies) internal {
+    require(eventId == _userOrganizations[ownerAddress].eventCounter + 1, "EVENT_ID_NOTVALID"); // we need to have the event id to reconciliate with the app. eventid are incremental per user
     _userOrganizations[ownerAddress].eventCounter++;
     for (uint i = 0; i < entityAdresses.length; i++){
         if(_isLockAddressEntity(ownerAddress, entityAdresses[i])) revert("LOCK_ADDRESS_EXISTS");
