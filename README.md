@@ -18,3 +18,8 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+
+## Outwave
+- after clone run `yarn install & yarn build`
+- to run all test `yarn test`
+- to deploy to specific network: `npx hardhat outwave:deploy --network mumbai`
