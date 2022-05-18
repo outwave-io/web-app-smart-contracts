@@ -156,18 +156,6 @@ function setMaxNumberOfKeys (
 }
 
 
-/* ERC721 */
-//todo understand if this shall be public or requires onlyLockOwner
-function balanceOf (
-  address lockAddress, 
-  address owner
-) public view returns (
-  uint256 balance
-){
-   return IPublicLock(lockAddress).balanceOf(owner);
-}
-
-
 function updateLockSymbol(
   address lockAddress,
   string calldata lockSymbol

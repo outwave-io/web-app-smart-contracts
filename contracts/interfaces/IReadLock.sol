@@ -19,4 +19,5 @@ interface IReadLock
   function keyManagerOf(uint) external view returns (address );
   function refundPenaltyBasisPoints() external view returns (uint256 );
   function transferFeeBasisPoints() external view returns (uint256 );
+  function balanceOf(address _owner) external view returns (uint256 balance);
 }
