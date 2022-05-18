@@ -13,8 +13,8 @@ contract('OutwaveEvent', () => {
   })
 
   it('Should forbid non-managers to upgrade', async () => {
-    console.log(unlockAddress)
-    console.log(publicLockAddress)
-    console.log(outwaveAddress)
+    // console.log(unlockAddress)
+    // console.log(publicLockAddress)
+    // console.log(outwaveAddress)
   })
 })
