@@ -20,4 +20,6 @@ interface IReadLock
   function refundPenaltyBasisPoints() external view returns (uint256 );
   function transferFeeBasisPoints() external view returns (uint256 );
   function balanceOf(address _owner) external view returns (uint256 balance);
+  function publicLockVersion() external pure returns (uint16);
+  function ownerOf(uint256 tokenId) external view returns (address _owner);
 }
