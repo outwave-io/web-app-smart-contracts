@@ -70,7 +70,7 @@ function eventCreate(
     (keyprices.length == numberOfKeys.length) &&
     (numberOfKeys.length == royalties.length) && 
     (royalties.length == baseTokenUris.length), 
-    "NOTVALID");
+    "PARAMS_NOT_VALID");
 
   address[] memory result = new address[](numberOfKeys.length);
   for(uint i; i < keyprices.length; i++){

@@ -46,6 +46,85 @@ contract('OutwaveEvent', () => {
       assert.equal(await readlock.name(), 'name')
     })
   })
+
+  describe('create event / behavior / multiple locks', () => {
+    let outwave
+    let addr1
+
+    before(async () => {
+      let addresses = await require('../helpers/deploy').deployUnlock('10')
+      let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      ;[, addr1] = await ethers.getSigners()
+    })
+    it('should create multiple vaild publiclocks', async () => {
+      const tx = await outwave
+        .connect(addr1)
+        .eventCreate(
+          1,
+          ['lock1', 'lock2'],
+          [
+            web3.utils.toWei('0.01', 'ether'),
+            web3.utils.toWei('0.02', 'ether'),
+          ],
+          [100000, 20000],
+          [1, 2],
+          [
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          ]
+        )
+      let receipt = await tx.wait()
+
+      let evt = receipt.events.filter((v) => v.event === 'LockRegistered')
+      assert.isArray(evt)
+      assert.equal(evt.length, 2)
+      let PublicLock = await ethers.getContractFactory('PublicLock')
+
+      for (const element of evt) {
+        let publiclock = await PublicLock.attach(element.args.lockAddress)
+        assert.equal(await publiclock.publicLockVersion(), 10)
+      }
+    })
+    it('should throw if invalid params array size is given (less) ', async () => {
+      await reverts(
+        outwave.connect(addr1).eventCreate(
+          2, // note: eventId changed
+          ['lock1'],
+          [
+            web3.utils.toWei('0.01', 'ether'),
+            web3.utils.toWei('0.02', 'ether'),
+          ],
+          [100000, 20000],
+          [1, 2],
+          [
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          ]
+        ),
+        'PARAMS_NOT_VALID'
+      )
+    })
+    it('should throw if invalid params array size is given (more) ', async () => {
+      await reverts(
+        outwave.connect(addr1).eventCreate(
+          3, // note: eventId changed
+          ['lock1', 'lock2', 'lock3'],
+          [
+            web3.utils.toWei('0.01', 'ether'),
+            web3.utils.toWei('0.02', 'ether'),
+          ],
+          [100000, 20000],
+          [1, 2],
+          [
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          ]
+        ),
+        'PARAMS_NOT_VALID'
+      )
+    })
+  })
   describe('create event / security', () => {
     let outwave
     let lockAddress // the address of the lock
