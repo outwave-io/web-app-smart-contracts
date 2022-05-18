@@ -81,7 +81,8 @@
     "verify": "hardhat verify",
     "hardhat": "hardhat",
     "deploy-all": "hardhat deploy",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "nuke": "./.scripts/nuke.sh"
   },
   "author": "demind.io",
   "license": "ISC"
