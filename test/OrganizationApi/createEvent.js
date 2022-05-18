@@ -32,10 +32,6 @@ contract('OutwaveEvent', () => {
       assert(lockAddress)
     })
 
-    it('should return correct lock version', async () => {
-      let version = await outwave.connect(addr1).publicLockVersion(lockAddress)
-      assert.equal(version, 10)
-    })
     it('should create an actual Public Lock, returning a valid version', async () => {
       let PublicLock = await ethers.getContractFactory('PublicLock')
       let publiclock = await PublicLock.attach(lockAddress)

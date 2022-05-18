@@ -103,12 +103,30 @@ contract OEMixinOrganizationApi is OEMixinCore {
     /* locks */
 
     // rmeoved in v10... find a different way
-    // function disableLock(
-    //   address lockAddress
-    // )  external onlyLockOwner(lockAddress)  {
-    //   _deregisterLock(msg.sender, lockAddress);
-    //    IPublicLock(lockAddress).disableLock();
-    // }
+    function eventDisable(uint256 eventId) external {
+        Lock[] memory userLocks = eventLocksGetAll(eventId);
+        for (uint256 i = 0; i < userLocks.length; i++) {
+            if (userLocks[i].exists) {
+                //eventLockDisable(userLocks[i].lockAddr);
+                require(
+                    _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
+                    "USER_NOT_OWNER"
+                );
+                IPublicLock lock = IPublicLock(userLocks[i].lockAddr);
+                lock.setMaxNumberOfKeys(lock.totalSupply());
+                _eventLockDeregister(msg.sender, userLocks[i].lockAddr);
+            }
+        }
+    }
+
+    function eventLockDisable(address lockAddress)
+        external
+        onlyLockOwner(lockAddress)
+    {
+        IPublicLock lock = IPublicLock(lockAddress);
+        lock.setMaxNumberOfKeys(lock.totalSupply());
+        _eventLockDeregister(msg.sender, lockAddress);
+    }
 
     function eventGrantKeys(
         address lockAddress,
