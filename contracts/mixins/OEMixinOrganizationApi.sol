@@ -102,7 +102,15 @@ contract OEMixinOrganizationApi is OEMixinCore {
 
     /* locks */
 
-    // rmeoved in v10... find a different way
+    
+  /**
+ * The ability to disable locks has been removed on v10 to decrease contract code size.
+ * Disabling locks can be achieved by setting `setMaxNumberOfKeys` to `totalSupply`
+ * and expire all existing keys.
+ * @dev the variables are kept to prevent conflicts in storage layout during upgrades
+  TODO: do need to expire the keys?
+ */
+ 
     function eventDisable(uint256 eventId) external {
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
