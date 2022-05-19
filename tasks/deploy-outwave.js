@@ -10,7 +10,7 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     let unlockAddress = await run('deploy:unlock')
     let publicLockAddress = await run('deploy:template')
     let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
-      // set lock template
+    // set lock template
     await run('set:template', {
       publicLockAddress,
       unlockAddress,
@@ -20,12 +20,12 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     let Outwave = await ethers.getContractFactory('OutwaveEvent')
     let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress);
 
-    console.log("- unlock deployed: " +  unlockAddress);
-    console.log("- publiclock template deployed: " +  publicLockAddress);
+    console.log("- unlock deployed: " + unlockAddress);
+    console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
-    console.log("To verify on blockchain: yarn verify " + outwave.address + " "+ unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
+    console.log("To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
 
-});
+  });
 
 task('outwave:deploy:createlock', 'create lock and returns address')
   // .addParam('outwaveaddr', 'the address of the outwave organization')
@@ -87,10 +87,8 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     var param3 = [100000];
     var param4 = [1];
 
-
-    //const tx = await outwave.eventCreate(param1, param2, param3);
     const tx = await outwave.eventCreate(
-      1,
+      web3.utils.padLeft(web3.utils.asciiToHex("1"), 64),
       ["name"],
       [web3.utils.toWei('0.01', 'ether')],
       [100000],
@@ -139,7 +137,7 @@ task('outwave:deploy:createlock', 'create lock and returns address')
 
     console.log("##### SUMMARY #####")
     console.log("unlock deployed at: " + unlockAddress);
-    console.log("utwave org deployed at: " + outwave.address);
+    console.log("outwave org deployed at: " + outwave.address);
     console.log("public lock deployed at: " + newLockAddress);
   })
 
@@ -150,11 +148,13 @@ task('outwave:call', 'create lock and returns address').setAction(
 )
 
 task('outwave:deploy:keyburner', 'deploys keyburner')
+  .addOptionalParam('outwaveaddr', 'the outwave facade address')
   .addOptionalParam('unlockaddr', 'the unlock factory address')
-  .setAction(async ({ unlockaddr }, { run }) => {
+  .setAction(async ({outwaveaddr, unlockaddr }, { run }) => {
     // eslint-disable-next-line global-require
     const keyBurnerDeployer = require('../scripts/deployments/outwaveKeyburner')
     await keyBurnerDeployer({
+      outwaveAddress: outwaveaddr,
       unlockAddress: unlockaddr
     })
   })
@@ -162,17 +162,16 @@ task('outwave:deploy:keyburner', 'deploys keyburner')
 task('outwave:call:keyburner', 'mint some keys and burn them ??')
   .addParam('keyburnaddr', 'the key burner address')
   .addParam('lockaddr', 'the public lock address')
-  .addParam('outwaveaddr', 'the outwave facade address')
-  .setAction(async ({ keyburnaddr, lockaddr, outwaveaddr }, { ethers }) => {
+  .setAction(async ({ keyburnaddr, lockaddr }, { ethers }) => {
     const [lockOwner, addr1, addr2, outwaveOwner] = await ethers.getSigners();
 
     const KeyBurner = await ethers.getContractFactory('OutwaveKeyBurner')
     const keyBurner = KeyBurner.attach(keyburnaddr)
 
-    const outwave = await ethers.getContractAt('OutwaveEvent', outwaveaddr)
+    const outwave = await ethers.getContractAt('OutwaveEvent', await keyBurner.readOutwave())
     console.log(`outwave instantiated`)
 
-    await outwave.connect(lockOwner).setBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
+    await outwave.connect(lockOwner).eventSetBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
     console.log('set new base token uri on public lock')
 
     // purchase key from lock
@@ -245,6 +244,10 @@ task('outwave:call:keyburner', 'mint some keys and burn them ??')
       console.log(
         `User received the OPA NFT #${nftMintEvent.args.tokenId} in return, it's tokenUri is ${await keyBurner.tokenURI(nftMintEvent.args.tokenId)}`
       )
+
+      const originalKey = await keyBurner.readOriginalKey(nftMintEvent.args.tokenId)
+      console.log('Original Key info:')
+      console.log(originalKey)
 
       console.log('-----------------------------')
     }
