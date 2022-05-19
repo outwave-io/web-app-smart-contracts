@@ -31,6 +31,7 @@ contract OEMixinCore {
 
   //todo: waht is those become huge? do we even care?
   mapping(address => OrganizationData) private _userOrganizations;
+  mapping(bytes32 => Lock) private _eventIds;
   address[] private _users;
 
   address internal _unlockAddr;
@@ -91,20 +92,27 @@ contract OEMixinCore {
         Lock memory newLock =  Lock({eventId: eventId, royalty: royalies[i], exists : true, lockAddr : entityAdresses[i] });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses[i]] = newLock;
+        _eventIds[eventId] = newLock;
         emit LockRegistered(ownerAddress, eventId, entityAdresses[i], address(this));
     }
   }
 
-  function _eventLockDeregister(address ownerAddress, address entityAddress) internal {
-      if(_isLockAddressEntity(ownerAddress, entityAddress)) revert("CORE_USER_NOT_OWNER");
+  function _eventLockDeregister(address ownerAddress, bytes32 eventId, address entityAddress) internal {
+      require(_isLockAddressEntity(ownerAddress, entityAddress), "CORE_USER_NOT_OWNER");
+      require(_eventIds[eventId].lockAddr == entityAddress, "CORE_EVENTID_INVALID");
       _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
       for(uint i=0; i < _userOrganizations[ownerAddress].locks.length ; i++){
         if(_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress){
           _userOrganizations[ownerAddress].locks[i].exists = false;
+          _eventIds[eventId].exists = false;
           emit LockDeegistered(ownerAddress, _userOrganizations[ownerAddress].locks[i].eventId, _userOrganizations[ownerAddress].locks[i].lockAddr);
           break;
         }
       }
+  }
+
+  function _eventIdExists(bytes32 eventId) internal view returns(bool){
+    return _eventIds[eventId].exists;
   }
 
   /* public */

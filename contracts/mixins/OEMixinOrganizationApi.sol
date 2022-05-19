@@ -76,6 +76,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
         console.log("event create called ");
+        require(!_eventIdExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         require(
             (names.length == keyprices.length) &&
                 (keyprices.length == numberOfKeys.length) &&
@@ -145,18 +146,18 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 );
                 IPublicLock lock = IPublicLock(userLocks[i].lockAddr);
                 lock.setMaxNumberOfKeys(lock.totalSupply());
-                _eventLockDeregister(msg.sender, userLocks[i].lockAddr);
+                _eventLockDeregister(msg.sender, eventId, userLocks[i].lockAddr);
             }
         }
     }
 
-    function eventLockDisable(address lockAddress)
+    function eventLockDisable(bytes32 eventId, address lockAddress)
         public
         onlyLockOwner(lockAddress)
     {
         IPublicLock lock = IPublicLock(lockAddress);
         lock.setMaxNumberOfKeys(lock.totalSupply());
-        _eventLockDeregister(msg.sender, lockAddress);
+        _eventLockDeregister(msg.sender, eventId, lockAddress);
     }
 
     function eventGrantKeys(

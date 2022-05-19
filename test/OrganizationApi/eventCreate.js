@@ -150,7 +150,7 @@ contract('OutwaveEvent', () => {
       lockAddress = evt.args.lockAddress
     })
 
-    it('should not allow creating multiple events with the same id for same user', async () => {
+    it('should NOT allow creating multiple events with the same id for same user', async () => {
       let [, addr1] = await ethers.getSigners()
       await reverts(
         outwave
@@ -163,23 +163,24 @@ contract('OutwaveEvent', () => {
             [1],
             ['ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx']
           ),
-        'EVENT_ID_INVALID'
+        'EVENT_ID_ALREADY_EXISTS'
       )
     })
-    it('should allow creating events with the same id if different user', async () => {
+    it('should NOT allow creating events with the same id if different user', async () => {
       let [, , addr2] = await ethers.getSigners()
-      const txAddr2 = await outwave
-        .connect(addr2)
-        .eventCreate(
-          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
-          ['name'],
-          [web3.utils.toWei('0.01', 'ether')],
-          [100000],
-          [1],
-          ['ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx']
-        )
-      await txAddr2.wait()
-      assert(txAddr2)
+      await reverts(
+        outwave
+          .connect(addr2)
+          .eventCreate(
+            web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+            ['name'],
+            [web3.utils.toWei('0.01', 'ether')],
+            [100000],
+            [1],
+            ['ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx']
+          ),
+        'EVENT_ID_ALREADY_EXISTS'
+      )
     })
     it('should create a public lock owned by Outwave and not by msg.sender', async () => {
       let PublicLock = await ethers.getContractFactory('PublicLock')
