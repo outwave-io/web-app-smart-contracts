@@ -16,19 +16,18 @@ contract OEMixinCore {
     address organizationAddress;
     mapping(address => Lock) locksEntity;  // fast searching
     Lock[] locks; //fast returnig of all locks
-    uint eventCounter;  //we 
     bool exists;
   }
 
   struct Lock{
-    uint  eventId;
+    bytes32  eventId;
     address lockAddr;
     uint8 royalty;
     bool exists;
   }
 
-  event LockRegistered(address indexed owner, uint indexed eventId, address indexed lockAddress, address outwaveEventAddress);
-  event LockDeegistered(address indexed owner, uint indexed eventId, address indexed lockAddress);
+  event LockRegistered(address indexed owner, bytes32 indexed eventId, address indexed lockAddress, address outwaveEventAddress);
+  event LockDeegistered(address indexed owner, bytes32 indexed eventId, address indexed lockAddress);
 
   //todo: waht is those become huge? do we even care?
   mapping(address => OrganizationData) private _userOrganizations;
@@ -86,15 +85,13 @@ contract OEMixinCore {
       return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists ;
   }
   
-  function _eventLockRegister(address ownerAddress, uint eventId, address[] memory entityAdresses, uint8[] memory royalies) internal {
-    require(eventId == _userOrganizations[ownerAddress].eventCounter + 1, "CORE_EVENT_ID_INVALID"); // we need to have the event id to reconciliate with the app. eventid are incremental per user
-    _userOrganizations[ownerAddress].eventCounter++;
+  function _eventLockRegister(address ownerAddress, bytes32 eventId, address[] memory entityAdresses, uint8[] memory royalies) internal {
     for (uint i = 0; i < entityAdresses.length; i++){
         if(_isLockAddressEntity(ownerAddress, entityAdresses[i])) revert("CORE_LOCK_ADDRESS_EXISTS");
-        Lock memory newLock =  Lock({eventId: _userOrganizations[ownerAddress].eventCounter, royalty: royalies[i], exists : true, lockAddr : entityAdresses[i] });
+        Lock memory newLock =  Lock({eventId: eventId, royalty: royalies[i], exists : true, lockAddr : entityAdresses[i] });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses[i]] = newLock;
-        emit LockRegistered(ownerAddress, _userOrganizations[ownerAddress].eventCounter, entityAdresses[i], address(this));
+        emit LockRegistered(ownerAddress, eventId, entityAdresses[i], address(this));
     }
   }
 
@@ -116,7 +113,7 @@ contract OEMixinCore {
     return _userOrganizations[msg.sender].locks;  
   }
 
-  function eventLocksGetAll(uint eventId) public view returns(Lock[] memory){
+  function eventLocksGetAll(bytes32 eventId) public view returns(Lock[] memory){
     Lock[] memory locks = _userOrganizations[msg.sender].locks;
     //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
     uint count;
@@ -143,9 +140,5 @@ contract OEMixinCore {
         return true;
     }
     return false;
-  }
-
-  function userLastEventId(address userAddress) public view returns(uint counter) {
-    return _userOrganizations[userAddress].eventCounter;
   }
 }

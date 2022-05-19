@@ -19,7 +19,7 @@ contract('OutwaveEvent', () => {
       const tx = await outwave
         .connect(addr1)
         .eventCreate(
-          1,
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           ['name'],
           [web3.utils.toWei('0.01', 'ether')],
           [100000],
@@ -57,7 +57,7 @@ contract('OutwaveEvent', () => {
       const tx = await outwave
         .connect(addr1)
         .eventCreate(
-          1,
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           ['lock1', 'lock2'],
           [
             web3.utils.toWei('0.01', 'ether'),
@@ -85,7 +85,7 @@ contract('OutwaveEvent', () => {
     it('should throw if invalid params array size is given (less) ', async () => {
       await reverts(
         outwave.connect(addr1).eventCreate(
-          2, // note: eventId changed as 1 has been already created
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64), // note: eventId changed as 1 has been already created
           ['lock1'],
           [
             web3.utils.toWei('0.01', 'ether'),
@@ -104,7 +104,7 @@ contract('OutwaveEvent', () => {
     it('should throw if invalid params array size is given (more) ', async () => {
       await reverts(
         outwave.connect(addr1).eventCreate(
-          2, // note: eventId changed as 1 has been already created
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64), // note: eventId changed as 1 has been already created
           ['lock1', 'lock2', 'lock3'],
           [
             web3.utils.toWei('0.01', 'ether'),
@@ -136,7 +136,7 @@ contract('OutwaveEvent', () => {
       const tx = await outwave
         .connect(addr1)
         .eventCreate(
-          1,
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           ['name'],
           [web3.utils.toWei('0.01', 'ether')],
           [100000],
@@ -156,7 +156,7 @@ contract('OutwaveEvent', () => {
         outwave
           .connect(addr1)
           .eventCreate(
-            1,
+            web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
             ['name'],
             [web3.utils.toWei('0.01', 'ether')],
             [100000],
@@ -171,7 +171,7 @@ contract('OutwaveEvent', () => {
       const txAddr2 = await outwave
         .connect(addr2)
         .eventCreate(
-          1,
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           ['name'],
           [web3.utils.toWei('0.01', 'ether')],
           [100000],

@@ -68,7 +68,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
     // }
 
     function _eventCreate(
-        uint256 eventId, 
+        bytes32 eventId, 
         string[] memory names,
         uint256[] memory keyprices,
         uint256[] memory numberOfKeys,
@@ -102,26 +102,24 @@ contract OEMixinOrganizationApi is OEMixinCore {
 
 
     function eventCreate(
-        uint256 eventId, //todo: review this
+        bytes32 eventId, //todo: review this
         string[] memory names,
         uint256[] memory keyprices,
         uint256[] memory numberOfKeys,
         uint8[] memory royalties,
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
-       require(eventId - 1 == userLastEventId(msg.sender), "EVENT_ID_INVALID");
        return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
     }
 
     function eventLockCreate(
-        uint256 eventId, //todo: review this
+        bytes32 eventId, //todo: review this
         string[] memory names,
         uint256[] memory keyprices,
         uint256[] memory numberOfKeys,
         uint8[] memory royalties,
         string[] memory baseTokenUris
     ) external lockAreEnabled returns (address[] memory){
-        require(eventId <= userLastEventId(msg.sender), "EVENT_ID_INVALID");
         return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
     }
 
@@ -136,8 +134,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
   TODO: do need to expire the keys?
  */
 
-    function eventDisable(uint256 eventId) public {
-        require(eventId <= userLastEventId(msg.sender), "EVENT_ID_INVALID");
+    function eventDisable(bytes32 eventId) public {
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
