@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
+
 
 /**
  * @title OEMixinCore
@@ -85,10 +87,10 @@ contract OEMixinCore {
   }
   
   function _eventLockRegister(address ownerAddress, uint eventId, address[] memory entityAdresses, uint8[] memory royalies) internal {
-    require(eventId == _userOrganizations[ownerAddress].eventCounter + 1, "EVENT_ID_NOTVALID"); // we need to have the event id to reconciliate with the app. eventid are incremental per user
+    require(eventId == _userOrganizations[ownerAddress].eventCounter + 1, "CORE_EVENT_ID_INVALID"); // we need to have the event id to reconciliate with the app. eventid are incremental per user
     _userOrganizations[ownerAddress].eventCounter++;
     for (uint i = 0; i < entityAdresses.length; i++){
-        if(_isLockAddressEntity(ownerAddress, entityAdresses[i])) revert("LOCK_ADDRESS_EXISTS");
+        if(_isLockAddressEntity(ownerAddress, entityAdresses[i])) revert("CORE_LOCK_ADDRESS_EXISTS");
         Lock memory newLock =  Lock({eventId: _userOrganizations[ownerAddress].eventCounter, royalty: royalies[i], exists : true, lockAddr : entityAdresses[i] });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses[i]] = newLock;
@@ -97,7 +99,7 @@ contract OEMixinCore {
   }
 
   function _eventLockDeregister(address ownerAddress, address entityAddress) internal {
-      if(_isLockAddressEntity(ownerAddress, entityAddress)) revert("USER_NOT_OWNER");
+      if(_isLockAddressEntity(ownerAddress, entityAddress)) revert("CORE_USER_NOT_OWNER");
       _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
       for(uint i=0; i < _userOrganizations[ownerAddress].locks.length ; i++){
         if(_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress){
@@ -134,12 +136,16 @@ contract OEMixinCore {
     return result;
   }
 
-  function isOutwaveLock(address _lockAddress) external view returns(bool isIndeed) {
+  function isOutwaveLock(address _lockAddress) public view returns(bool isIndeed) {
     for (uint i = 0; i < _users.length; i++) {
       address ownerAddress = _users[i];
       if(_userOrganizations[ownerAddress].locksEntity[_lockAddress].exists)
         return true;
     }
     return false;
+  }
+
+  function userLastEventId(address userAddress) public view returns(uint counter) {
+    return _userOrganizations[userAddress].eventCounter;
   }
 }

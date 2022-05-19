@@ -67,8 +67,8 @@ contract OEMixinOrganizationApi is OEMixinCore {
     //   //todo
     // }
 
-    function eventCreate(
-        uint256 eventId, //todo: review this
+    function _eventCreate(
+        uint256 eventId, 
         string[] memory names,
         uint256[] memory keyprices,
         uint256[] memory numberOfKeys,
@@ -100,6 +100,31 @@ contract OEMixinOrganizationApi is OEMixinCore {
         return result;
     }
 
+
+    function eventCreate(
+        uint256 eventId, //todo: review this
+        string[] memory names,
+        uint256[] memory keyprices,
+        uint256[] memory numberOfKeys,
+        uint8[] memory royalties,
+        string[] memory baseTokenUris
+    ) public lockAreEnabled returns (address[] memory) {
+       require(eventId - 1 == userLastEventId(msg.sender), "EVENT_ID_INVALID");
+       return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
+    }
+
+    function eventLockCreate(
+        uint256 eventId, //todo: review this
+        string[] memory names,
+        uint256[] memory keyprices,
+        uint256[] memory numberOfKeys,
+        uint8[] memory royalties,
+        string[] memory baseTokenUris
+    ) external lockAreEnabled returns (address[] memory){
+        require(eventId <= userLastEventId(msg.sender), "EVENT_ID_INVALID");
+        return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
+    }
+
     /* locks */
 
     
@@ -110,8 +135,9 @@ contract OEMixinOrganizationApi is OEMixinCore {
  * @dev the variables are kept to prevent conflicts in storage layout during upgrades
   TODO: do need to expire the keys?
  */
- 
-    function eventDisable(uint256 eventId) external {
+
+    function eventDisable(uint256 eventId) public {
+        require(eventId <= userLastEventId(msg.sender), "EVENT_ID_INVALID");
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
@@ -128,7 +154,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
     }
 
     function eventLockDisable(address lockAddress)
-        external
+        public
         onlyLockOwner(lockAddress)
     {
         IPublicLock lock = IPublicLock(lockAddress);
