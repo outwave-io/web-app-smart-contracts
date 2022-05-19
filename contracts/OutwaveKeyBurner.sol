@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
+import "./interfaces/IReadOutwave.sol";
 
 contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
     using Counters for Counters.Counter;
@@ -18,22 +19,29 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
 
     bytes4 constant ERC721ID = 0x80ac58cd;
 
+    IReadOutwave outwave;
     IUnlock unlock;
 
-    mapping(uint256 => string) private tokenURIs;
+    struct OriginalKey {
+        uint256 keyId;
+        address lockAddress;
+        string tokenURI;
+        uint256 eventId;
+    }
+
+    mapping(uint256 => OriginalKey) private originalKeys;
 
     event KeyBurn(address indexed from, address indexed lock, uint256 tokenId);
 
-    constructor(address _unlock)
+    constructor(address _outwave, address _unlock)
         ERC721("OutwavePartecipantAttestation", "OPA")
     {
+        outwave = IReadOutwave(_outwave);
         unlock = IUnlock(_unlock);
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        revert(
-            "FEATURE_DISABLED"
-        );
+        revert("FEATURE_DISABLED");
     }
 
     // Returns the json file of the corresponding token ID.
@@ -45,23 +53,21 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
         returns (string memory)
     {
         require(_exists(_tokenId), "TOKENID_NOT_EXISTS");
-        assert(bytes(tokenURIs[_tokenId]).length != 0);
-        return tokenURIs[_tokenId];
+        assert(originalKeys[_tokenId].keyId != 0);
+        return originalKeys[_tokenId].tokenURI;
     }
 
     function setTokenURI(uint256 _tokenId, string memory _tokenUri)
         external
         onlyOwner
     {
-        tokenURIs[_tokenId] = _tokenUri;
+        assert(originalKeys[_tokenId].keyId != 0);
+        originalKeys[_tokenId].tokenURI = _tokenUri;
     }
 
     function burnKey(address _parent, uint256 _tokenId) public {
         (bool isLock, , ) = unlock.locks(_parent);
-        require(
-            isLock,
-            "NOT_PUBLIC_LOCK"
-        );
+        require(isLock, "NOT_PUBLIC_LOCK");
 
         IPublicLock parentLock = IPublicLock(_parent);
         parentLock.burn(_tokenId);
@@ -77,12 +83,17 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
         );
 
         // store tokenUri
-        tokenURIs[mintedTokenId] = string(
-            abi.encodePacked(
-                lockBaseURI,
-                Strings.toString(_tokenId),
-                "_mk.json"
-            )
+        originalKeys[mintedTokenId] = OriginalKey(
+            _tokenId,
+            _parent,
+            string(
+                abi.encodePacked(
+                    lockBaseURI,
+                    Strings.toString(_tokenId),
+                    "_mk.json"
+                )
+            ),
+            outwave.getEventByLock(_parent)
         );
 
         emit KeyBurn(msg.sender, _parent, _tokenId);
@@ -95,8 +106,21 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
         return tokenId;
     }
 
-    function readUnlock() public view returns (address) {
+    function readUnlock() external view returns (address) {
         return address(unlock);
+    }
+
+    function readOutwave() external view returns (address) {
+        return address(outwave);
+    }
+
+    function readOriginalKey(uint256 _tokenId)
+        public
+        view
+        returns (OriginalKey memory originalKey)
+    {
+        require(_exists(_tokenId), "TOKENID_NOT_EXISTS");
+        return originalKeys[_tokenId];
     }
 
     function onERC721Received(
@@ -112,7 +136,7 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
         string memory str,
         uint256 startIndex,
         uint256 endIndex
-    ) public pure returns (string memory) {
+    ) private pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory result = new bytes(endIndex - startIndex);
         for (uint256 i = startIndex; i < endIndex; i++) {
