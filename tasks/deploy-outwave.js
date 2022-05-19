@@ -87,10 +87,8 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     var param3 = [100000];
     var param4 = [1];
 
-
-    //const tx = await outwave.eventCreate(param1, param2, param3);
     const tx = await outwave.eventCreate(
-      1,
+      web3.utils.padLeft(web3.utils.asciiToHex("1"), 64),
       ["name"],
       [web3.utils.toWei('0.01', 'ether')],
       [100000],
@@ -139,7 +137,7 @@ task('outwave:deploy:createlock', 'create lock and returns address')
 
     console.log("##### SUMMARY #####")
     console.log("unlock deployed at: " + unlockAddress);
-    console.log("utwave org deployed at: " + outwave.address);
+    console.log("outwave org deployed at: " + outwave.address);
     console.log("public lock deployed at: " + newLockAddress);
   })
 
@@ -173,7 +171,7 @@ task('outwave:call:keyburner', 'mint some keys and burn them ??')
     const outwave = await ethers.getContractAt('OutwaveEvent', await keyBurner.readOutwave())
     console.log(`outwave instantiated`)
 
-    await outwave.connect(lockOwner).setBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
+    await outwave.connect(lockOwner).eventSetBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
     console.log('set new base token uri on public lock')
 
     // purchase key from lock

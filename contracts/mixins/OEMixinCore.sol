@@ -142,13 +142,12 @@ contract OEMixinCore {
     return false;
   }
 
-  function getEventByLock(address _lockAddress) external view returns(uint eventId) {
+  function getEventByLock(address _lockAddress) external view returns(bytes32 eventId) {
     for (uint i = 0; i < _users.length; i++) {
       address ownerAddress = _users[i];
       Lock memory eventLock = _userOrganizations[ownerAddress].locksEntity[_lockAddress];
-      if(eventLock.exists){
+      if(eventLock.exists)
         return eventLock.eventId;
-      }
     }
     return 0;
   }

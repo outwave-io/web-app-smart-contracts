@@ -26,7 +26,7 @@ contract OutwaveKeyBurner is ERC721Holder, ERC721, Ownable {
         uint256 keyId;
         address lockAddress;
         string tokenURI;
-        uint256 eventId;
+        bytes32 eventId;
     }
 
     mapping(uint256 => OriginalKey) private originalKeys;

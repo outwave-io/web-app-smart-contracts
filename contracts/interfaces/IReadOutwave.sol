@@ -10,5 +10,5 @@ interface IReadOutwave {
     function getEventByLock(address _lockAddress)
         external
         view
-        returns (uint eventId);
+        returns (bytes32 eventId);
 }
