@@ -13,7 +13,7 @@ import "hardhat/console.sol";
 contract OEMixinCore {
 
   struct OrganizationData{
-    address organizationAddress;
+    address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
     mapping(address => Lock) locksEntity;  // fast searching
     Lock[] locks; //fast returnig of all locks
     bool exists;
@@ -31,7 +31,7 @@ contract OEMixinCore {
 
   //todo: waht is those become huge? do we even care?
   mapping(address => OrganizationData) private _userOrganizations;
-  mapping(bytes32 => Lock) private _eventIds;
+  mapping(bytes32 => bool) private _eventIds;
   address[] private _users;
 
   address internal _unlockAddr;
@@ -83,36 +83,36 @@ contract OEMixinCore {
   }
 
   function _isLockAddressEntity(address ownerAddress, address entityAddress) internal view returns(bool isIndeed) {
-      return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists ;
+      return _userOrganizations[ownerAddress].locksEntity[entityAddress].exists;
   }
   
   function _eventLockRegister(address ownerAddress, bytes32 eventId, address[] memory entityAdresses, uint8[] memory royalies) internal {
     for (uint i = 0; i < entityAdresses.length; i++){
         if(_isLockAddressEntity(ownerAddress, entityAdresses[i])) revert("CORE_LOCK_ADDRESS_EXISTS");
-        Lock memory newLock =  Lock({eventId: eventId, royalty: royalies[i], exists : true, lockAddr : entityAdresses[i] });
+        Lock memory newLock =  Lock({eventId: eventId, royalty: royalies[i], exists: true, lockAddr: entityAdresses[i] });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses[i]] = newLock;
-        _eventIds[eventId] = newLock;
+        _eventIds[eventId] = true;
         emit LockRegistered(ownerAddress, eventId, entityAdresses[i], address(this));
     }
   }
 
   function _eventLockDeregister(address ownerAddress, bytes32 eventId, address entityAddress) internal {
       require(_isLockAddressEntity(ownerAddress, entityAddress), "CORE_USER_NOT_OWNER");
-      require(_eventIds[eventId].lockAddr == entityAddress, "CORE_EVENTID_INVALID");
+      require(_eventExists(eventId), "CORE_EVENTID_INVALID");
       _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
       for(uint i=0; i < _userOrganizations[ownerAddress].locks.length ; i++){
         if(_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress){
           _userOrganizations[ownerAddress].locks[i].exists = false;
-          _eventIds[eventId].exists = false;
+          _eventIds[eventId] = false;
           emit LockDeegistered(ownerAddress, _userOrganizations[ownerAddress].locks[i].eventId, _userOrganizations[ownerAddress].locks[i].lockAddr);
           break;
         }
       }
   }
 
-  function _eventIdExists(bytes32 eventId) internal view returns(bool){
-    return _eventIds[eventId].exists;
+  function _eventExists(bytes32 eventId) internal view returns(bool){
+    return _eventIds[eventId] == true;
   }
 
   /* public */
@@ -121,6 +121,7 @@ contract OEMixinCore {
     return _userOrganizations[msg.sender].locks;  
   }
 
+  // todo: this works only if sender is the organization owner
   function eventLocksGetAll(bytes32 eventId) public view returns(Lock[] memory){
     Lock[] memory locks = _userOrganizations[msg.sender].locks;
     //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
@@ -141,19 +142,12 @@ contract OEMixinCore {
     return result;
   }
 
-  function isOutwaveLock(address _lockAddress) public view returns(bool isIndeed) {
+  // note that this is broken: users are appended only in _registerNewOrganization,
+  // now locks can be registered without an org.
+  function getEventByLock(address lockAddress) external view returns(bytes32 eventId) {
     for (uint i = 0; i < _users.length; i++) {
       address ownerAddress = _users[i];
-      if(_userOrganizations[ownerAddress].locksEntity[_lockAddress].exists)
-        return true;
-    }
-    return false;
-  }
-
-  function getEventByLock(address _lockAddress) external view returns(bytes32 eventId) {
-    for (uint i = 0; i < _users.length; i++) {
-      address ownerAddress = _users[i];
-      Lock memory eventLock = _userOrganizations[ownerAddress].locksEntity[_lockAddress];
+      Lock memory eventLock = _userOrganizations[ownerAddress].locksEntity[lockAddress];
       if(eventLock.exists)
         return eventLock.eventId;
     }

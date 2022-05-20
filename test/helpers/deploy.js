@@ -1,4 +1,8 @@
 const { ethers, run } = require('hardhat')
+const deployKeyBurner = require('../../scripts/deployments/outwaveKeyburner')
+const PublicLock = artifacts.require('PublicLock')
+const createLockHash = require('./createLockCalldata')
+const Locks = require('../fixtures/locks')
 
 async function deployUnlock(unlockVersion) {
   //  let unlockVersion = '10'
@@ -16,9 +20,37 @@ async function deployUnlock(unlockVersion) {
   let Outwave = await ethers.getContractFactory('OutwaveEvent')
   let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress)
   let outwaveAddress = outwave.address
-  return {unlockAddress, publicLockAddress, outwaveAddress}
+  return { unlockAddress, publicLockAddress, outwaveAddress }
+}
+
+async function deployLocks(
+  unlock,
+  from,
+  tokenAddress = web3.utils.padLeft(0, 40)
+) {
+  let locks = {}
+  await Promise.all(
+    Object.keys(Locks).map(async (name) => {
+      const args = [
+        Locks[name].expirationDuration.toFixed(),
+        tokenAddress,
+        Locks[name].keyPrice.toFixed(),
+        Locks[name].maxNumberOfKeys.toFixed(),
+        Locks[name].lockName,
+      ]
+      const calldata = await createLockHash({ args, from })
+      const tx = await unlock.createUpgradeableLock(calldata)
+      const evt = tx.logs.find((v) => v.event === 'NewLock')
+      const lock = await PublicLock.at(evt.args.newLockAddress)
+      locks[name] = lock
+      locks[name].params = Locks[name]
+    })
+  )
+  return locks
 }
 
 module.exports = {
   deployUnlock,
+  deployKeyBurner,
+  deployLocks,
 }
