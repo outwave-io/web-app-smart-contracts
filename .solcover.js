@@ -2,6 +2,8 @@ module.exports = {
     skipFiles: [
         'past-versions',
         'mocks',
-        'test-artifacts'
+        'test-artifacts',
+        'PublicLock.sol',
+        'Unlock.sol'
     ]
 };
