@@ -68,7 +68,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
     // }
 
     function _eventCreate(
-        bytes32 eventId, 
+        bytes32 eventId,
         string[] memory names,
         uint256[] memory keyprices,
         uint256[] memory numberOfKeys,
@@ -101,7 +101,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
         return result;
     }
 
-
     function eventCreate(
         bytes32 eventId, //todo: review this
         string[] memory names,
@@ -110,7 +109,15 @@ contract OEMixinOrganizationApi is OEMixinCore {
         uint8[] memory royalties,
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
-       return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
+        return
+            _eventCreate(
+                eventId,
+                names,
+                keyprices,
+                numberOfKeys,
+                royalties,
+                baseTokenUris
+            );
     }
 
     function eventLockCreate(
@@ -120,21 +127,27 @@ contract OEMixinOrganizationApi is OEMixinCore {
         uint256[] memory numberOfKeys,
         uint8[] memory royalties,
         string[] memory baseTokenUris
-    ) external lockAreEnabled returns (address[] memory){
-        return _eventCreate(eventId, names, keyprices, numberOfKeys, royalties, baseTokenUris);
+    ) external lockAreEnabled returns (address[] memory) {
+        return
+            _eventCreate(
+                eventId,
+                names,
+                keyprices,
+                numberOfKeys,
+                royalties,
+                baseTokenUris
+            );
     }
 
     /* locks */
 
-    
-  /**
- * The ability to disable locks has been removed on v10 to decrease contract code size.
- * Disabling locks can be achieved by setting `setMaxNumberOfKeys` to `totalSupply`
- * and expire all existing keys.
- * @dev the variables are kept to prevent conflicts in storage layout during upgrades
-  TODO: do need to expire the keys?
- */
-
+    /**
+    * The ability to disable locks has been removed on v10 to decrease contract code size.
+    * Disabling locks can be achieved by setting `setMaxNumberOfKeys` to `totalSupply`
+    * and expire all existing keys.
+    * @dev the variables are kept to prevent conflicts in storage layout during upgrades
+    * TODO: do need to expire the keys?
+    */
     function eventDisable(bytes32 eventId) public {
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
@@ -146,7 +159,11 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 );
                 IPublicLock lock = IPublicLock(userLocks[i].lockAddr);
                 lock.setMaxNumberOfKeys(lock.totalSupply());
-                _eventLockDeregister(msg.sender, eventId, userLocks[i].lockAddr);
+                _eventLockDeregister(
+                    msg.sender,
+                    eventId,
+                    userLocks[i].lockAddr
+                );
             }
         }
     }

@@ -4,11 +4,10 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // outwave
-import './mixins/OEMixinOrganizationApi.sol';
-import './mixins/OEMixinManage.sol';
+import "./mixins/OEMixinOrganizationApi.sol";
+import "./mixins/OEMixinManage.sol";
 import "./mixins/OEMixinCore.sol";
 import "./mixins/OEMixinFeePurchaseHook.sol";
-
 
 /* 
   main todo
@@ -24,8 +23,6 @@ idee todo
 
 */
 
-
-
 /**
  * @title Outwave factory
  * @author Miro Radenovic (demind.io)
@@ -33,15 +30,13 @@ idee todo
  * Every ERC-721 compliant contract must implement the ERC165 interface.
  * https://eips.ethereum.org/EIPS/eip-721
  */
-contract OutwaveEvent is OEMixinCore, OEMixinManage, OEMixinOrganizationApi, OEMixinFeePurchaseHook
+contract OutwaveEvent is
+    OEMixinCore,
+    OEMixinManage,
+    OEMixinOrganizationApi,
+    OEMixinFeePurchaseHook
 {
-
-  constructor(
-    address unlockaddr, 
-    address payable paymentAddr
-    ) public 
-  {
-    OEMixinCore._initializeOEMixinCore(unlockaddr, paymentAddr);
-  }
-  
+    constructor(address unlockaddr, address payable paymentAddr) public {
+        OEMixinCore._initializeOEMixinCore(unlockaddr, paymentAddr);
+    }
 }

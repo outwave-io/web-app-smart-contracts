@@ -12,25 +12,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * https://eips.ethereum.org/EIPS/eip-721
  */
 
-
- 
 /*
 Todo
 - shall be upgradable, to add new implementations. this smart contract will allow us to implement features like staking
 - register all withdraws, to know how much hase been earned
 */
 
-contract OutwaveOrganization is Ownable
-{
+contract OutwaveOrganization is Ownable {
     bytes32 private _ipfsdata;
 
-    constructor(bytes32 ipfsdata){
+    constructor(bytes32 ipfsdata) {
         _ipfsdata = ipfsdata;
     }
 
     // refuisters all withdraws from the organization. allows us to know how much have been gained by each wit
-    function registerWithdraw(address lockAddr, uint amount) public {
-
-    }
-
+    function registerWithdraw(address lockAddr, uint amount) public {}
 }
