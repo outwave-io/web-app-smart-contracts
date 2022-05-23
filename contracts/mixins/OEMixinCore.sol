@@ -99,7 +99,7 @@ contract OEMixinCore {
 
   function _eventLockDeregister(address ownerAddress, bytes32 eventId, address entityAddress) internal {
       require(_isLockAddressEntity(ownerAddress, entityAddress), "CORE_USER_NOT_OWNER");
-      require(_eventExists(eventId), "CORE_EVENTID_INVALID");
+      require(eventExists(eventId), "CORE_EVENTID_INVALID");
       _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
       for(uint i=0; i < _userOrganizations[ownerAddress].locks.length ; i++){
         if(_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress){
@@ -111,19 +111,26 @@ contract OEMixinCore {
       }
   }
 
-  function _eventExists(bytes32 eventId) internal view returns(bool){
+  function eventExists(bytes32 eventId) public view returns(bool) {
     return _eventIds[eventId] == true;
   }
 
   /* public */
 
-  function eventLocksGetAll() public view returns(Lock[] memory){
+  function eventLocksGetAll() public view returns(Lock[] memory) {
     return _userOrganizations[msg.sender].locks;  
   }
 
-  // todo: this works only if sender is the organization owner
-  function eventLocksGetAll(bytes32 eventId) public view returns(Lock[] memory){
-    Lock[] memory locks = _userOrganizations[msg.sender].locks;
+  function eventLocksGetAll(bytes32 eventId) public view returns(Lock[] memory) {
+    return _eventLocks(eventId, msg.sender);
+  }
+
+  function eventLocksGetAll(bytes32 eventId, address owner) public view returns(Lock[] memory) {
+    return _eventLocks(eventId, owner);
+  }
+
+  function _eventLocks(bytes32 eventId, address owner) internal view returns(Lock[] memory) {
+    Lock[] memory locks = _userOrganizations[owner].locks;
     //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
     uint count;
     for (uint i = 0; i < locks.length; i++) {
@@ -143,7 +150,7 @@ contract OEMixinCore {
   }
 
   // note that this is broken: users are appended only in _registerNewOrganization,
-  // now locks can be registered without an org.
+  // but now locks can be registered in other methods without an org.
   function getEventByLock(address lockAddress) external view returns(bytes32 eventId) {
     for (uint i = 0; i < _users.length; i++) {
       address ownerAddress = _users[i];

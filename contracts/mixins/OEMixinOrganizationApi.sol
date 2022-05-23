@@ -76,7 +76,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
         console.log("event create called ");
-        require(!_eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
+        require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         require(
             (names.length == keyprices.length) &&
                 (keyprices.length == numberOfKeys.length) &&
