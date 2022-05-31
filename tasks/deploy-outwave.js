@@ -150,7 +150,7 @@ task('outwave:call', 'create lock and returns address').setAction(
 task('outwave:deploy:keyburner', 'deploys keyburner')
   .addOptionalParam('outwaveaddr', 'the outwave facade address')
   .addOptionalParam('unlockaddr', 'the unlock factory address')
-  .setAction(async ({outwaveaddr, unlockaddr }, { run }) => {
+  .setAction(async ({ outwaveaddr, unlockaddr }, { run }) => {
     // eslint-disable-next-line global-require
     const keyBurnerDeployer = require('../scripts/deployments/outwaveKeyburner')
     await keyBurnerDeployer({
@@ -251,6 +251,51 @@ task('outwave:call:keyburner', 'mint some keys and burn them ??')
 
       console.log('-----------------------------')
     }
+  })
+
+task('outwave:call:purchasekeyfor', 'buy a key for the specified address')
+  .addParam('keyburnaddr', 'the key burner address')
+  .addParam('lockaddr', 'the public lock address')
+  .addParam('recipientaddr', 'the recipient that will receive the key')
+  .setAction(async ({ keyburnaddr, lockaddr, recipientaddr }, { ethers }) => {
+    const [signer] = await ethers.getSigners();
+
+    // const KeyBurner = await ethers.getContractFactory('OutwaveKeyBurner')
+    // const keyBurner = KeyBurner.attach(keyburnaddr)
+
+    // purchase key from lock
+    const publicLock = await ethers.getContractAt('PublicLock', lockaddr)
+    console.log(`public lock instantiated`)
+    const keyPrice = await publicLock.keyPrice()
+    // eslint-disable-next-line no-console
+    console.log(`Key price is ${keyPrice} WEI`)
+
+    const txPurchase = await publicLock
+      .connect(signer)
+      .purchase(
+        [],
+        [recipientaddr],
+        [web3.utils.padLeft(0, 40)],
+        [web3.utils.padLeft(0, 40)],
+        [[]],
+        {
+          value: keyPrice,
+        }
+      )
+
+    const txPurRec = await txPurchase.wait()
+    const evt = txPurRec.events.find((v) => v.event === 'Transfer')
+    // const tokenId = evt.args.tokenId
+    // eslint-disable-next-line no-console
+    console.log(`Token ${evt.args.tokenId} minted and sent to ${evt.args.to}`)
+    // eslint-disable-next-line no-console
+    console.log(
+      `Key balance of ${recipientaddr} is ${await publicLock.balanceOf(
+        recipientaddr
+      )}`
+    )
+
+    console.log('-----------------------------')
   })
 
 /* eslint-enable */
