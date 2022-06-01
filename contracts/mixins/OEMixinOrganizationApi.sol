@@ -67,7 +67,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
     //   //todo
     // }
 
-    function _eventCreate(
+    function _eventLockCreate(
         bytes32 eventId,
         string[] memory names,
         uint256[] memory keyprices,
@@ -75,8 +75,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
         uint8[] memory royalties,
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
-        console.log("event create called ");
-        require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         require(
             (names.length == keyprices.length) &&
                 (keyprices.length == numberOfKeys.length) &&
@@ -109,8 +107,9 @@ contract OEMixinOrganizationApi is OEMixinCore {
         uint8[] memory royalties,
         string[] memory baseTokenUris
     ) public lockAreEnabled returns (address[] memory) {
+        require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         return
-            _eventCreate(
+            _eventLockCreate(
                 eventId,
                 names,
                 keyprices,
@@ -129,7 +128,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         string[] memory baseTokenUris
     ) external lockAreEnabled returns (address[] memory) {
         return
-            _eventCreate(
+            _eventLockCreate(
                 eventId,
                 names,
                 keyprices,

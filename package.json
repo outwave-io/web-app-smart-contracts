@@ -74,7 +74,7 @@
     "lint:code": "eslint .",
     "lint": "yarn lint:contracts && yarn lint:code",
     "lintFix": "yarn lint:contracts --fix && yarn lint:code --fix",
-    "coverage": "hardhat coverage --solcoverjs .\\.solcover.js",
+    "coverage": "hardhat coverage --solcoverjs .solcover.js",
     "dev": "yarn lint && yarn build && yarn test",
     "ci": "yarn lint && yarn test",
     "build": "hardhat compile",
