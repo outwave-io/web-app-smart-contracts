@@ -17,11 +17,23 @@ contract OEMixinCore {
     }
 
     struct Lock {
-        bytes32 eventId;
+        bytes32 eventId;    
         address lockAddr;
         uint8 royalty;
         bool exists;
     }
+
+    // EVENTS
+
+    event EventCreated(
+         address indexed owner,
+         bytes32 eventId
+    );
+
+    event EventDisabled(
+         address indexed owner,
+         bytes32 eventId
+    );
 
     event LockRegistered(
         address indexed owner,
@@ -32,11 +44,14 @@ contract OEMixinCore {
     event LockUpdated(
         address indexed lockAddress
     );
+
     event LockDeregistered(
         address indexed owner,
         bytes32 indexed eventId,
         address indexed lockAddress
     );
+
+
 
     //todo: waht is those become huge? do we even care?
     mapping(address => OrganizationData) private _userOrganizations; //user address and organizationData

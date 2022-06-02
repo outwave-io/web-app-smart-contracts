@@ -97,8 +97,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         string memory baseTokenUri
     ) public lockAreEnabled returns (address) {
         require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
-        return
-            _eventLockCreate(
+        address result = _eventLockCreate(
                 eventId,
                 name,
                 keyprice,
@@ -106,6 +105,8 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 royalty,
                 baseTokenUri
             );
+        emit EventCreated(msg.sender, eventId);
+        return result;
     }
 
      /**
@@ -157,6 +158,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 );
             }
         }
+        emit EventDisabled(msg.sender, eventId);
     }
 
     function eventLockDisable(bytes32 eventId, address lockAddress)

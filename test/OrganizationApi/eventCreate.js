@@ -14,7 +14,7 @@ contract('OutwaveEvent', () => {
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
     })
 
-    it('should create successfully and emit event LockRegistered when created', async () => {
+    it('should create successfully and emit events EventCreated and LockRegistered when created', async () => {
       ;[, addr1] = await ethers.getSigners()
       const tx = await outwave
         .connect(addr1)
@@ -27,6 +27,11 @@ contract('OutwaveEvent', () => {
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       let receipt = await tx.wait()
+      // verify events
+      let eventCreate = receipt.events.find((v) => v.event === 'EventCreated')
+      assert.equal( eventCreate.args.eventId,  web3.utils.padLeft(web3.utils.asciiToHex('1'), 64))
+      assert.equal( eventCreate.args.owner, addr1.address)
+      
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
@@ -101,7 +106,7 @@ contract('OutwaveEvent', () => {
         'EVENT_ID_ALREADY_EXISTS'
       )
     })
-    it('should NOT allow creating events with the same id if different user', async () => {
+    it('should NOT allow creating events with the same id even for different user', async () => {
       let [, , addr2] = await ethers.getSigners()
       await reverts(
         outwave
