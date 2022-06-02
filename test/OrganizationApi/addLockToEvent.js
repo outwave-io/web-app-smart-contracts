@@ -37,7 +37,7 @@ contract('OutwaveEvent', () => {
       ;[, addr1] = await ethers.getSigners()
       const tx = await outwave
         .connect(addr1)
-        .eventLockCreate(
+        .addLockToEvent(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64), //same event id
           'name2',
           web3.utils.toWei('0.01', 'ether'),

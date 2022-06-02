@@ -108,7 +108,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
             );
     }
 
-    function eventLockCreate(
+    function addLockToEvent(
         bytes32 eventId, //todo: review this
         string memory name,
         uint256 keyprice,

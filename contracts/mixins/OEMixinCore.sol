@@ -40,7 +40,7 @@ contract OEMixinCore {
 
     //todo: waht is those become huge? do we even care?
     mapping(address => OrganizationData) private _userOrganizations;
-    mapping(bytes32 => bool) private _eventIds;
+    mapping(bytes32 => address) private _eventIds;
     address[] private _users;
 
     address internal _unlockAddr;
@@ -128,7 +128,7 @@ contract OEMixinCore {
             _userOrganizations[ownerAddress].locksEntity[
                 entityAdresses
             ] = newLock;
-            _eventIds[eventId] = true;
+            _eventIds[eventId] = msg.sender;
             emit LockRegistered(
                 ownerAddress,
                 eventId,
@@ -160,7 +160,7 @@ contract OEMixinCore {
                 entityAddress
             ) {
                 _userOrganizations[ownerAddress].locks[i].exists = false;
-                _eventIds[eventId] = false;
+                _eventIds[eventId] = address(0);
                 emit LockDeregistered(
                     ownerAddress,
                     _userOrganizations[ownerAddress].locks[i].eventId,
@@ -172,7 +172,7 @@ contract OEMixinCore {
     }
 
     function eventExists(bytes32 eventId) public view returns (bool) {
-        return _eventIds[eventId] == true;
+        return (_eventIds[eventId] != address(0));
     }
 
     /* public */
