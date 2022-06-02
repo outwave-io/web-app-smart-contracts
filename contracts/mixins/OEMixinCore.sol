@@ -58,6 +58,12 @@ contract OEMixinCore {
         _;
     }
 
+    modifier onlyEventOwner(bytes32 eventId) {
+        // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
+        require(_eventIds[eventId] == msg.sender, "USER_NOT_OWNER"); //fast and 0 gas checks
+        _;
+    }
+
     function _isUserLockOwner(address user, address lock)
         internal
         view

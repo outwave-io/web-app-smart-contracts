@@ -108,6 +108,9 @@ contract OEMixinOrganizationApi is OEMixinCore {
             );
     }
 
+     /**
+    * Adds a lock to the event, verifying the msg.sender is actually the owner of the event
+    */
     function addLockToEvent(
         bytes32 eventId, //todo: review this
         string memory name,
@@ -115,7 +118,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         uint256 numberOfKey,
         uint8 royalty,
         string memory baseTokenUri
-    ) external lockAreEnabled returns (address) {
+    ) external onlyEventOwner(eventId) lockAreEnabled returns (address) {
         return
             _eventLockCreate(
                 eventId,
