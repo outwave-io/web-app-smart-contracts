@@ -29,6 +29,9 @@ contract OEMixinCore {
         address indexed lockAddress,
         address outwaveEventAddress
     );
+    event LockUpdated(
+        address indexed lockAddress
+    );
     event LockDeregistered(
         address indexed owner,
         bytes32 indexed eventId,

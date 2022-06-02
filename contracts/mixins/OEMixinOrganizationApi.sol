@@ -205,32 +205,35 @@ contract OEMixinOrganizationApi is OEMixinCore {
         // payable(msg.sender).transfer(lockaddressBalance);
     }
 
-    function eventUpdateKeyPricing(address lockAddress, uint256 keyPrice)
-        external
-        onlyLockOwner(lockAddress)
-    {
-        IPublicLock(lockAddress).updateKeyPricing(keyPrice, address(0));
-    }
-
-    function eventSetMaxNumberOfKeys(
-        address lockAddress,
-        uint256 maxNumberOfKeys
-    ) external onlyLockOwner(lockAddress) {
-        IPublicLock(lockAddress).setMaxKeysPerAddress(maxNumberOfKeys);
-    }
-
     //todo.. do we care?
-    function eventUpdateLockSymbol(
+    function  eventLockUpdateLockSymbol(
         address lockAddress,
         string calldata lockSymbol
     ) external onlyLockOwner(lockAddress) {
         IPublicLock(lockAddress).updateLockSymbol(lockSymbol);
     }
 
-    function eventSetBaseTokenURI(
+    function eventLockSetBaseTokenURI(
         address lockAddress,
         string calldata baseTokenURI
     ) external onlyLockOwner(lockAddress) {
         IPublicLock(lockAddress).setBaseTokenURI(baseTokenURI);
+    }
+
+
+    function eventLockUpdate(
+        address lockAddress,
+        string calldata lockName,
+        uint256 keyPrice, // the price of each key (nft)
+        uint256 maxNumberOfKeys
+    ) external onlyLockOwner(lockAddress) {
+        IPublicLock lock = IPublicLock(lockAddress);
+        lock.updateLockName(lockName);
+        console.log("#############miro"); 
+        console.log(maxNumberOfKeys);
+        lock.updateKeyPricing(keyPrice, address(0)); //todo: use stable
+        lock.setMaxNumberOfKeys(maxNumberOfKeys);
+        
+        emit LockUpdated(lockAddress);
     }
 }
