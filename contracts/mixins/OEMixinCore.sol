@@ -120,25 +120,25 @@ contract OEMixinCore {
         address entityAdresses,
         uint8 royalies
     ) internal {
-            if (_isLockAddressEntity(ownerAddress, entityAdresses))
-                revert("CORE_LOCK_ADDRESS_EXISTS");
-            Lock memory newLock = Lock({
-                eventId: eventId,
-                royalty: royalies,
-                exists: true,
-                lockAddr: entityAdresses
-            });
-            _userOrganizations[ownerAddress].locks.push(newLock);
-            _userOrganizations[ownerAddress].locksEntity[
-                entityAdresses
-            ] = newLock;
-            _eventIds[eventId] = msg.sender;
-            emit LockRegistered(
-                ownerAddress,
-                eventId,
-                entityAdresses,
-                address(this)
-            );
+        if (_isLockAddressEntity(ownerAddress, entityAdresses))
+            revert("CORE_LOCK_ADDRESS_EXISTS");
+        Lock memory newLock = Lock({
+            eventId: eventId,
+            royalty: royalies,
+            exists: true,
+            lockAddr: entityAdresses
+        });
+        _userOrganizations[ownerAddress].locks.push(newLock);
+        _userOrganizations[ownerAddress].locksEntity[
+            entityAdresses
+        ] = newLock;
+        _eventIds[eventId] = msg.sender;
+        emit LockRegistered(
+            ownerAddress,
+            eventId,
+            entityAdresses,
+            address(this)
+        );
     }
 
     function _eventLockDeregister(
@@ -146,23 +146,13 @@ contract OEMixinCore {
         bytes32 eventId,
         address entityAddress
     ) internal {
-        require(
-            _isLockAddressEntity(ownerAddress, entityAddress),
-            "CORE_USER_NOT_OWNER"
-        );
+        require( _isLockAddressEntity(ownerAddress, entityAddress), "CORE_USER_NOT_OWNER");
         require(eventExists(eventId), "CORE_EVENTID_INVALID");
         _userOrganizations[ownerAddress]
             .locksEntity[entityAddress]
             .exists = false;
-        for (
-            uint i = 0;
-            i < _userOrganizations[ownerAddress].locks.length;
-            i++
-        ) {
-            if (
-                _userOrganizations[ownerAddress].locks[i].lockAddr ==
-                entityAddress
-            ) {
+        for (uint i = 0; i < _userOrganizations[ownerAddress].locks.length;i++) {
+            if (_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress) {
                 _userOrganizations[ownerAddress].locks[i].exists = false;
                 _eventIds[eventId] = address(0);
                 emit LockDeregistered(
