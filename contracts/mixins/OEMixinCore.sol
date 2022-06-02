@@ -113,30 +113,28 @@ contract OEMixinCore {
     function _eventLockRegister(
         address ownerAddress,
         bytes32 eventId,
-        address[] memory entityAdresses,
-        uint8[] memory royalies
+        address entityAdresses,
+        uint8 royalies
     ) internal {
-        for (uint i = 0; i < entityAdresses.length; i++) {
-            if (_isLockAddressEntity(ownerAddress, entityAdresses[i]))
+            if (_isLockAddressEntity(ownerAddress, entityAdresses))
                 revert("CORE_LOCK_ADDRESS_EXISTS");
             Lock memory newLock = Lock({
                 eventId: eventId,
-                royalty: royalies[i],
+                royalty: royalies,
                 exists: true,
-                lockAddr: entityAdresses[i]
+                lockAddr: entityAdresses
             });
             _userOrganizations[ownerAddress].locks.push(newLock);
             _userOrganizations[ownerAddress].locksEntity[
-                entityAdresses[i]
+                entityAdresses
             ] = newLock;
             _eventIds[eventId] = true;
             emit LockRegistered(
                 ownerAddress,
                 eventId,
-                entityAdresses[i],
+                entityAdresses,
                 address(this)
             );
-        }
     }
 
     function _eventLockDeregister(

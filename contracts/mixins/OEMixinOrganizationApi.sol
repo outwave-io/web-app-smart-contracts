@@ -69,72 +69,61 @@ contract OEMixinOrganizationApi is OEMixinCore {
 
     function _eventLockCreate(
         bytes32 eventId,
-        string[] memory names,
-        uint256[] memory keyprices,
-        uint256[] memory numberOfKeys,
-        uint8[] memory royalties,
-        string[] memory baseTokenUris
-    ) public lockAreEnabled returns (address[] memory) {
-        require(
-            (names.length == keyprices.length) &&
-                (keyprices.length == numberOfKeys.length) &&
-                (numberOfKeys.length == royalties.length) &&
-                (royalties.length == baseTokenUris.length),
-            "PARAMS_NOT_VALID"
-        );
+        string memory name,
+        uint256 keyprice,
+        uint256 numberOfKey,
+        uint8 royalty,
+        string memory baseTokenUri
+    ) public lockAreEnabled returns (address) {
 
-        address[] memory result = new address[](numberOfKeys.length);
-        for (uint256 i; i < keyprices.length; i++) {
-            address newAddr = _createLock(
-                0,
-                address(0),
-                keyprices[i],
-                numberOfKeys[i],
-                names[i]
-            );
-            result[i] = newAddr;
-            IPublicLock(newAddr).setBaseTokenURI(baseTokenUris[i]);
-        }
-        _eventLockRegister(msg.sender, eventId, result, royalties);
+        address result = _createLock(
+            0,
+            address(0),
+            keyprice,
+            numberOfKey,
+            name
+        );
+        IPublicLock(result).setBaseTokenURI(baseTokenUri);
+        _eventLockRegister(msg.sender, eventId, result, royalty);
         return result;
     }
 
     function eventCreate(
         bytes32 eventId, //todo: review this
-        string[] memory names,
-        uint256[] memory keyprices,
-        uint256[] memory numberOfKeys,
-        uint8[] memory royalties,
-        string[] memory baseTokenUris
-    ) public lockAreEnabled returns (address[] memory) {
+        string memory name,
+        uint256 keyprice,
+        uint256 numberOfKey,
+        uint8 royalty,
+        string memory baseTokenUri
+    ) public lockAreEnabled returns (address) {
         require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         return
             _eventLockCreate(
                 eventId,
-                names,
-                keyprices,
-                numberOfKeys,
-                royalties,
-                baseTokenUris
+                name,
+                keyprice,
+                numberOfKey,
+                royalty,
+                baseTokenUri
             );
     }
 
     function eventLockCreate(
         bytes32 eventId, //todo: review this
-        string[] memory names,
-        uint256[] memory keyprices,
-        uint256[] memory numberOfKeys,
-        uint8[] memory royalties,
-        string[] memory baseTokenUris
-    ) external lockAreEnabled returns (address[] memory) {
+        string memory name,
+        uint256 keyprice,
+        uint256 numberOfKey,
+        uint8 royalty,
+        string memory baseTokenUri
+    ) external lockAreEnabled returns (address) {
         return
             _eventLockCreate(
                 eventId,
-                names,
-                keyprices,
-                numberOfKeys,
-                royalties,
-                baseTokenUris
+                name,
+                keyprice,
+                numberOfKey,
+                royalty,
+                baseTokenUri
             );
     }
 

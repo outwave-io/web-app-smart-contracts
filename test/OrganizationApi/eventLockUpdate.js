@@ -18,11 +18,11 @@ contract('OutwaveEvent', () => {
         .connect(addr1)
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
-          ['name'],
-          [web3.utils.toWei('0.01', 'ether')],
-          [100000],
-          [1],
-          ['ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx']
+          'name',
+          web3.utils.toWei('0.01', 'ether'),
+          100000,
+          1,
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       await tx.wait()
 
@@ -73,11 +73,11 @@ contract('OutwaveEvent', () => {
         .connect(addr1)
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
-          ['name'],
-          [web3.utils.toWei('0.01', 'ether')],
-          [100000],
-          [1],
-          ['ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx']
+          'name',
+          web3.utils.toWei('0.01', 'ether'),
+          100000,
+          1,
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       await tx.wait()
 
