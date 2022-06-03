@@ -35,8 +35,10 @@ contract('OutwaveEvent', () => {
       console.log('------miro:' + (await web3.eth.getBalance(lockAddress)))
     })
     it('shuold ensure locks created, actually allows buying keys (nft)', async () => {
-      let PublicLock = await ethers.getContractFactory('PublicLock')
-      let publiclock = await PublicLock.attach(lockAddress)
+      // let PublicLock = await ethers.getContractFactory('PublicLock')
+      // let publiclock = await PublicLock.attach(lockAddress)
+
+      let publiclock = await ethers.getContractAt('ILockManager', lockAddress)
 
       await publiclock
         .connect(addr2)
