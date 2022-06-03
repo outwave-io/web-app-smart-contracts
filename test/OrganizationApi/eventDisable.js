@@ -1,0 +1,167 @@
+const { assert } = require('chai')
+const { ethers } = require('hardhat')
+const { reverts } = require('truffle-assertions')
+
+contract('OutwaveEvent', () => {
+  describe('disable event / behavior ', () => {
+    let outwave
+    let lockAddress // the address of the lock
+    let addr1 // user 1
+    let addr2
+    let addr3
+    let nftPrice = web3.utils.toWei('0.01', 'ether')
+
+    before(async () => {
+      let addresses = await require('../helpers/deploy').deployUnlock('10')
+      let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      ;[, addr1, addr2, addr3] = await ethers.getSigners()
+
+      const tx = await outwave
+        .connect(addr1)
+        .eventCreate(
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+          'name',
+          nftPrice,
+          100000,
+          1,
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+        )
+      await tx.wait()
+
+      let receipt = await tx.wait()
+      let evt = receipt.events.find((v) => v.event === 'LockRegistered')
+      lockAddress = evt.args.lockAddress
+      console.log('------miro:' + (await web3.eth.getBalance(lockAddress)))
+    })
+    it('shuold ensure locks created, actually allows buying keys (nft)', async () => {
+      let PublicLock = await ethers.getContractFactory('PublicLock')
+      let publiclock = await PublicLock.attach(lockAddress)
+
+      await publiclock
+        .connect(addr2)
+        .purchase(
+          [nftPrice],
+          [addr2.address],
+          [web3.utils.padLeft(0, 40)],
+          [web3.utils.padLeft(0, 40)],
+          [[]],
+          {
+            from: addr2.address,
+            value: nftPrice,
+          }
+        )
+
+      // TODO: understand why gas fees are taken from the overall
+      // console.log("-------nftprice:" + nftPrice)
+      // console.log("------  balance:" + await web3.eth.getBalance(lockAddress))
+    })
+    it('user actually send money that is stored in contract', async () => {
+      const balance = await web3.eth.getBalance(lockAddress)
+      //   assert.equal(balance.toString(), nftPrice)
+      assert.notEqual(balance, 0)
+    })
+
+    it('should disable event ', async () => {
+      ;[, addr1] = await ethers.getSigners()
+      const tx = await outwave
+        .connect(addr1)
+        .eventDisable(web3.utils.padLeft(web3.utils.asciiToHex('1'), 64))
+      let receipt = await tx.wait()
+
+      // verify events
+      let eventCreate = receipt.events.find((v) => v.event === 'EventDisabled')
+      assert.equal(
+        eventCreate.args.eventId,
+        web3.utils.padLeft(web3.utils.asciiToHex('1'), 64)
+      )
+      assert.equal(eventCreate.args.owner, addr1.address)
+
+      let evt = receipt.events.find((v) => v.event === 'LockDeregistered')
+      assert.equal(evt.args.owner, addr1.address)
+      assert.equal(
+        evt.args.eventId,
+        web3.utils.padLeft(web3.utils.asciiToHex('1'), 64)
+      )
+      assert.equal(evt.args.lockAddress, lockAddress)
+    })
+    it('locks of disabled events are actually disabled: cannot purchase additional keys (nft)', async () => {
+      let PublicLock = await ethers.getContractFactory('PublicLock')
+      let publiclock = await PublicLock.attach(lockAddress)
+
+      await reverts(
+        publiclock
+          .connect(addr3)
+          .purchase(
+            [web3.utils.toWei('0.01', 'ether')],
+            [addr3.address],
+            [web3.utils.padLeft(0, 40)],
+            [web3.utils.padLeft(0, 40)],
+            [[]],
+            {
+              from: addr3.address,
+              value: web3.utils.toWei('0.01', 'ether'),
+            }
+          ),
+        'LOCK_SOLD_OUT'
+      )
+    })
+  })
+  describe('disable event lock / security', () => {
+    let outwave
+    let lockAddress // the address of the lock
+    let owner
+    let addr1 // user 1
+    let addr2 // user 2
+
+    before(async () => {
+      let addresses = await require('../helpers/deploy').deployUnlock('10')
+      let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      ;[owner, addr1, addr2] = await ethers.getSigners()
+
+      const tx = await outwave
+        .connect(addr1)
+        .eventCreate(
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+          'name',
+          web3.utils.toWei('0.01', 'ether'),
+          100000,
+          1,
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+        )
+      await tx.wait()
+
+      let receipt = await tx.wait()
+      let evt = receipt.events.find((v) => v.event === 'LockRegistered')
+      lockAddress = evt.args.lockAddress
+    })
+
+    it('should NOT allow updating from a different account (not owner)', async () => {
+      await reverts(
+        outwave
+          .connect(addr2)
+          .eventLockUpdate(
+            lockAddress,
+            'updatedName',
+            web3.utils.toWei('1', 'ether'),
+            ethers.BigNumber.from(3000000)
+          ),
+        'USER_NOT_OWNER'
+      )
+    })
+    it('should NOT allow updating even from outwave owner (not owner)', async () => {
+      await reverts(
+        outwave
+          .connect(owner)
+          .eventLockUpdate(
+            lockAddress,
+            'updatedName',
+            web3.utils.toWei('1', 'ether'),
+            ethers.BigNumber.from(3000000)
+          ),
+        'USER_NOT_OWNER'
+      )
+    })
+  })
+})
