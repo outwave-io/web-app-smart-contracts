@@ -47,7 +47,7 @@ contract('OutwaveEvent', () => {
       assert.equal(lockAddress, lockAddress2)
 
       // check the values using IReadLock
-      const readLock = await ethers.getContractAt('IReadLock', lockAddress)
+      const readLock = await ethers.getContractAt('ILockManager', lockAddress)
       assert.equal(await readLock.name(), 'updatedName')
       assert.equal(await readLock.keyPrice(), web3.utils.toWei('1', 'ether'))
       assert.isTrue(

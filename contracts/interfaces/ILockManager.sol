@@ -2,7 +2,7 @@
 pragma solidity >=0.5.17 <0.9.0;
 
 //https://docs.unlock-protocol.com/unlock/developers/smart-contracts/lock-api#getters
-interface IReadLock {
+interface ILockManager {
     function name() external view returns (string memory _name);
 
     function numberOfOwners() external view returns (uint);
@@ -38,4 +38,12 @@ interface IReadLock {
     function publicLockVersion() external pure returns (uint16);
 
     function ownerOf(uint256 tokenId) external view returns (address _owner);
+
+    function purchase(uint256[] calldata _values,
+        address[] calldata _recipients,
+        address[] calldata _referrers,
+        address[] calldata _keyManagers,
+        bytes[] calldata _data
+    ) external payable;
+  
 }
