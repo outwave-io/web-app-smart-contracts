@@ -77,9 +77,7 @@ contract OutwaveKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     }
 
     /**
-     * @notice Burn
-     * @dev Ensure that the contract can return the debt + premium, e.g., has
-     *      enough funds to repay and has approved the Pool to pull the total amount
+     * @notice Burn the key of an Outwave Lock
      * @param parent The address of the parent PublicLock
      * @param tokenId The id of the PublickLock key to be burned
      */
