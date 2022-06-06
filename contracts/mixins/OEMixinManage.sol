@@ -10,7 +10,18 @@ import "./OEMixinCore.sol";
 
 */
 contract OEMixinManage is OEMixinCore, Ownable {
+
     event PaymentReceived(address, uint);
+ 
+    // allows the creations of public locks that will use specific erc20 token
+    function addErc20PaymentToken (address erc20addr) public onlyOwner{
+        _addErc20PaymentToken(erc20addr);
+    }
+
+    // removes the creations of public locks that will use specific erc20 token
+    function removeErc20PaymentToken (address erc20addr) public onlyOwner{
+        _removeErc20PaymentToken(erc20addr);
+    }
 
     function updateOutwavePaymentAddress(address payable newPaymentAddress)
         public
@@ -21,6 +32,11 @@ contract OEMixinManage is OEMixinCore, Ownable {
 
     function outwaveWithdraw() public onlyOwner {
         _outwavePaymentAddress.transfer(address(this).balance);
+    }
+
+    function outwaveErc20Withdraw() public onlyOwner {
+        // todo
+       // _outwavePaymentAddress.transfer(address(this).balance);
     }
 
     function outwaveUpdateUnlockFactory(address newUnlockAddr)

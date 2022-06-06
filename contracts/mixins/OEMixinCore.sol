@@ -3,10 +3,11 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
-/**
+/*
  * @title OEMixinCore
  * @author Miro Radenovic (miro@demind.io)
- * The Core of the Outwave Event provides access to common properties (fields) accessed by other mixins
+ * @dev The Core of the Outwave Event provides access to common properties (fields) accessed by other mixins. Child mixins can access
+ * to internal fields, only with proper get and set function, marked as internals. Direct access to fields is forbidden
  */
 contract OEMixinCore {
     struct OrganizationData {
@@ -57,6 +58,10 @@ contract OEMixinCore {
     mapping(address => OrganizationData) private _userOrganizations;
     mapping(bytes32 => address) private _eventIds;
     address[] private _users;
+
+    // list of the tokens that can be used for key purchases in locks
+    mapping(address => bool) internal  _allowedErc20Tokens;
+
 
     address internal _unlockAddr;
     bool internal _allowLockCreation;
@@ -182,6 +187,38 @@ contract OEMixinCore {
         }
     }
 
+    function _eventLocks(bytes32 eventId, address owner)
+        internal
+        view
+        returns (Lock[] memory)
+    {
+        Lock[] memory locks = _userOrganizations[owner].locks;
+        //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
+        uint count;
+        for (uint i = 0; i < locks.length; i++) {
+            if (locks[i].eventId == eventId) {
+                count++;
+            }
+        }
+        uint returnIndex;
+        Lock[] memory result = new Lock[](count);
+        for (uint i = 0; i < locks.length; i++) {
+            if (locks[i].eventId == eventId) {
+                result[returnIndex] = locks[i];
+                returnIndex;
+            }
+        }
+        return result;
+    }
+
+    function _addErc20PaymentToken (address erc20addr) internal{
+        _allowedErc20Tokens[erc20addr] = true;
+    }
+
+    function _removeErc20PaymentToken (address erc20addr) internal{
+        _allowedErc20Tokens[erc20addr] = false;
+    }
+
     function eventExists(bytes32 eventId) public view returns (bool) {
         return (_eventIds[eventId] != address(0));
     }
@@ -208,29 +245,7 @@ contract OEMixinCore {
         return _eventLocks(eventId, owner);
     }
 
-    function _eventLocks(bytes32 eventId, address owner)
-        internal
-        view
-        returns (Lock[] memory)
-    {
-        Lock[] memory locks = _userOrganizations[owner].locks;
-        //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
-        uint count;
-        for (uint i = 0; i < locks.length; i++) {
-            if (locks[i].eventId == eventId) {
-                count++;
-            }
-        }
-        uint returnIndex;
-        Lock[] memory result = new Lock[](count);
-        for (uint i = 0; i < locks.length; i++) {
-            if (locks[i].eventId == eventId) {
-                result[returnIndex] = locks[i];
-                returnIndex;
-            }
-        }
-        return result;
-    }
+   
 
     // note that this is broken: users are appended only in _registerNewOrganization,
     // but now locks can be registered in other methods without an org.
@@ -247,4 +262,6 @@ contract OEMixinCore {
         }
         return 0;
     }
+
+
 }
