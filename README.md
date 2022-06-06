@@ -23,3 +23,16 @@ npx hardhat help
 - after clone run `yarn install & yarn build`
 - to run all test `yarn test`
 - to deploy to specific network: `npx hardhat outwave:deploy --network mumbai`
+
+## Tenderly
+Tenderly allows debugging and profiling of smart contracts. To configure the hardhat plugin add a config.yaml file as specified in the docs:
+
+https://www.npmjs.com/package/@tenderly/hardhat-tenderly
+
+`access_key: qlnAUn61wMFTWVXrisR00ZVTu8uKQaV5`
+
+Then ask to the fellow devs to be added to the project on tenderly.co
+
+#### Example commands
+- `yarn hardhat tenderly:push OutwaveKeyBurner=0x1085ef079C6CE62E5d3F4a625e79f7FF527DD29A --network mumbai`
+- `yarn hardhat tenderly:verify OutwaveKeyBurner=0x1085ef079C6CE62E5d3F4a625e79f7FF527DD29A --network mumbai` 

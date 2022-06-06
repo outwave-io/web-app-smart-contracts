@@ -27,6 +27,9 @@ require('@nomiclabs/hardhat-etherscan')
 // check contract size
 require('hardhat-contract-sizer')
 
+// tenderly plugin (contract debugging, profiling, etc)
+require('@tenderly/hardhat-tenderly')
+
 const { getHardhatNetwork } = require('./helpers/network')
 
 const settings = {
@@ -76,5 +79,9 @@ module.exports = {
   },
   mocha: {
     timeout: 2000000,
+  },
+  tenderly: {
+    project: 'project',
+    username: 'rbrivio',
   },
 }
