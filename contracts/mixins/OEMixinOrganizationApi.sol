@@ -70,6 +70,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
     function _eventLockCreate(
         bytes32 eventId,
         string memory name,
+        address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
         uint8 royalty,
@@ -78,7 +79,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
 
         address result = _createLock(
             0,
-            address(0),
+            tokenAddress,
             keyprice,
             numberOfKey,
             name
@@ -91,15 +92,17 @@ contract OEMixinOrganizationApi is OEMixinCore {
     function eventCreate(
         bytes32 eventId, //todo: review this
         string memory name,
+        address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
         uint8 royalty,
         string memory baseTokenUri
-    ) public lockAreEnabled returns (address) {
+    ) public lockAreEnabled tokenAddressIsAvailable(tokenAddress) returns (address) {
         require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
         address result = _eventLockCreate(
                 eventId,
                 name,
+                tokenAddress,
                 keyprice,
                 numberOfKey,
                 royalty,
@@ -109,21 +112,23 @@ contract OEMixinOrganizationApi is OEMixinCore {
         return result;
     }
 
-     /**
+    /**
     * Adds a lock to the event, verifying the msg.sender is actually the owner of the event
     */
     function addLockToEvent(
         bytes32 eventId, //todo: review this
         string memory name,
+        address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
         uint8 royalty,
         string memory baseTokenUri
-    ) external onlyEventOwner(eventId) lockAreEnabled returns (address) {
+    ) external onlyEventOwner(eventId) tokenAddressIsAvailable(tokenAddress) lockAreEnabled returns (address) {
         return
             _eventLockCreate(
                 eventId,
                 name,
+                tokenAddress,
                 keyprice,
                 numberOfKey,
                 royalty,

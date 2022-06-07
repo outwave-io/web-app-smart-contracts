@@ -84,6 +84,11 @@ contract OEMixinCore {
         _;
     }
 
+    modifier tokenAddressIsAvailable(address tokenAddress) {
+        require(_allowedErc20Tokens[tokenAddress], "ERC20_NOT_AVAILABLE"); 
+        _;
+    }
+
     function _isUserLockOwner(address user, address lock)
         internal
         view
