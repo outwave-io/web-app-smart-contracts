@@ -56,7 +56,6 @@ contract OEMixinCore {
     //todo: waht is those become huge? do we even care?
     mapping(address => OrganizationData) private _userOrganizations;
     mapping(bytes32 => address) private _eventIds;
-    address[] private _users;
 
     address internal _unlockAddr;
     bool internal _allowLockCreation;
@@ -111,7 +110,6 @@ contract OEMixinCore {
         if (_userOrganizations[ownerAddress].exists) revert();
         _userOrganizations[ownerAddress].exists = true;
         _userOrganizations[ownerAddress].organizationAddress = entityAddress;
-        _users.push(ownerAddress);
     }
 
     function _isOrganizationAddressEntity(address ownerAddress)
@@ -145,7 +143,6 @@ contract OEMixinCore {
             exists: true,
             lockAddr: entityAdresses
         });
-        _users.push(ownerAddress);
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[
             entityAdresses
