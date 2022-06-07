@@ -31,23 +31,23 @@ async function deployLocks(
   tokenAddress = web3.utils.padLeft(0, 40)
 ) {
   let locks = {}
-  await Promise.all(
-    Object.keys(Locks).map(async (name) => {
-      const args = [
-        Locks[name].expirationDuration.toFixed(),
-        tokenAddress,
-        Locks[name].keyPrice.toFixed(),
-        Locks[name].maxNumberOfKeys.toFixed(),
-        Locks[name].lockName,
-      ]
-      const calldata = await createLockHash({ args, from })
-      const tx = await unlock.createUpgradeableLock(calldata)
-      const evt = tx.logs.find((v) => v.event === 'NewLock')
-      const lock = await PublicLock.at(evt.args.newLockAddress)
-      locks[name] = lock
-      locks[name].params = Locks[name]
-    })
-  )
+
+  for (const name of Object.keys(Locks)) {
+    const args = [
+      Locks[name].expirationDuration.toFixed(),
+      tokenAddress,
+      Locks[name].keyPrice.toFixed(),
+      Locks[name].maxNumberOfKeys.toFixed(),
+      Locks[name].lockName,
+    ]
+    const calldata = await createLockHash({ args, from })
+    const tx = await unlock.createUpgradeableLock(calldata)
+    const evt = tx.logs.find((v) => v.event === 'NewLock')
+    const lock = await PublicLock.at(evt.args.newLockAddress)
+    locks[name] = lock
+    locks[name].params = Locks[name]
+  }
+
   return locks
 }
 

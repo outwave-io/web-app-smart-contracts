@@ -43,6 +43,10 @@ module.exports = {
     url: `http://${testHost}:8545`,
     name: 'localhost',
   },
+  hardhat: {
+    chainId: 31337,
+    name: 'hardhat',
+  },
   arbitrum: {
     chainId: 42161,
     url: 'https://arb1.arbitrum.io/rpc',

@@ -57,7 +57,6 @@ contract OEMixinCore {
     //todo: waht is those become huge? do we even care?
     mapping(address => OrganizationData) private _userOrganizations;
     mapping(bytes32 => address) private _eventIds;
-    address[] private _users;
 
     // list of the tokens that can be used for key purchases in locks
     mapping(address => bool) internal  _allowedErc20Tokens;
@@ -122,7 +121,6 @@ contract OEMixinCore {
         if (_userOrganizations[ownerAddress].exists) revert();
         _userOrganizations[ownerAddress].exists = true;
         _userOrganizations[ownerAddress].organizationAddress = entityAddress;
-        _users.push(ownerAddress);
     }
 
     function _isOrganizationAddressEntity(address ownerAddress)
@@ -255,23 +253,21 @@ contract OEMixinCore {
         return _eventLocks(eventId, owner);
     }
 
-   
-
-    // note that this is broken: users are appended only in _registerNewOrganization,
-    // but now locks can be registered in other methods without an org.
-    function getEventByLock(address lockAddress)
+    function eventByLock(address lockAddress, address ownerAddress)
         external
         view
         returns (bytes32 eventId)
     {
-        for (uint i = 0; i < _users.length; i++) {
-            address ownerAddress = _users[i];
-            Lock memory eventLock = _userOrganizations[ownerAddress]
-                .locksEntity[lockAddress];
-            if (eventLock.exists) return eventLock.eventId;
-        }
+        Lock memory lock = _userOrganizations[ownerAddress].locksEntity[lockAddress];
+        if (lock.exists) return lock.eventId;
         return 0;
     }
 
-
+    function eventOwner(bytes32 eventId)
+        external
+        view
+        returns (address owner) 
+    {
+        return _eventIds[eventId];
+    }
 }
