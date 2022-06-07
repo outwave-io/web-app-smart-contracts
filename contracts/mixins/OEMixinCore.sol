@@ -110,6 +110,7 @@ contract OEMixinCore {
         _unlockAddr = unlockaddr;
         _outwavePaymentAddress = paymentAddr;
         _allowLockCreation = true;
+        _allowedErc20Tokens[address(0)] = true;  // allow creation of lock with payment in native token
     }
 
     /* manages organization lock collection */

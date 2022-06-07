@@ -230,7 +230,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         lock.updateLockName(lockName);
         console.log("#############miro"); 
         console.log(maxNumberOfKeys);
-        lock.updateKeyPricing(keyPrice, address(0)); //todo: use stable
+        lock.updateKeyPricing(keyPrice, lock.tokenAddress()); //todo: use stable
         lock.setMaxNumberOfKeys(maxNumberOfKeys);
         
         emit LockUpdated(lockAddress);

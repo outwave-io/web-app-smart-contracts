@@ -19,6 +19,7 @@ contract('OutwaveEvent', () => {
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           'name',
+          web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
           1,
@@ -74,6 +75,7 @@ contract('OutwaveEvent', () => {
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           'name',
+          web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
           1,
