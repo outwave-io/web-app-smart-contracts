@@ -14,13 +14,17 @@ contract OEMixinManage is OEMixinCore, Ownable {
     event PaymentReceived(address, uint);
  
     // allows the creations of public locks that will use specific erc20 token
-    function addErc20PaymentToken (address erc20addr) public onlyOwner{
-        _addErc20PaymentToken(erc20addr);
+    function erc20PaymentTokenAdd (address erc20addr) public onlyOwner{
+        _erc20PaymentTokenAdd(erc20addr);
     }
 
     // removes the creations of public locks that will use specific erc20 token
-    function removeErc20PaymentToken (address erc20addr) public onlyOwner{
-        _removeErc20PaymentToken(erc20addr);
+    function erc20PaymentTokenRemove (address erc20addr) public onlyOwner{
+        _erc20PaymentTokenRemove(erc20addr);
+    }
+
+    function erc20PaymentTokenIsAllowed(address addr) public view returns (bool) {
+        return _erc20PaymentTokenIsAllowed(addr);
     }
 
     function updateOutwavePaymentAddress(address payable newPaymentAddress)

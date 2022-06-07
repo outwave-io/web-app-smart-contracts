@@ -211,12 +211,16 @@ contract OEMixinCore {
         return result;
     }
 
-    function _addErc20PaymentToken (address erc20addr) internal{
+    function _erc20PaymentTokenAdd (address erc20addr) internal{
         _allowedErc20Tokens[erc20addr] = true;
     }
 
-    function _removeErc20PaymentToken (address erc20addr) internal{
+    function _erc20PaymentTokenRemove (address erc20addr) internal{
         _allowedErc20Tokens[erc20addr] = false;
+    }
+
+    function _erc20PaymentTokenIsAllowed (address erc20addr) internal view returns (bool) {
+        return _allowedErc20Tokens[erc20addr];
     }
 
     function eventExists(bytes32 eventId) public view returns (bool) {
