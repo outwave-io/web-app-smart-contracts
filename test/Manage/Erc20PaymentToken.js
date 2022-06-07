@@ -1,7 +1,6 @@
 const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
-const { tokens } = require('hardlydifficult-ethereum-contracts')
 
 contract('OEMixinManage', () => {
   describe('Set and Get Erc20PaymentToken / behavior ', () => {
@@ -14,20 +13,11 @@ contract('OEMixinManage', () => {
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
       let [, proxyOwner, tokenOwner] = await ethers.getSigners()
-      // Deploy a SAI contract for testing
-      // const ownerAddr = tokenOwner.address
-      // const sai = await tokens.sai.deploy(web3, ownerAddr);
-      // Mint tokens
-      tokenDai = await tokens.dai.deploy(
-        web3,
-        proxyOwner.address,
-        tokenOwner.address
-      )
-      tokenSai = await tokens.sai.deploy(
-        web3,
-        proxyOwner.address,
-        tokenOwner.address
-      )
+      ;[tokenDai, tokenSai] =
+        await require('../helpers/deploy').deployErc20Tokens(
+          tokenOwner,
+          proxyOwner
+        )
 
       //   await token.mint(user.address, 100, { from: tokenOwner.address });
       //   const balance = await token.balanceOf(user.address);
@@ -73,20 +63,11 @@ contract('OEMixinManage', () => {
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
       ;[owner, proxyOwner, tokenOwner, user] = await ethers.getSigners()
-      // Mint tokens
-      tokenDai = await tokens.dai.deploy(
-        web3,
-        proxyOwner.address,
-        tokenOwner.address
-      )
-      tokenSai = await tokens.sai.deploy(
-        web3,
-        proxyOwner.address,
-        tokenOwner.address
-      )
-
-      console.log(tokenDai.address)
-      console.log(tokenSai.address)
+      ;[tokenDai, tokenSai] =
+        await require('../helpers/deploy').deployErc20Tokens(
+          tokenOwner,
+          proxyOwner
+        )
     })
     it('shuold  allow to set a ERC20 DAI token to a owner', async () => {
       await outwave.connect(owner).erc20PaymentTokenAdd(tokenDai.address)

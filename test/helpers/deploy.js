@@ -1,9 +1,11 @@
 const { ethers, run } = require('hardhat')
+const { tokens } = require('hardlydifficult-ethereum-contracts')
 const deployKeyBurner = require('../../scripts/deployments/outwaveKeyburner')
 const PublicLock = artifacts.require('PublicLock')
 const createLockHash = require('./createLockCalldata')
 const Locks = require('../fixtures/locks')
 
+// deploys unlock and deps to enable creation of locks from Outwave Events
 async function deployUnlock(unlockVersion) {
   //  let unlockVersion = '10'
   const [owner] = await ethers.getSigners()
@@ -49,8 +51,24 @@ async function deployLocks(
   return locks
 }
 
+// Deploys 2 erc20 tokens: DAI and SAI.
+async function deployErc20Tokens(tokenOwner, proxyOwner) {
+  let tokenDai = await tokens.dai.deploy(
+    web3,
+    proxyOwner.address,
+    tokenOwner.address
+  )
+  let tokenSai = await tokens.sai.deploy(
+    web3,
+    proxyOwner.address,
+    tokenOwner.address
+  )
+  return [tokenDai, tokenSai]
+}
+
 module.exports = {
   deployUnlock,
   deployKeyBurner,
   deployLocks,
+  deployErc20Tokens,
 }
