@@ -81,7 +81,11 @@ contract OutwaveKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
      * @param parent The address of the parent PublicLock
      * @param tokenId The id of the PublickLock key to be burned
      */
-    function burnKey(address parent, uint256 tokenId) external {
+    function burnKey(
+        address parent,
+        uint256 tokenId,
+        bytes32 eventHash
+    ) external {
         (bool deployed, , ) = _unlock.locks(parent);
         IPublicLock parentLock = IPublicLock(parent);
         require(
@@ -101,6 +105,12 @@ contract OutwaveKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
             54
         );
 
+        address eventOwner = _outwave.eventOwner(eventHash);
+        require(eventOwner != address(0), "OWNER_NOT_FOUND");
+
+        bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
+        require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
+
         // store tokenUri
         _originalKeys[mintedTokenId] = OriginalKey(
             tokenId,
@@ -112,7 +122,7 @@ contract OutwaveKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
                     "_mk.json"
                 )
             ),
-            _outwave.getEventByLock(parent)
+            retrievedEventHash
         );
 
         emit KeyBurn(msg.sender, parent, tokenId);

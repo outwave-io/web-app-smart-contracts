@@ -3,7 +3,7 @@ const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
 
 contract('OutwaveEvent', () => {
-  describe('disable event / behavior ', () => {
+  describe('disable event / behaviour ', () => {
     let outwave
     let lockAddress // the address of the lock
     let addr1 // user 1

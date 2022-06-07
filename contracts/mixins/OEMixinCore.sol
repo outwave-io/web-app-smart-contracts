@@ -145,6 +145,7 @@ contract OEMixinCore {
             exists: true,
             lockAddr: entityAdresses
         });
+        _users.push(ownerAddress);
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[
             entityAdresses
@@ -208,6 +209,24 @@ contract OEMixinCore {
         return _eventLocks(eventId, owner);
     }
 
+    function eventByLock(address lockAddress, address ownerAddress)
+        external
+        view
+        returns (bytes32 eventId)
+    {
+        Lock memory lock = _userOrganizations[ownerAddress].locksEntity[lockAddress];
+        if (lock.exists) return lock.eventId;
+        return 0;
+    }
+
+    function eventOwner(bytes32 eventId)
+        external
+        view
+        returns (address owner) 
+    {
+        return _eventIds[eventId];
+    }
+
     function _eventLocks(bytes32 eventId, address owner)
         internal
         view
@@ -230,21 +249,5 @@ contract OEMixinCore {
             }
         }
         return result;
-    }
-
-    // note that this is broken: users are appended only in _registerNewOrganization,
-    // but now locks can be registered in other methods without an org.
-    function getEventByLock(address lockAddress)
-        external
-        view
-        returns (bytes32 eventId)
-    {
-        for (uint i = 0; i < _users.length; i++) {
-            address ownerAddress = _users[i];
-            Lock memory eventLock = _userOrganizations[ownerAddress]
-                .locksEntity[lockAddress];
-            if (eventLock.exists) return eventLock.eventId;
-        }
-        return 0;
     }
 }
