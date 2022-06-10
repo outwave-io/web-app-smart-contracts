@@ -55,7 +55,6 @@ async function deployLocks(
 async function deployErc20Tokens(tokenOwner, proxyOwner) {
   let tokenDai = await tokens.dai.deploy(
     web3,
-    proxyOwner.address,
     tokenOwner.address
   )
   let tokenSai = await tokens.sai.deploy(

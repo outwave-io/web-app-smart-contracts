@@ -2123,6 +2123,16 @@ interface ILockKeyPurchaseHook
     uint minKeyPrice,
     uint pricePaid
   ) external;
+
+  /**
+   * @notice If the lock owner has registered an implementer then this hook
+   * after tokens have been trasfered from the buyer.
+   * @param pricePaid the value/pricePaid included with the purchase transaction
+   * @dev the lock's address is the `msg.sender` when this function is called
+   */
+  function onKeyPurchased(
+    uint pricePaid
+  ) external;
 }
 
 
@@ -3687,9 +3697,16 @@ contract MixinPurchase is
     if(tokenAddress != address(0)) {
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
       token.transferFrom(msg.sender, address(this), totalPriceToPay);
+      if(address(onKeyPurchaseHook) != address(0)) {
+        onKeyPurchaseHook.onKeyPurchased(totalPriceToPay);
+      }
+
     } else {
       // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
       require(totalPriceToPay <= msg.value, 'INSUFFICIENT_VALUE');
+      if(address(onKeyPurchaseHook) != address(0)) {
+        onKeyPurchaseHook.onKeyPurchased(msg.value);
+      }
     }
 
     // refund gas
@@ -3736,45 +3753,7 @@ contract MixinPurchase is
     _refundGas();
   }
 
-  /**
-  * Renew a given token
-  * @notice only works for non-free, expiring, ERC20 locks
-  * @param _tokenId the ID fo the token to renew
-  * @param _referrer the address of the person to be granted UDT
-  */
-  function renewMembershipFor(
-    uint _tokenId,
-    address _referrer
-  ) public {
-    _lockIsUpToDate();
-    _isKey(_tokenId);
 
-    // check the lock
-    require(_originalDurations[_tokenId] != type(uint).max, 'NON_EXPIRING_LOCK');
-    require(tokenAddress != address(0), 'NON_ERC20_LOCK');
-
-    // make sure duration and pricing havent changed  
-    uint keyPrice = purchasePriceFor(ownerOf(_tokenId), _referrer, '');
-    require(_originalPrices[_tokenId] == keyPrice, 'PRICE_CHANGED');
-    require(_originalDurations[_tokenId] == expirationDuration, 'DURATION_CHANGED');
-    require(_originalTokens[_tokenId] == tokenAddress, 'TOKEN_CHANGED');
-
-    // make sure key is ready for renewal
-    require(isValidKey(_tokenId) == false, 'NOT_READY');
-
-    // extend key duration
-    _extendKey(_tokenId);
-
-    // store in unlock
-    _recordKeyPurchase(keyPrice, _referrer);
-
-    // transfer the tokens
-    IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-    token.transferFrom(ownerOf(_tokenId), address(this), keyPrice);
-
-    // refund gas if applicable
-    _refundGas();
-  }
 
   /**
    * @notice returns the minimum price paid for a purchase with these params.

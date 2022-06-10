@@ -22,8 +22,9 @@ import "hardhat/console.sol";
 contract OEMixinOrganizationApi is OEMixinCore {
     /* unlock */
 
+    uint256 MAX_INT = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
+
     function _createLock(
-        uint256 expirationDuration,
         address tokenAddress,
         uint256 keyPrice,
         uint256 maxNumberOfKeys,
@@ -37,7 +38,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
         bytes memory data = abi.encodeWithSignature(
             "initialize(address,uint256,address,uint256,uint256,string)",
             address(this),
-            expirationDuration,
+            MAX_INT,
             tokenAddress,
             keyPrice,
             maxNumberOfKeys,
@@ -78,7 +79,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
     ) public lockAreEnabled returns (address) {
 
         address result = _createLock(
-            0,
             tokenAddress,
             keyprice,
             numberOfKey,
