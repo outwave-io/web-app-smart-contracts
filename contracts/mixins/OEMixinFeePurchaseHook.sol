@@ -72,6 +72,7 @@ contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
         address tokenadd = lock.tokenAddress();
         lock.withdraw(tokenadd, fee);
         if(tokenadd != address(0)){
+            //todo: shall we use safeerc20upgradable?
             IERC20 erc20 = IERC20(tokenadd);
             erc20.transfer(_outwavePaymentAddress, fee);
         }

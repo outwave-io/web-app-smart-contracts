@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
@@ -46,7 +47,8 @@ contract OEMixinOrganizationApi is OEMixinCore {
         );
 
         address newlocladd = IUnlock(_unlockAddr).createUpgradeableLock(data);
-        IPublicLock(newlocladd).setEventHooks(
+        IPublicLock lock = IPublicLock(newlocladd);
+        lock.setEventHooks(
             address(this),
             address(0),
             address(0),
@@ -188,20 +190,36 @@ contract OEMixinOrganizationApi is OEMixinCore {
         );
     }
 
-    // function eventWithdraw(
-    //   address lockAddress
-    // ) external onlyLockOwner(lockAddress) {
-    //     uint lockaddressBalance = lockAddress.balance;
-    //     require(lockaddressBalance > 0, "LOCK_NO_FUNDS");
-    //     IPublicLock(lockAddress).withdraw(address(0), lockAddress.balance);
-    //     payable(msg.sender).transfer(lockaddressBalance);
-    // }
+    // // function eventWithdraw(
+    // //   address lockAddress
+    // // ) external onlyLockOwner(lockAddress) {
+    // //     uint lockaddressBalance = lockAddress.balance;
+    // //     require(lockaddressBalance > 0, "LOCK_NO_FUNDS");
+    // //     IPublicLock(lockAddress).withdraw(address(0), lockAddress.balance);
+    // //     payable(msg.sender).transfer(lockaddressBalance);
+    // // }
 
-    function eventWithdraw(uint256 eventId) external {
-        // uint lockaddressBalance = lockAddress.balance;
-        // require(lockaddressBalance > 0, "LOCK_NO_FUNDS");
-        // IPublicLock(lockAddress).withdraw(address(0), lockAddress.balance);
-        // payable(msg.sender).transfer(lockaddressBalance);
+    function withdraw(
+        address lockAddress,
+        uint amount
+    ) external onlyLockOwner(lockAddress) {
+        console.log("------->>>>>>>");
+        console.log(msg.sender);
+        IPublicLock lock = IPublicLock(lockAddress);
+        console.log(lockAddress);
+        console.log(amount);
+        address tokenadd = lock.tokenAddress();
+        lock.withdraw(tokenadd,amount);
+        if(tokenadd != address(0)){
+            //todo: shall we use safeerc20upgradable?
+            IERC20 erc20 = IERC20(tokenadd);
+            erc20.transfer(msg.sender, amount);
+        }
+        else{
+            payable(msg.sender).transfer(amount);
+        }
+
+
     }
 
     //todo.. do we care?

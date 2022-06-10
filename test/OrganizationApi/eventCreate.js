@@ -43,7 +43,7 @@ contract('OutwaveEvent', () => {
       let publiclock = await PublicLock.attach(lockAddress)
       assert.equal(await publiclock.publicLockVersion(), 10)
     })
-    it('should create an smart contract implementing IReadLock, returning a valid name', async () => {
+    it('should create an smart contract implementing ILockManager, returning a valid name', async () => {
       let readlock = await ethers.getContractAt('ILockManager', lockAddress)
       assert.equal(await readlock.name(), 'name')
     })
