@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "@unlock-protocol/contracts/dist/PublicLock/ILockKeyPurchaseHookV7.sol";
 
 import "./OEMixinCore.sol";
+import "hardhat/console.sol";
 
 /*
     Provides core functionalties for managing as owner
@@ -33,7 +35,11 @@ contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
         address recipient,
         address referrer,
         bytes calldata data
-    ) external view override returns (uint minKeyPrice) {}
+    ) external view override returns (uint minKeyPrice) {
+        uint price =  IPublicLockV10(msg.sender).keyPrice();
+        console.log("keyPurchasePrice is ",price);
+        return price;
+    }
 
     /**
      * @notice If the lock owner has registered an implementer then this hook
@@ -55,11 +61,23 @@ contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
         uint minKeyPrice,
         uint pricePaid
     ) external override {
+        
+    }
+
+    function onKeyPurchased(
+        uint pricePaid
+    ) external override{
         IPublicLockV10 lock = IPublicLockV10(msg.sender);
         uint fee = pricePaid - ((98 * pricePaid) / 100);
         address tokenadd = lock.tokenAddress();
         lock.withdraw(tokenadd, fee);
-        _outwavePaymentAddress.transfer(address(this).balance);
+        if(tokenadd != address(0)){
+            IERC20 erc20 = IERC20(tokenadd);
+            erc20.transfer(_outwavePaymentAddress, fee);
+        }
+        else{
+            _outwavePaymentAddress.transfer(address(this).balance);
+        }
         emit OutwavePaymentTransfered(msg.sender, fee);
     }
 }

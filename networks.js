@@ -35,7 +35,7 @@ module.exports = {
   },
   ganache: {
     chainId: 1337,
-    url: `http://${testHost}:8545`,
+    url: `http://${testHost}:7545`,
     name: 'ganache',
   },
   localhost: {
