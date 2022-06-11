@@ -6,7 +6,7 @@ contract('OutwaveEvent', () => {
   let outwaveAddress
 
   beforeEach(async () => {
-    let addresses = await require('./helpers/deploy').deployUnlock('10')
+    let addresses = await require('../helpers/deploy').deployUnlock('10')
     unlockAddress = addresses.unlockAddress;
     publicLockAddress = addresses.publicLockAddress;
     outwaveAddress = addresses.outwaveAddress;

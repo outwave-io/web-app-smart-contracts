@@ -73,6 +73,15 @@ contract('OutwaveEvent', () => {
       assert.equal(await web3.eth.getBalance(lockAddress), 0)
       assert.isTrue(afterWithDrawBalance.gt(initialBalance))
     })
+
+    it('shuold lock have balance 0', async () => {
+      assert.isTrue(await web3.eth.getBalance(lockAddress) == 0)
+    })
+
+    it('shuold outwave contract have balance 0 (not storing on contract, but only on specified address)', async () => {
+      assert.isTrue(await web3.eth.getBalance(outwave.address) == 0)
+    })
+
   })
 
   describe(`withdraw ERC20 tokens / behavior `, () => {
@@ -150,6 +159,14 @@ contract('OutwaveEvent', () => {
       const afterWithDrawBalance = await tokenDai.balanceOf(eventOwner.address)
       assert.equal(await tokenDai.balanceOf(lockAddress), 0)
       assert.isTrue(afterWithDrawBalance.gt(initialBalance))
+    })
+
+    it('shuold lock have balance 0', async () => {
+      assert.isTrue(await tokenDai.balanceOf(lockAddress) == 0)
+    })
+
+    it('shuold outwave contract have balance 0 (not storing on contract, but only on specified address)', async () => {
+      assert.isTrue(await tokenDai.balanceOf(outwave.address) == 0)
     })
   })
 
