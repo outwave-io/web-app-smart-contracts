@@ -54,7 +54,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
             address(0),
             address(0)
         );
-        console.log("new public lock address", newlocladd);
         return newlocladd;
     }
 
@@ -190,24 +189,11 @@ contract OEMixinOrganizationApi is OEMixinCore {
         );
     }
 
-    // // function eventWithdraw(
-    // //   address lockAddress
-    // // ) external onlyLockOwner(lockAddress) {
-    // //     uint lockaddressBalance = lockAddress.balance;
-    // //     require(lockaddressBalance > 0, "LOCK_NO_FUNDS");
-    // //     IPublicLock(lockAddress).withdraw(address(0), lockAddress.balance);
-    // //     payable(msg.sender).transfer(lockaddressBalance);
-    // // }
-
     function withdraw(
         address lockAddress,
         uint amount
     ) external onlyLockOwner(lockAddress) {
-        console.log("------->>>>>>>");
-        console.log(msg.sender);
         IPublicLock lock = IPublicLock(lockAddress);
-        console.log(lockAddress);
-        console.log(amount);
         address tokenadd = lock.tokenAddress();
         lock.withdraw(tokenadd,amount);
         if(tokenadd != address(0)){
@@ -246,8 +232,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
     ) external onlyLockOwner(lockAddress) {
         IPublicLock lock = IPublicLock(lockAddress);
         lock.updateLockName(lockName);
-        console.log("#############miro"); 
-        console.log(maxNumberOfKeys);
         lock.updateKeyPricing(keyPrice, lock.tokenAddress()); //todo: use stable
         lock.setMaxNumberOfKeys(maxNumberOfKeys);
         

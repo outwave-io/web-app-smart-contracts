@@ -29,7 +29,7 @@ async function main({ unlockVersion = 10 }) {
   // need to fetch previous unlock versions
   if (unlockVersion < CURRENT_VERSION) {
     // eslint-disable-next-line no-console
-    console.log(`UNLOCK SETUP > Setting up version ${unlockVersion}`)
+    //console.log(`UNLOCK SETUP > Setting up version ${unlockVersion}`)
 
     // need to copy .sol for older versions in contracts repo
     const pastUnlockPath = require.resolve(
@@ -59,9 +59,9 @@ async function main({ unlockVersion = 10 }) {
   await unlock.deployed()
 
   // eslint-disable-next-line no-console
-  console.log(
-    `UNLOCK SETUP > Unlock (w proxy) deployed to: ${unlock.address} (tx: ${unlock.deployTransaction.hash})`
-  )
+  // console.log(
+  //   `UNLOCK SETUP > Unlock (w proxy) deployed to: ${unlock.address} (tx: ${unlock.deployTransaction.hash})`
+  // )
 
   // delete remaining artifact
   if (unlockVersion < CURRENT_VERSION) {

@@ -7,13 +7,13 @@ async function main() {
   await publicLock.deployed()
 
   // eslint-disable-next-line no-console
-  console.log(
-    `PUBLIC LOCK > deployed to : ${publicLock.address} (tx: ${publicLock.deployTransaction.hash})`
-  )
+  // console.log(
+  //   `PUBLIC LOCK > deployed to : ${publicLock.address} (tx: ${publicLock.deployTransaction.hash})`
+  // )
   // eslint-disable-next-line no-console
-  console.log(
-    'PUBLIC LOCK > Please verify it and call `yarn hardhat set:template`.'
-  )
+  // console.log(
+  //   'PUBLIC LOCK > Please verify it and call `yarn hardhat set:template`.'
+  // )
 
   // save deployment info
   await addDeployment('PublicLock', publicLock, false)

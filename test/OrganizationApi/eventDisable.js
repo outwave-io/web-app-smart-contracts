@@ -31,7 +31,6 @@ contract('OutwaveEvent', () => {
       let receipt = await tx.wait()
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
-      console.log('------miro:' + (await web3.eth.getBalance(lockAddress)))
     })
     it('shuold ensure locks created, actually allows buying keys (nft)', async () => {
       // let PublicLock = await ethers.getContractFactory('PublicLock')

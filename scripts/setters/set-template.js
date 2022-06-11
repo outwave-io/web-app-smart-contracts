@@ -31,9 +31,9 @@ async function main({ publicLockAddress, unlockAddress, unlockVersion }) {
   const version = await publicLock.publicLockVersion()
   if (unlockVersion > 9) {
     // eslint-disable-next-line no-console
-    console.log(
-      `LOCK TEMPLATE SETUP > Setting up PublicLock version ${version}`
-    )
+    // console.log(
+    //   `LOCK TEMPLATE SETUP > Setting up PublicLock version ${version}`
+    // )
     const txVersion = await unlock.addLockTemplate(publicLockAddress, version)
     await txVersion.wait()
   }
@@ -42,7 +42,7 @@ async function main({ publicLockAddress, unlockAddress, unlockVersion }) {
   const tx = await unlock.setLockTemplate(publicLockAddress)
   const { transactionHash } = await tx.wait()
   // eslint-disable-next-line no-console
-  console.log(`UNLOCK SETUP> Template set for Lock (tx: ${transactionHash})`)
+  //console.log(`UNLOCK SETUP> Template set for Lock (tx: ${transactionHash})`)
 }
 
 // execute as standalone

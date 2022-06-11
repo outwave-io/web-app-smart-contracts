@@ -37,7 +37,6 @@ contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
         bytes calldata data
     ) external view override returns (uint minKeyPrice) {
         uint price =  IPublicLockV10(msg.sender).keyPrice();
-        console.log("keyPurchasePrice is ",price);
         return price;
     }
 

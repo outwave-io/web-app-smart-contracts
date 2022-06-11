@@ -18,12 +18,6 @@ contract('OEMixinManage', () => {
           tokenOwner,
           proxyOwner
         )
-
-      //   await token.mint(user.address, 100, { from: tokenOwner.address });
-      //   const balance = await token.balanceOf(user.address);
-      //   assert.equal(balance.toString(), 100);
-      console.log(tokenDai.address)
-      console.log(tokenSai.address)
     })
     it('shuold allow to set a valid ERC20 DAI token', async () => {
       await outwave.erc20PaymentTokenAdd(tokenDai.address)
