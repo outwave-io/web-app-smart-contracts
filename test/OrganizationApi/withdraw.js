@@ -37,7 +37,8 @@ contract('OutwaveEvent', () => {
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
-      publiclock = await ethers.getContractAt('ILockManager', lockAddress)
+      let PublicLock = await ethers.getContractFactory('PublicLock')
+      publiclock = await PublicLock.attach(lockAddress)
 
     })
 

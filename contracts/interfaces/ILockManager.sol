@@ -45,12 +45,5 @@ interface ILockManager {
         address[] calldata _keyManagers,
         bytes[] calldata _data
     ) external payable;
-
-    function withdraw(
-        address _tokenAddress,
-        uint _amount
-    ) external;
-
-
   
 }
