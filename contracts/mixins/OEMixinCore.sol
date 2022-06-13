@@ -20,7 +20,6 @@ contract OEMixinCore {
     struct Lock {
         bytes32 eventId;    
         address lockAddr;
-        uint8 royalty;
         bool exists;
     }
 
@@ -143,14 +142,12 @@ contract OEMixinCore {
     function _eventLockRegister(
         address ownerAddress,
         bytes32 eventId,
-        address entityAdresses,
-        uint8 royalies
+        address entityAdresses
     ) internal {
         if (_isLockAddressEntity(ownerAddress, entityAdresses))
             revert("CORE_LOCK_ADDRESS_EXISTS");
         Lock memory newLock = Lock({
             eventId: eventId,
-            royalty: royalies,
             exists: true,
             lockAddr: entityAdresses
         });

@@ -75,7 +75,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        uint8 royalty,
         string memory baseTokenUri
     ) public lockAreEnabled returns (address) {
 
@@ -86,7 +85,7 @@ contract OEMixinOrganizationApi is OEMixinCore {
             name
         );
         IPublicLock(result).setBaseTokenURI(baseTokenUri);
-        _eventLockRegister(msg.sender, eventId, result, royalty);
+        _eventLockRegister(msg.sender, eventId, result);
         return result;
     }
 
@@ -96,7 +95,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        uint8 royalty,
         string memory baseTokenUri
     ) public lockAreEnabled tokenAddressIsAvailable(tokenAddress) returns (address) {
         require(!eventExists(eventId), "EVENT_ID_ALREADY_EXISTS");
@@ -106,7 +104,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 tokenAddress,
                 keyprice,
                 numberOfKey,
-                royalty,
                 baseTokenUri
             );
         emit EventCreated(msg.sender, eventId);
@@ -122,7 +119,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        uint8 royalty,
         string memory baseTokenUri
     ) external onlyEventOwner(eventId) tokenAddressIsAvailable(tokenAddress) lockAreEnabled returns (address) {
         return
@@ -132,7 +128,6 @@ contract OEMixinOrganizationApi is OEMixinCore {
                 tokenAddress,
                 keyprice,
                 numberOfKey,
-                royalty,
                 baseTokenUri
             );
     }
