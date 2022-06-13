@@ -2,9 +2,11 @@
 /* eslint-disable global-require */
 
 const { task } = require('hardhat/config')
+require("@tenderly/hardhat-tenderly");
 
 task('outwave:deploy', 'deploys unlock infrastructure')
-  .setAction(async ({ }, { ethers }) => {
+  .addOptionalParam('verify', 'verify with hardhat-tenderly')
+  .setAction(async ({ verify = false  }, { ethers }) => {
     let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
     console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
     console.log("!!! Outwave payments are set to: " + receivePaymentAddress);
@@ -28,12 +30,58 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     console.log("- outwave org deployed: " + outwave.address);
 
     const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
-    var addressResult = await keyBurnerDeployer({
+    var eventKeyburnerAddress = await keyBurnerDeployer({
       outwaveAddress: outwave.address,
       unlockAddress: unlockAddress
     })
-    console.log("- event keyburner published at: " + addressResult);
-    console.log("To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + addressResult + " --network XXXXXXXXXXXXX")
+    console.log("- event keyburner published at: " + eventKeyburnerAddress);
+
+    if(verify){
+      console.log(" * verify with hardhat-tenderly..");
+
+    await hre.tenderly.persistArtifacts({
+        name: "OutwaveEvent",
+        address: outwave.address,
+    })
+
+    await hre.tenderly.verify({
+      name: "OutwaveEvent",
+      address: outwave.address,
+    })
+
+    console.log(" * OutwaveEvent, loadedin tenderly");
+
+    await hre.tenderly.persistArtifacts({
+      name: "EventKeyBurner",
+      address: eventKeyburnerAddress,
+    })
+
+    await hre.tenderly.verify({
+      name: "EventKeyBurner",
+      address: eventKeyburnerAddress,
+    })
+    console.log(" * EventKeyBurner, loadedin tenderly");
+
+    await hre.tenderly.persistArtifacts({
+      name: "Unlock",
+      address: unlockAddress,
+    })
+
+    await hre.tenderly.verify({
+      name: "Unlock",
+      address: unlockAddress,
+    })
+    console.log(" * Unlock, loadedin tenderly");
+
+    console.log(" ...done! visit https://dashboard.tenderly.co/");
+    }
+
+   
+    console.log("[onchain] To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
+    // console.log("[tenderly] To verify on tenderly:")
+    // console.log("--- yarn hardhat tenderly:push OutwaveEvent=" + outwave.address + " Unlock=" + unlockAddress + " EventKeyBurner=" + addressResult + " --network XXXXXXXXXXXXX")
+    // console.log("--- yarn hardhat tenderly:verify OutwaveEvent=" + outwave.address + " Unlock=" + unlockAddress + " EventKeyBurner=" + addressResult + " --network XXXXXXXXXXXXX")
+
 
   });
 
