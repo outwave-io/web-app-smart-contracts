@@ -6,11 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 
-// todo: ma che cazzo è sta roba...? sembra un bug di hardhat quando compila
-//import "../_unlock/PublicLockV10.sol";
-//import "../_unlock/UnlockV11.sol";
 
-import "../OutwaveOrganization.sol";
 import "./OEMixinCore.sol";
 import "hardhat/console.sol";
 
