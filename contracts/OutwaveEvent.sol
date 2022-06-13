@@ -4,10 +4,10 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // outwave
-import "./mixins/OEMixinOrganizationApi.sol";
-import "./mixins/OEMixinManage.sol";
-import "./mixins/OEMixinCore.sol";
-import "./mixins/OEMixinFeePurchaseHook.sol";
+import "./mixins/EventOrganizationManagerMixin.sol";
+import "./mixins/EventOutwaveManagerMixin.sol";
+import "./mixins/EventCoreMixin.sol";
+import "./mixins/EventPurchaseHookMixin.sol";
 
 /* 
   main todo
@@ -31,12 +31,12 @@ idee todo
  * https://eips.ethereum.org/EIPS/eip-721
  */
 contract OutwaveEvent is
-    OEMixinCore,
-    OEMixinManage,
-    OEMixinOrganizationApi,
-    OEMixinFeePurchaseHook
+    EventCoreMixin,
+    EventOutwaveManagerMixin,
+    EventOrganizationManagerMixin,
+    EventPurchaseHookMixin
 {
     constructor(address unlockaddr, address payable paymentAddr) {
-        OEMixinCore._initializeOEMixinCore(unlockaddr, paymentAddr);
+        EventCoreMixin._initializeOEMixinCore(unlockaddr, paymentAddr);
     }
 }

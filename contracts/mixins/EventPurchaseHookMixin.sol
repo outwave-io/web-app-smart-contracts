@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "@unlock-protocol/contracts/dist/PublicLock/ILockKeyPurchaseHookV7.sol";
 
-import "./OEMixinCore.sol";
+import "./EventCoreMixin.sol";
 import "hardhat/console.sol";
 
 /*
@@ -15,7 +15,7 @@ import "hardhat/console.sol";
     - Payments and withdraw
 
 */
-contract OEMixinFeePurchaseHook is OEMixinCore, ILockKeyPurchaseHookV7 {
+contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
     event OutwavePaymentTransfered(address from, uint amount);
 
     /**

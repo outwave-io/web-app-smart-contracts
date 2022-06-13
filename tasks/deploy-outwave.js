@@ -152,7 +152,7 @@ task('outwave:deploy:keyburner', 'deploys keyburner')
   .addOptionalParam('unlockaddr', 'the unlock factory address')
   .setAction(async ({ outwaveaddr, unlockaddr }, { run }) => {
     // eslint-disable-next-line global-require
-    const keyBurnerDeployer = require('../scripts/deployments/outwaveKeyburner')
+    const keyBurnerDeployer = require('../scripts/deployments/EventKeyBurner')
     await keyBurnerDeployer({
       outwaveAddress: outwaveaddr,
       unlockAddress: unlockaddr
@@ -165,7 +165,7 @@ task('outwave:call:keyburner', 'mint some keys and burn them ??')
   .setAction(async ({ keyburnaddr, lockaddr }, { ethers }) => {
     const [lockOwner, addr1, addr2, outwaveOwner] = await ethers.getSigners();
 
-    const KeyBurner = await ethers.getContractFactory('OutwaveKeyBurner')
+    const KeyBurner = await ethers.getContractFactory('EventKeyBurner')
     const keyBurner = KeyBurner.attach(keyburnaddr)
 
     const outwave = await ethers.getContractAt('OutwaveEvent', await keyBurner.readOutwave())
@@ -260,7 +260,7 @@ task('outwave:call:purchasekeyfor', 'buy a key for the specified address')
   .setAction(async ({ keyburnaddr, lockaddr, recipientaddr }, { ethers }) => {
     const [signer] = await ethers.getSigners();
 
-    // const KeyBurner = await ethers.getContractFactory('OutwaveKeyBurner')
+    // const KeyBurner = await ethers.getContractFactory('EventKeyBurner')
     // const keyBurner = KeyBurner.attach(keyburnaddr)
 
     // purchase key from lock

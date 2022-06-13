@@ -5,7 +5,7 @@ const { ethers, web3 } = require('hardhat')
 
 const keyPrice = web3.utils.toWei('0.01', 'ether')
 
-contract('OutwaveEvent', () => {
+contract('EventPurchaseHook', () => {
 
   describe(`purchase NFT with native tokens / behavior `, () => {
     let outwave
@@ -46,8 +46,8 @@ contract('OutwaveEvent', () => {
       assert.equal(await publiclock.tokenAddress(),  web3.utils.padLeft(0, 40))
     })
 
-    it('should create an smart contract implementing ILockManager, returnig the correct tokenAddress', async () => {
-      let readlock = await ethers.getContractAt('ILockManager', lockAddress)
+    it('should create an smart contract implementing IEventLock, returnig the correct tokenAddress', async () => {
+      let readlock = await ethers.getContractAt('IEventLock', lockAddress)
       assert.equal(await readlock.tokenAddress(),  web3.utils.padLeft(0, 40))
     })
 
@@ -148,8 +148,8 @@ contract('OutwaveEvent', () => {
       assert.equal(await publiclock.tokenAddress(), tokenDai.address)
     })
 
-    it('should create an smart contract implementing ILockManager, returnig the correct tokenAddress', async () => {
-      let readlock = await ethers.getContractAt('ILockManager', lockAddress)
+    it('should create an smart contract implementing IEventLock, returnig the correct tokenAddress', async () => {
+      let readlock = await ethers.getContractAt('IEventLock', lockAddress)
       assert.equal(await readlock.tokenAddress(), tokenDai.address)
     })
 
@@ -162,7 +162,7 @@ contract('OutwaveEvent', () => {
     })
 
     it('should allow user (user2) to actually purchase in ERC20 token', async () => {
-      let readlock = await ethers.getContractAt('ILockManager', lockAddress)
+      let readlock = await ethers.getContractAt('IEventLock', lockAddress)
       assert.equal(await readlock.tokenAddress(), tokenDai.address)
 
       let txr3 = await publiclock.connect(user2).purchase(

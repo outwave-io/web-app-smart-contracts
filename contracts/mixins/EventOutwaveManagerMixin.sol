@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./OEMixinCore.sol";
+import "./EventCoreMixin.sol";
 
 /*
     Provides core functionalties for managing as owner
@@ -9,7 +9,7 @@ import "./OEMixinCore.sol";
     - Payments and withdraw
 
 */
-contract OEMixinManage is OEMixinCore, Ownable {
+contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
 
     event PaymentReceived(address, uint);
  

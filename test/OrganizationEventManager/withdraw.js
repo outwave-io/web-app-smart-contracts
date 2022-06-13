@@ -4,7 +4,7 @@ const { reverts } = require('truffle-assertions')
 
 const keyPrice = web3.utils.toWei('0.01', 'ether')
 
-contract('OutwaveEvent', () => {
+contract('Organization Event Manager', () => {
 
   describe(`withdraw native tokens / behavior `, () => {
     let outwave
@@ -121,7 +121,7 @@ contract('OutwaveEvent', () => {
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
 
-      publiclock = await ethers.getContractAt('ILockManager', lockAddress)
+      publiclock = await ethers.getContractAt('IEventLock', lockAddress)
 
       await tokenDai.approve(lockAddress, keyPrice, {
         from: user2.address,

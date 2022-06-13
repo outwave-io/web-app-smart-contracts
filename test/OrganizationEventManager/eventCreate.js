@@ -2,7 +2,7 @@ const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
 
-contract('OutwaveEvent', () => {
+contract('Organization Event Manager', () => {
   describe('create event / behavior ', () => {
     let outwave
     let lockAddress
@@ -29,9 +29,9 @@ contract('OutwaveEvent', () => {
       let receipt = await tx.wait()
       // verify events
       let eventCreate = receipt.events.find((v) => v.event === 'EventCreated')
-      assert.equal( eventCreate.args.eventId,  web3.utils.padLeft(web3.utils.asciiToHex('1'), 64))
-      assert.equal( eventCreate.args.owner, addr1.address)
-      
+      assert.equal(eventCreate.args.eventId, web3.utils.padLeft(web3.utils.asciiToHex('1'), 64))
+      assert.equal(eventCreate.args.owner, addr1.address)
+
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
@@ -42,8 +42,8 @@ contract('OutwaveEvent', () => {
       let publiclock = await PublicLock.attach(lockAddress)
       assert.equal(await publiclock.publicLockVersion(), 10)
     })
-    it('should create an smart contract implementing ILockManager, returning a valid name', async () => {
-      let readlock = await ethers.getContractAt('ILockManager', lockAddress)
+    it('should create an smart contract implementing IEventLock, returning a valid name', async () => {
+      let readlock = await ethers.getContractAt('IEventLock', lockAddress)
       assert.equal(await readlock.name(), 'name')
     })
   })
@@ -55,23 +55,23 @@ contract('OutwaveEvent', () => {
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
-      ;[, addr1, addr2] = await ethers.getSigners()
+        ;[, addr1, addr2] = await ethers.getSigners()
 
     })
-  
+
   })
   describe('create event / security', () => {
     let outwave
     let lockAddress // the address of the lock
     let addr1
     let addr2
-   
+
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      ;[, addr1, addr2] = await ethers.getSigners()
+        ;[, addr1, addr2] = await ethers.getSigners()
 
       const tx = await outwave
         .connect(addr1)

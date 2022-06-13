@@ -2,7 +2,7 @@
 pragma solidity >=0.5.17 <0.9.0;
 
 //https://docs.unlock-protocol.com/unlock/developers/smart-contracts/lock-api#getters
-interface ILockManager {
+interface IEventLock {
     function name() external view returns (string memory _name);
 
     function numberOfOwners() external view returns (uint);

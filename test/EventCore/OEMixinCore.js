@@ -1,6 +1,6 @@
 // const { ethers, run } = require('hardhat')
 
-contract('OutwaveEvent', () => {
+contract('EventCore', () => {
   let unlockAddress
   let publicLockAddress
   let outwaveAddress

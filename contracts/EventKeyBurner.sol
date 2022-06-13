@@ -18,7 +18,7 @@ import "./interfaces/IReadOutwave.sol";
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract OutwaveKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
+contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;

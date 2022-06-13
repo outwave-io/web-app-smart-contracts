@@ -9,7 +9,7 @@ import "hardhat/console.sol";
  * @dev The Core of the Outwave Event provides access to common properties (fields) accessed by other mixins. Child mixins can access
  * to internal fields, only with proper get and set function, marked as internals. Direct access to fields is forbidden
  */
-contract OEMixinCore {
+contract EventCoreMixin {
     struct OrganizationData {
         address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
         mapping(address => Lock) locksEntity; // fast searching

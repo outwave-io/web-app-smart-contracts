@@ -2,7 +2,7 @@ const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
 
-contract('OutwaveEvent', () => {
+contract('Organization Event Manager', () => {
   describe('create event lock / behavior ', () => {
     let outwave
     let lockAddress // the address of the lock
@@ -13,7 +13,7 @@ contract('OutwaveEvent', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      ;[, addr1, addr2] = await ethers.getSigners()
+        ;[, addr1, addr2] = await ethers.getSigners()
 
       const tx = await outwave
         .connect(addr1)
@@ -52,7 +52,7 @@ contract('OutwaveEvent', () => {
       assert.equal(evt.args.eventId, web3.utils.padLeft(web3.utils.asciiToHex('1'), 64))
       assert.equal(evt.args.owner, addr1.address)
 
-    
+
     })
   })
 
@@ -69,7 +69,7 @@ contract('OutwaveEvent', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      ;[owner, addr1, addr2] = await ethers.getSigners()
+        ;[owner, addr1, addr2] = await ethers.getSigners()
 
       const tx = await outwave
         .connect(addr1)
@@ -135,7 +135,7 @@ contract('OutwaveEvent', () => {
         'USER_NOT_OWNER'
       )
     })
-   
+
   })
 
 })

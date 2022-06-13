@@ -26,7 +26,7 @@ contract('KeyBurner', (accounts) => {
         outwaveAddress,
         unlockAddress
       })
-      let keyBurnerFactory = await ethers.getContractFactory('OutwaveKeyBurner')
+      let keyBurnerFactory = await ethers.getContractFactory('EventKeyBurner')
       keyBurner = await keyBurnerFactory.attach(keyBurnerAddress)
 
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
@@ -112,7 +112,7 @@ contract('KeyBurner', (accounts) => {
         outwaveAddress,
         unlockAddress
       })
-      let keyBurnerFactory = await ethers.getContractFactory('OutwaveKeyBurner')
+      let keyBurnerFactory = await ethers.getContractFactory('EventKeyBurner')
       keyBurner = await keyBurnerFactory.attach(keyBurnerAddress)
 
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
@@ -245,7 +245,7 @@ contract('KeyBurner', (accounts) => {
         outwaveAddress,
         unlockAddress
       })
-      let keyBurnerFactory = await ethers.getContractFactory('OutwaveKeyBurner')
+      let keyBurnerFactory = await ethers.getContractFactory('EventKeyBurner')
       keyBurner = await keyBurnerFactory.attach(keyBurnerAddress)
 
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
