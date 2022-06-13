@@ -5,11 +5,14 @@ const { task } = require('hardhat/config')
 
 task('outwave:deploy', 'deploys unlock infrastructure')
   .setAction(async ({ }, { ethers }) => {
+    let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
+    console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
+    console.log("!!! Outwave payments are set to: " + receivePaymentAddress);
 
     let unlockVersion = "10";
     let unlockAddress = await run('deploy:unlock')
     let publicLockAddress = await run('deploy:template')
-    let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
+    
     // set lock template
     await run('set:template', {
       publicLockAddress,
@@ -23,7 +26,14 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     console.log("- unlock deployed: " + unlockAddress);
     console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
-    console.log("To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
+
+    const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
+    var addressResult = await keyBurnerDeployer({
+      outwaveAddress: outwave.address,
+      unlockAddress: unlockAddress
+    })
+    console.log("- event keyburner published at: " + addressResult);
+    console.log("To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + addressResult + " --network XXXXXXXXXXXXX")
 
   });
 
@@ -62,6 +72,10 @@ task('outwave:deploy:createlock', 'create lock and returns address')
     console.log("- unlock deployed: " + unlockAddress);
     console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
+
+
+  
+
     // console.log("- outwave hook deployed: " +  outwavehook.address);
 
 
@@ -148,15 +162,17 @@ task('outwave:call', 'create lock and returns address').setAction(
 )
 
 task('outwave:deploy:keyburner', 'deploys keyburner')
-  .addOptionalParam('outwaveaddr', 'the outwave facade address')
-  .addOptionalParam('unlockaddr', 'the unlock factory address')
+  .addParam('outwaveaddr', 'the outwave facade address')
+  .addParam('unlockaddr', 'the unlock factory address')
   .setAction(async ({ outwaveaddr, unlockaddr }, { run }) => {
     // eslint-disable-next-line global-require
-    const keyBurnerDeployer = require('../scripts/deployments/EventKeyBurner')
-    await keyBurnerDeployer({
+    const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
+    var addressResult = await keyBurnerDeployer({
       outwaveAddress: outwaveaddr,
       unlockAddress: unlockaddr
     })
+    console.log("- event keyburner published at: " + addressResult);
+
   })
 
 task('outwave:call:keyburner', 'mint some keys and burn them ??')
