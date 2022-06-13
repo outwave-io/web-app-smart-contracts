@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
-import "@unlock-protocol/contracts/dist/PublicLock/ILockKeyPurchaseHookV7.sol";
+import "../ILockKeyPurchaseHookV7.sol";
 
 import "./EventCoreMixin.sol";
 import "hardhat/console.sol";
