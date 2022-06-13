@@ -23,7 +23,6 @@ contract('OutwaveEvent', () => {
           web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          1,
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       await tx.wait()
@@ -44,7 +43,6 @@ contract('OutwaveEvent', () => {
           web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          1,
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       let receipt = await tx.wait()
@@ -81,7 +79,6 @@ contract('OutwaveEvent', () => {
           web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          1,
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
       await tx.wait()
@@ -101,7 +98,6 @@ contract('OutwaveEvent', () => {
             web3.utils.padLeft(0, 40), //address(0) 
             web3.utils.toWei('0.01', 'ether'),
             100000,
-            1,
             'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
           ),
         'USER_NOT_OWNER'
@@ -118,7 +114,6 @@ contract('OutwaveEvent', () => {
             web3.utils.padLeft(0, 40), //address(0) 
             web3.utils.toWei('0.01', 'ether'),
             100000,
-            1,
             'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
           ),
         'USER_NOT_OWNER'
@@ -135,7 +130,6 @@ contract('OutwaveEvent', () => {
             web3.utils.padLeft(0, 40), //address(0) 
             web3.utils.toWei('0.01', 'ether'),
             100000,
-            1,
             'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
           ),
         'USER_NOT_OWNER'

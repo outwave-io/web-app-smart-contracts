@@ -30,7 +30,6 @@ contract('OutwaveEvent', () => {
           web3.utils.padLeft(0, 40), //address(0),
           keyPrice, 
           10, // num keys
-          1,
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
         let receipt = await tx.wait()
@@ -126,7 +125,6 @@ contract('OutwaveEvent', () => {
           tokenDai.address,
           keyPrice, 
           10, // num keys
-          1,
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
         )
         let receipt = await tx.wait()
