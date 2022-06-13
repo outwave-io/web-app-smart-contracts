@@ -65,7 +65,7 @@ contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
 
     function onKeyPurchased(
         uint pricePaid
-    ) external override{
+    ) external {
         IPublicLockV10 lock = IPublicLockV10(msg.sender);
         uint fee = pricePaid - ((98 * pricePaid) / 100);
         address tokenadd = lock.tokenAddress();

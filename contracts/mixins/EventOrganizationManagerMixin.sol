@@ -61,11 +61,12 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri
+        string memory baseTokenUri,
+        bytes32 lockId
     ) private lockAreEnabled returns (address) {
         address result = _createLock(tokenAddress, keyprice, numberOfKey, name);
         IPublicLock(result).setBaseTokenURI(baseTokenUri);
-        _eventLockRegister(msg.sender, eventId, result);
+        _eventLockRegister(msg.sender, eventId, result, lockId);
         return result;
     }
 
@@ -87,7 +88,8 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri
+        string memory baseTokenUri,
+        bytes32 lockId
     )
         public override
         lockAreEnabled
@@ -101,7 +103,8 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
             tokenAddress,
             keyprice,
             numberOfKey,
-            baseTokenUri
+            baseTokenUri,
+            lockId
         );
         emit EventCreated(msg.sender, eventId);
         return result;
@@ -124,7 +127,8 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri
+        string memory baseTokenUri,
+        bytes32 lockId
     )
         public override
         onlyEventOwner(eventId)
@@ -139,7 +143,8 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
                 tokenAddress,
                 keyprice,
                 numberOfKey,
-                baseTokenUri
+                baseTokenUri,
+                lockId
             );
     }
 

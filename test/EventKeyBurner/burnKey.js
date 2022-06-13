@@ -39,7 +39,8 @@ contract('KeyBurner', (accounts) => {
           web3.utils.padLeft(0, 40), // address(0) 
           web3.utils.toWei('0.0001', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
       await tx.wait()
 
@@ -128,7 +129,9 @@ contract('KeyBurner', (accounts) => {
           web3.utils.padLeft(0, 40), // address(0) 
           web3.utils.toWei('0.0001', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
+
         )
       await tx1.wait()
 
@@ -148,7 +151,8 @@ contract('KeyBurner', (accounts) => {
           web3.utils.padLeft(0, 40), // address(0) 
           web3.utils.toWei('0.0001', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          web3.utils.padLeft(web3.utils.asciiToHex('3'), 64)
         )
       await tx2.wait()
 
@@ -260,6 +264,7 @@ contract('KeyBurner', (accounts) => {
         // console.log('\naccount balance: ' + balance)
 
         const eventHash = web3.utils.padLeft(Math.trunc(Math.random() * 10000000), 64)
+        const contractHash = web3.utils.padLeft(Math.trunc(Math.random() * 10000000), 64)
 
         const tx = await outwave
           .connect(account)
@@ -269,7 +274,8 @@ contract('KeyBurner', (accounts) => {
             web3.utils.padLeft(0, 40), // address(0) 
             web3.utils.toWei('0.0001', 'ether'),
             100000,
-            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            contractHash
           )
 
         await tx.wait()

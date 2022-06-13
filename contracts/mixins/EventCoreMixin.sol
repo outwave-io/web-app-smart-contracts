@@ -39,7 +39,8 @@ contract EventCoreMixin {
         address indexed owner,
         bytes32 indexed eventId,
         address indexed lockAddress,
-        address outwaveEventAddress
+        address outwaveEventAddress,
+        bytes32 lockId
     );
     event LockUpdated(
         address indexed lockAddress
@@ -142,7 +143,8 @@ contract EventCoreMixin {
     function _eventLockRegister(
         address ownerAddress,
         bytes32 eventId,
-        address entityAdresses
+        address entityAdresses,
+        bytes32 lockId
     ) internal {
         if (_isLockAddressEntity(ownerAddress, entityAdresses))
             revert("CORE_LOCK_ADDRESS_EXISTS");
@@ -160,7 +162,8 @@ contract EventCoreMixin {
             ownerAddress,
             eventId,
             entityAdresses,
-            address(this)
+            address(this),
+            lockId
         );
     }
 

@@ -24,7 +24,8 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
       let receipt = await tx.wait()
       // verify events
@@ -33,6 +34,8 @@ contract('Organization Event Manager', () => {
       assert.equal(eventCreate.args.owner, addr1.address)
 
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
+      assert.equal(evt.args.lockId, web3.utils.padLeft(web3.utils.asciiToHex('2'), 64))
+
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
     })
@@ -81,7 +84,8 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), //address(0) 
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
       await tx.wait()
 
@@ -101,7 +105,8 @@ contract('Organization Event Manager', () => {
             web3.utils.padLeft(0, 40), //address(0) 
             web3.utils.toWei('0.01', 'ether'),
             100000,
-            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
           ),
         'EVENT_ID_ALREADY_EXISTS'
       )
@@ -117,8 +122,9 @@ contract('Organization Event Manager', () => {
             web3.utils.padLeft(0, 40), //address(0) 
             web3.utils.toWei('0.01', 'ether'),
             100000,
-            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
-          ),
+            'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
+            web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
+            ),
         'EVENT_ID_ALREADY_EXISTS'
       )
     })

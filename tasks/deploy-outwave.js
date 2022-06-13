@@ -155,7 +155,8 @@ task('outwave:deploy:createlock', 'create lock and returns address')
       [web3.utils.toWei('0.01', 'ether')],
       [100000],
       [1],
-      ["ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx"]);
+      ["ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx"],
+      web3.utils.padLeft(web3.utils.asciiToHex("2"), 64));
     const receipt = await tx.wait()
     console.log(receipt)
     let evt = receipt.events.find((v) => v.event === 'LockRegistered')
