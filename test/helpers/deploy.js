@@ -1,6 +1,6 @@
 const { ethers, run } = require('hardhat')
 const { tokens } = require('hardlydifficult-ethereum-contracts')
-const deployKeyBurner = require('../../scripts/deployments/outwaveKeyburner')
+const deployKeyBurner = require('../../scripts/deployments/eventKeyburner')
 const PublicLock = artifacts.require('PublicLock')
 const createLockHash = require('./createLockCalldata')
 const Locks = require('../fixtures/locks')
