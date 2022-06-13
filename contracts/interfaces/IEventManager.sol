@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.5.17 <0.9.0;
 
 //https://docs.unlock-protocol.com/unlock/developers/smart-contracts/lock-api#getters

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 // extenal
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -36,7 +36,7 @@ contract OutwaveEvent is
     OEMixinOrganizationApi,
     OEMixinFeePurchaseHook
 {
-    constructor(address unlockaddr, address payable paymentAddr) public {
+    constructor(address unlockaddr, address payable paymentAddr) {
         OEMixinCore._initializeOEMixinCore(unlockaddr, paymentAddr);
     }
 }
