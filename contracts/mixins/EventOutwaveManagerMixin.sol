@@ -45,7 +45,6 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
             erc20.transfer(_outwavePaymentAddress, amount);
         }
         else{
-            uint a = 9;
             _outwavePaymentAddress.transfer(amount);
         }
         emit OutwaveWithdraw(_outwavePaymentAddress, tokenAddr, amount);
