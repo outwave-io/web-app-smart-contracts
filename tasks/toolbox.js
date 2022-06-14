@@ -4,7 +4,9 @@
 const { task } = require('hardhat/config')
 require("@tenderly/hardhat-tenderly");
 
-task('tool:addErc20', 'Adds support for specific USDC token payment. if not ecr20addr is specified, USDC on mumbai is used')
+
+
+task('tool:event:addErc20', 'Adds support for specific USDC token payment. if not ecr20addr is specified, USDC on mumbai is used')
   .addParam('outwaveaddr', 'the outwave facade address')
   .addOptionalParam('erc20addr', 'the ERC20 Address to add')
   .setAction(async ({ outwaveaddr, erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554' }, { ethers }) => {
@@ -15,8 +17,30 @@ task('tool:addErc20', 'Adds support for specific USDC token payment. if not ecr2
     console.log('erc20 address can be used in creating lock: ' + erc20addr);
   });
 
+task('tool:erc20:approve', 'Approve spending')
+  .addParam('lockaddr', 'the address of the contract to approve spending')
+  .addOptionalParam('erc20addr', 'the ERC20 Address to add')
+  .addOptionalParam('amount', 'the amount to approve')
+  .setAction(async ({
+    lockaddr,
+    erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554',
+    amount = 9000000000000000
+  }, { ethers }) => {
 
-task('tool:createEvent', 'create Event and returns lock address')
+    let [user1] = await ethers.getSigners()
+    const abi = [
+      'function approve(address speder, uint256 amount) external returns (bool)',
+      'function balanceOf(address account) external view returns (uint256)'
+    ]
+    let tokenContract = new ethers.Contract(erc20addr, abi, user1);
+
+    await tokenContract.approve(lockaddr, amount)
+    console.log('user balance is ' + await tokenContract.balanceOf(user1.address));
+    console.log('approved max ' + amount + ' for ' + lockaddr);
+  });
+
+
+task('tool:event:createEvent', 'create Event and returns lock address')
   .addParam('outwaveaddr', 'the address of the outwave organization')
   .addOptionalParam('eventid', 'the eventId ')
   .addOptionalParam('lockname', 'the lock name')
@@ -29,12 +53,12 @@ task('tool:createEvent', 'create Event and returns lock address')
     eventid = 'event1',
     lockname = 'New Outwave Lock',
     keytokenaddr = web3.utils.padLeft(0, 40), //address(0)
-    keyprice = web3.utils.toWei('0.01', 'ether'),
+    keyprice = web3.utils.toWei('0.000001', 'ether'),
     keyquantity = 100000,
     keyuri = 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx'
   }, { ethers }) => {
 
-   
+
     let Outwave = await ethers.getContractFactory('OutwaveEvent')
     let outwave = await Outwave.attach(outwaveaddr)
 
@@ -54,7 +78,7 @@ task('tool:createEvent', 'create Event and returns lock address')
     console.log("event created. lock address is: " + evtLock.args.lockAddress)
   })
 
-task('tool:purchase', 'purchase NFT with erc20 from lockaddress')
+task('tool:lock:purchase', 'purchase NFT with erc20 from lockaddress')
   .addParam('lockaddr', 'the address of the outwave organization')
   .addOptionalParam('erc20', 'use erc20 purchase (bool)')
   .addOptionalParam('keydest', 'destinator of the key')
@@ -64,7 +88,7 @@ task('tool:purchase', 'purchase NFT with erc20 from lockaddress')
     keydest
   }, { ethers }) => {
 
-    if(keydest == null){
+    if (keydest == null) {
       let [user1] = await ethers.getSigners()
       keydest = user1.address;
       console.log(keydest)
@@ -72,10 +96,12 @@ task('tool:purchase', 'purchase NFT with erc20 from lockaddress')
 
     let readlock = await ethers.getContractAt('PublicLock', lockaddr)
     const keyprice = await readlock.keyPrice()
-    console.log(`Key price is ${keyprice} `)
+    console.log("keyprice is " + keyprice);
+    console.log("keydest is " + keydest);
+
     let txr3;
 
-    if(erc20){
+    if (erc20) {
       txr3 = await readlock.purchase(
         [keyprice],
         [keydest],
@@ -84,7 +110,7 @@ task('tool:purchase', 'purchase NFT with erc20 from lockaddress')
         [[]]
       )
     }
-    else{
+    else {
       txr3 = await readlock.purchase(
         [],
         [keydest],
@@ -92,12 +118,12 @@ task('tool:purchase', 'purchase NFT with erc20 from lockaddress')
         [web3.utils.padLeft(0, 40)],
         [[]],
         {
-          value : keyprice
+          value: keyprice
         }
       )
     }
 
-    
+
     let receipt = await txr3.wait()
     // not sure why this not works...its the same as unit test
     const evt = receipt.events.find((v) => v.event === 'Transfer')
