@@ -91,16 +91,12 @@ task('tool:lock:purchase', 'purchase NFT with erc20 from lockaddress')
     if (keydest == null) {
       let [user1] = await ethers.getSigners()
       keydest = user1.address;
-      console.log(keydest)
     }
 
     let readlock = await ethers.getContractAt('PublicLock', lockaddr)
     const keyprice = await readlock.keyPrice()
-    console.log("keyprice is " + keyprice);
-    console.log("keydest is " + keydest);
 
     let txr3;
-
     if (erc20) {
       txr3 = await readlock.purchase(
         [keyprice],
