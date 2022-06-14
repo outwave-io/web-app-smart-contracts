@@ -82,7 +82,7 @@ module.exports = {
     timeout: 2000000,
   },
   tenderly: {
-    project: 'project',
-    username: 'rbrivio',
+    project: 'events',
+    username: 'outwave-dao',
   },
 }

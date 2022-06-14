@@ -2,7 +2,7 @@
 // const { ethers, web3 } = require('hardhat')
 // const { reverts } = require('truffle-assertions')
 
-// const keyPrice = web3.utils.toWei('0.01', 'ether')
+// const keyPrice = web3.utils.toWei('1', 'ether')
 
 // contract('EventOutwaveManager', () => {
 
@@ -13,13 +13,17 @@
 //     let publiclock
 //     let user2
 //     let user3
-//     let eventId = web3.utils.padLeft(web3.utils.asciiToHex('1'), 64);
+//     let eventId = web3.utils.padLeft(web3.utils.asciiToHex('1'), 64)
+//     let randomWallet = ethers.Wallet.createRandom()
 
 //     before(async () => {
 //       let addresses = await require('../helpers/deploy').deployUnlock('10')
 //       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
 //       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
 //         ;[owner, proxyOwner, eventOwner, user2, user3] = await ethers.getSigners()
+
+//       await outwave.updateOutwavePaymentAddress(randomWallet);
+
 
 //       const tx = await outwave
 //         .connect(eventOwner)
@@ -36,14 +40,10 @@
 //       // verify events
 //       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
 //       lockAddress = evt.args.lockAddress
-//       assert(lockAddress)
 //       let PublicLock = await ethers.getContractFactory('PublicLock')
 //       publiclock = await PublicLock.attach(lockAddress)
 
-//     })
-
-//     it('should allow user (user2) to actually purchase in native token', async () => {
-
+//       // make a purchase
 //       await publiclock.connect(user2).purchase(
 //         [keyPrice],
 //         [user2.address],
@@ -54,10 +54,27 @@
 //           value: keyPrice
 //         }
 //       )
-//       assert.isAbove(parseInt(await web3.eth.getBalance(lockAddress)), 0)
-//       assert.isBelow(parseInt(await web3.eth.getBalance(lockAddress)), parseInt(keyPrice))
+//     })
+
+//     it('should allow owner to withdraw small quantity', async () => {
+//         const txt = await outwave.outwaveWithdraw(web3.utils.padLeft(0, 40), 100);
+//         const receipt = txt.wait();
+//         let evt = receipt.events.find((v) => v.event === 'OutwaveWithdraw')
+//         let beneficiaryAddr = evt.args.beneficiaryAddr
+//         let tokenAddr = evt.args.tokenAddr
+//         let amount = evt.args.amount
+//         assert(lockAddress)
+//         assert(tokenAddr)
+//         assert(amount)
 
 //     })
+
+//     it('should allow owner to withdraw all remaing quantity', async () => {
+//         const txt = await outwave.outwaveWithdraw(web3.utils.padLeft(0, 40), await web3.eth.getBalance(outwave));
+//         const receipt = txt.wait();
+//     })
+
+
 
 //     it('shuold NOT allow withdraw to user that is not event owner (user3)', async () => {
 //       await reverts(
@@ -241,7 +258,6 @@
 //         'USER_NOT_OWNER'
 //       )
 //     })
-
 //   })
 
 // })

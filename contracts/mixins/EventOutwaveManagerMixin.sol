@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "./EventCoreMixin.sol";
 
 /*
@@ -12,6 +14,7 @@ import "./EventCoreMixin.sol";
 contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
 
     event PaymentReceived(address, uint);
+    event OutwaveWithdraw(address beneficiaryAddr, address tokenAddr, uint amount);
  
     // allows the creations of public locks that will use specific erc20 token
     function erc20PaymentTokenAdd (address erc20addr) public onlyOwner{
@@ -34,13 +37,19 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _outwavePaymentAddress = newPaymentAddress;
     }
 
-    function outwaveWithdraw() public onlyOwner {
-        _outwavePaymentAddress.transfer(address(this).balance);
-    }
+    function outwaveWithdraw(address tokenAddr, uint amount) public onlyOwner {
 
-    function outwaveErc20Withdraw() public onlyOwner {
-        // todo
-       // _outwavePaymentAddress.transfer(address(this).balance);
+        if(tokenAddr != address(0)){
+            //todo: shall we use safeerc20upgradable?
+            IERC20 erc20 = IERC20(tokenAddr);
+            erc20.transfer(_outwavePaymentAddress, amount);
+        }
+        else{
+            uint a = 9;
+            _outwavePaymentAddress.transfer(amount);
+        }
+        emit OutwaveWithdraw(_outwavePaymentAddress, tokenAddr, amount);
+
     }
 
     function outwaveUpdateUnlockFactory(address newUnlockAddr)
