@@ -282,4 +282,16 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
     ) public override onlyLockOwner(lockAddress) {
         IPublicLock(lockAddress).setBaseTokenURI(baseTokenURI);
     }
+
+    /**
+        @notice change the max keys per address (default 1). Check unlock's Public Lock documentation for more info
+        @param lockAddress the address of the lock 
+        @param maxKeysPerAddress the max keys per address
+     */
+    function eventLockSetMaxKeysPerAddress(
+        address lockAddress,
+        uint256 maxKeysPerAddress
+    ) public override onlyLockOwner(lockAddress) {
+        IPublicLock(lockAddress).setMaxKeysPerAddress(maxKeysPerAddress);
+    }
 }

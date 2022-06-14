@@ -13,51 +13,51 @@ contract('EventPurchaseHook', () => {
     let user1
     let publiclock
     let randomWallet = ethers.Wallet.createRandom()
-    
+
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      ;[owner, proxyOwner, user1, user2] = await ethers.getSigners()
+        ;[owner, proxyOwner, user1, user2] = await ethers.getSigners()
 
       await outwave.updateOutwavePaymentAddress(randomWallet.address) //set dao payment address
 
-        const tx = await outwave
+      const tx = await outwave
         .connect(user1)
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           'name',
           web3.utils.padLeft(0, 40), //address(0),
-          keyPrice, 
+          keyPrice,
           10, // num keys
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
-        let receipt = await tx.wait()
-        // verify events
-        let evt = receipt.events.find((v) => v.event === 'LockRegistered')
-        lockAddress = evt.args.lockAddress
-        assert(lockAddress)
+      let receipt = await tx.wait()
+      // verify events
+      let evt = receipt.events.find((v) => v.event === 'LockRegistered')
+      lockAddress = evt.args.lockAddress
+      assert(lockAddress)
     })
 
 
     it('should create an actual Public Lock using native token, returning the correct tokenAddress', async () => {
       let PublicLock = await ethers.getContractFactory('PublicLock')
       publiclock = await PublicLock.attach(lockAddress)
-      assert.equal(await publiclock.tokenAddress(),  web3.utils.padLeft(0, 40))
+      assert.equal(await publiclock.tokenAddress(), web3.utils.padLeft(0, 40))
     })
 
     it('should create an smart contract implementing IEventLock, returnig the correct tokenAddress', async () => {
       let readlock = await ethers.getContractAt('IEventLock', lockAddress)
-      assert.equal(await readlock.tokenAddress(),  web3.utils.padLeft(0, 40))
+      assert.equal(await readlock.tokenAddress(), web3.utils.padLeft(0, 40))
     })
 
     it('should lock have 0 native token Balance', async () => {
-      assert.equal(await web3.eth.getBalance(publiclock.address),  0);
+      assert.equal(await web3.eth.getBalance(publiclock.address), 0);
     })
 
     it('should dao have some native token', async () => {
-      assert.equal(await web3.eth.getBalance(randomWallet.address),  0);
+      assert.equal(await web3.eth.getBalance(randomWallet.address), 0);
     })
 
     it('should allow user (user2) to actually purchase in native token', async () => {
@@ -69,7 +69,7 @@ contract('EventPurchaseHook', () => {
         [web3.utils.padLeft(0, 40)],
         [[]],
         {
-          value : keyPrice
+          value: keyPrice
         }
       )
 
@@ -80,12 +80,12 @@ contract('EventPurchaseHook', () => {
     })
 
     it('lock should have balance', async () => {
-      assert.isAbove(parseInt(await  web3.eth.getBalance(publiclock.address)), 0)
-      assert.isBelow(parseInt(await  web3.eth.getBalance(publiclock.address)), parseInt(keyPrice))
+      assert.isAbove(parseInt(await web3.eth.getBalance(publiclock.address)), 0)
+      assert.isBelow(parseInt(await web3.eth.getBalance(publiclock.address)), parseInt(keyPrice))
     })
     it('dao should have balance', async () => {
-      assert.isAbove(parseInt(await  web3.eth.getBalance(randomWallet.address)), 0)
-      assert.isBelow(parseInt(await  web3.eth.getBalance(randomWallet.address)), parseInt(keyPrice))
+      assert.isAbove(parseInt(await web3.eth.getBalance(randomWallet.address)), 0)
+      assert.isBelow(parseInt(await web3.eth.getBalance(randomWallet.address)), parseInt(keyPrice))
     })
     it('should user have valid keys', async () => {
       assert.isTrue(await publiclock.getHasValidKey(user2.address))
@@ -107,40 +107,40 @@ contract('EventPurchaseHook', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      ;[owner, proxyOwner, user1, user2, daoUser] = await ethers.getSigners()
-      ;[tokenDai] =
-        await require('../helpers/deploy').deployErc20Tokens(
-          owner,
-          proxyOwner
-        )
-        await outwave.erc20PaymentTokenAdd(tokenDai.address) //allow the erc20 
-        await outwave.updateOutwavePaymentAddress(daoUser.address) //set dao payment address
+        ;[owner, proxyOwner, user1, user2, daoUser] = await ethers.getSigners()
+        ;[tokenDai] =
+          await require('../helpers/deploy').deployErc20Tokens(
+            owner,
+            proxyOwner
+          )
+      await outwave.erc20PaymentTokenAdd(tokenDai.address) //allow the erc20 
+      await outwave.updateOutwavePaymentAddress(daoUser.address) //set dao payment address
 
-        await tokenDai.mint(user2.address, keyPrice , { from: owner.address });
+      await tokenDai.mint(user2.address, keyPrice, { from: owner.address });
 
-        const tx = await outwave
+      const tx = await outwave
         .connect(user1)
         .eventCreate(
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
           'name',
           tokenDai.address,
-          keyPrice, 
+          keyPrice,
           10, // num keys
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
-        let receipt = await tx.wait()
-        // verify events
-        let evt = receipt.events.find((v) => v.event === 'LockRegistered')
-        lockAddress = evt.args.lockAddress
-        assert(lockAddress)
+      let receipt = await tx.wait()
+      // verify events
+      let evt = receipt.events.find((v) => v.event === 'LockRegistered')
+      lockAddress = evt.args.lockAddress
+      assert(lockAddress)
 
-        await tokenDai.approve(lockAddress, keyPrice, {
-          from: user2.address,
-        })
+      await tokenDai.approve(lockAddress, keyPrice, {
+        from: user2.address,
+      })
 
-        balance = await tokenDai.balanceOf(user2.address);
-        assert.equal(balance.toString(),  keyPrice);
+      balance = await tokenDai.balanceOf(user2.address);
+      assert.equal(balance.toString(), keyPrice);
     })
 
 
@@ -156,11 +156,11 @@ contract('EventPurchaseHook', () => {
     })
 
     it('should lock have 0 ERC20 Balance', async () => {
-      assert.equal(await tokenDai.balanceOf(publiclock.address),  0);
+      assert.equal(await tokenDai.balanceOf(publiclock.address), 0);
     })
 
     it('should lock have 0 ERC20 Balance', async () => {
-      assert.equal(await tokenDai.balanceOf(daoUser.address),  0);
+      assert.equal(await tokenDai.balanceOf(daoUser.address), 0);
     })
 
     it('should allow user (user2) to actually purchase in ERC20 token', async () => {

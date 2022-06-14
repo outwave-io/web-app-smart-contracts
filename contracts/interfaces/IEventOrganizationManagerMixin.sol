@@ -128,4 +128,13 @@ interface IEventOrganizationManagerMixin {
         string calldata baseTokenURI
     ) external;
 
+    /**
+        @notice change the max keys per address (default 1). Check unlock's Public Lock documentation for more info
+        @param lockAddress the address of the lock 
+        @param maxKeysPerAddress the max keys per address
+     */
+    function eventLockSetMaxKeysPerAddress(
+        address lockAddress,
+        uint256 maxKeysPerAddress
+    ) external;
 }
