@@ -37,20 +37,6 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _outwavePaymentAddress = newPaymentAddress;
     }
 
-    function outwaveWithdraw(address tokenAddr, uint amount) public onlyOwner {
-
-        if(tokenAddr != address(0)){
-            //todo: shall we use safeerc20upgradable?
-            IERC20 erc20 = IERC20(tokenAddr);
-            erc20.transfer(_outwavePaymentAddress, amount);
-        }
-        else{
-            _outwavePaymentAddress.transfer(amount);
-        }
-        emit OutwaveWithdraw(_outwavePaymentAddress, tokenAddr, amount);
-
-    }
-
     function outwaveUpdateUnlockFactory(address newUnlockAddr)
         public
         onlyOwner
