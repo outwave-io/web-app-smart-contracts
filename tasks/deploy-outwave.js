@@ -76,7 +76,11 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     console.log(" ...done! visit https://dashboard.tenderly.co/");
     }
 
-    console.log("[onchain] To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
+    console.log("[onchain] To verify OutwaveEvent on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + receivePaymentAddress + " --network XXXXXXXXXXXXX")
+    console.log("[onchain] To verify EventKeyBurner org on blockchain: yarn verify " + eventKeyburnerAddress + " " + outwave.address + " " + unlockAddress + " --network XXXXXXXXXXXXX")
+    // console.log("[tenderly] To verify on tenderly:")
+    // console.log("--- yarn hardhat tenderly:push OutwaveEvent=" + outwave.address + " Unlock=" + unlockAddress + " EventKeyBurner=" + addressResult + " --network XXXXXXXXXXXXX")
+    // console.log("--- yarn hardhat tenderly:verify OutwaveEvent=" + outwave.address + " Unlock=" + unlockAddress + " EventKeyBurner=" + addressResult + " --network XXXXXXXXXXXXX")
  
   });
 
