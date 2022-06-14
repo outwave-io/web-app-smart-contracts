@@ -51,6 +51,7 @@ task('tool:event:createEvent', 'create Event and returns lock address')
   .setAction(async ({
     outwaveaddr,
     eventid = 'event1',
+    lockId = 'lock1',
     lockname = 'New Outwave Lock',
     keytokenaddr = web3.utils.padLeft(0, 40), //address(0)
     keyprice = web3.utils.toWei('0.000001', 'ether'),
@@ -63,14 +64,17 @@ task('tool:event:createEvent', 'create Event and returns lock address')
     let outwave = await Outwave.attach(outwaveaddr)
 
 
+    const eventHash = web3.utils.padLeft(web3.utils.asciiToHex(eventid), 64);
+    const lockHash = web3.utils.padLeft(web3.utils.asciiToHex(lockId), 64);
     const txEv = await outwave
       .eventCreate(
-        web3.utils.padLeft(web3.utils.asciiToHex(eventid), 64),
+        eventHash,
         lockname,
         keytokenaddr,
         keyprice,
         keyquantity,
-        keyuri
+        keyuri,
+        lockHash
       )
 
     let evRec = await txEv.wait()
@@ -133,97 +137,110 @@ task('tool:lock:purchase', 'purchase NFT with erc20 from lockaddress')
   })
 
 
-task('tool:call:keyburner', 'mint some keys and burn them ??')
+task('tool:keyburner:burn', 'mint some keys and burn them ??')
   .addParam('keyburnaddr', 'the key burner address')
   .addParam('lockaddr', 'the public lock address')
-  .setAction(async ({ keyburnaddr, lockaddr }, { ethers }) => {
-    const [lockOwner, addr1, addr2, outwaveOwner] = await ethers.getSigners();
-
-    const KeyBurner = await ethers.getContractFactory('EventKeyBurner')
-    const keyBurner = KeyBurner.attach(keyburnaddr)
-
-    const outwave = await ethers.getContractAt('OutwaveEvent', await keyBurner.readOutwave())
-    console.log(`outwave instantiated`)
-
-    await outwave.connect(lockOwner).eventSetBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
-    console.log('set new base token uri on public lock')
-
-    // purchase key from lock
-    const publicLock = await ethers.getContractAt('PublicLock', lockaddr)
-    console.log(`public lock instantiated`)
-    const keyPrice = await publicLock.keyPrice()
-    // eslint-disable-next-line no-console
-    console.log(`Key price is ${keyPrice} WEI`)
-
-    const signers = (await ethers.getSigners()).slice(-10)
-
-    for (let index = 0; index < signers.length; index++) {
-      const signer = signers[index]
-      const signerKeyBalance = await publicLock.balanceOf(
-        signer.address
-      )
-      console.log(`Key balance of ${signer.address} is ${signerKeyBalance}`)
-
-      if (signerKeyBalance == 1) continue
-
-      const txPurchase = await publicLock
-        .connect(signer)
-        .purchase(
-          [],
-          [signer.address],
-          [web3.utils.padLeft(0, 40)],
-          [web3.utils.padLeft(0, 40)],
-          [[]],
-          {
-            value: keyPrice,
-          }
-        )
-
-      const txPurRec = await txPurchase.wait()
-      const evt = txPurRec.events.find((v) => v.event === 'Transfer')
-      // const tokenId = evt.args.tokenId
-      // eslint-disable-next-line no-console
-      console.log(`Token ${evt.args.tokenId} minted and sent to ${evt.args.to}`)
-      // eslint-disable-next-line no-console
-      console.log(
-        `Key balance of ${signer.address} is ${await publicLock.balanceOf(
-          signer.address
-        )}`
-      )
-
-      console.log('-----------------------------')
+  .addParam('tokenid', 'the key tokenid')
+  .setAction(async ({ keyburnaddr, lockaddr, tokenid }, { ethers }) => {
+    if (keydest == null) {
+      let [user1] = await ethers.getSigners()
+      keydest = user1.address;
     }
 
-    for (let index = 0; index < signers.length; index++) {
-      const signer = signers[index]
-      const tokenId = await publicLock
-        .connect(signer)
-        .tokenOfOwnerByIndex(signer.address, 0)
+    let readlock = await ethers.getContractAt('PublicLock', lockaddr)
+    const ownerAddress = await readlock.ownerOf(tokenid)
 
-      // approve key trasfer from keyBurner in publickLock
-      await publicLock.connect(signer).approve(keyBurner.address, tokenId)
-      console.log(
-        `One time trasfer of ERC721 '${tokenId}:${publicLock.address}' has been granted to keyBurner ${keyBurner.address}`
-      )
 
-      // burn the token
-      const txBurn = await keyBurner.connect(signer).burnKey(publicLock.address, tokenId)
-      const txBurnRec = await txBurn.wait()
-      const keyBurnEvent = txBurnRec.events.find((v) => v.event === 'KeyBurn')
-      const nftMintEvent = txBurnRec.events.find((v) => v.event === 'Transfer' && v.args.from == web3.utils.padLeft(0, 40))
+    console.log("owner is aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ")
+    console.log(ownerAddress)
 
-      console.log(
-        `Key '${keyBurnEvent.args.tokenId}:${keyBurnEvent.args.lock}' has been burned by keyBurner on behalf of user ${keyBurnEvent.args.from}`
-      )
-      console.log(
-        `User received the OPA NFT #${nftMintEvent.args.tokenId} in return, it's tokenUri is ${await keyBurner.tokenURI(nftMintEvent.args.tokenId)}`
-      )
 
-      const originalKey = await keyBurner.readOriginalKey(nftMintEvent.args.tokenId)
-      console.log('Original Key info:')
-      console.log(originalKey)
 
-      console.log('-----------------------------')
-    }
+    // const KeyBurner = await ethers.getContractFactory('EventKeyBurner')
+    // const keyBurner = KeyBurner.attach(keyburnaddr)
+
+    // const outwave = await ethers.getContractAt('OutwaveEvent', await keyBurner.readOutwave())
+    // console.log(`outwave instantiated`)
+
+    // await outwave.connect(lockOwner).eventSetBaseTokenURI(lockaddr, 'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx/')
+    // console.log('set new base token uri on public lock')
+
+    // // purchase key from lock
+    // const publicLock = await ethers.getContractAt('PublicLock', lockaddr)
+    // console.log(`public lock instantiated`)
+    // const keyPrice = await publicLock.keyPrice()
+    // // eslint-disable-next-line no-console
+    // console.log(`Key price is ${keyPrice} WEI`)
+
+    // const signers = (await ethers.getSigners()).slice(-10)
+
+    // for (let index = 0; index < signers.length; index++) {
+    //   const signer = signers[index]
+    //   const signerKeyBalance = await publicLock.balanceOf(
+    //     signer.address
+    //   )
+    //   console.log(`Key balance of ${signer.address} is ${signerKeyBalance}`)
+
+    //   if (signerKeyBalance == 1) continue
+
+    //   const txPurchase = await publicLock
+    //     .connect(signer)
+    //     .purchase(
+    //       [],
+    //       [signer.address],
+    //       [web3.utils.padLeft(0, 40)],
+    //       [web3.utils.padLeft(0, 40)],
+    //       [[]],
+    //       {
+    //         value: keyPrice,
+    //       }
+    //     )
+
+    //   const txPurRec = await txPurchase.wait()
+    //   const evt = txPurRec.events.find((v) => v.event === 'Transfer')
+    //   // const tokenId = evt.args.tokenId
+    //   // eslint-disable-next-line no-console
+    //   console.log(`Token ${evt.args.tokenId} minted and sent to ${evt.args.to}`)
+    //   // eslint-disable-next-line no-console
+    //   console.log(
+    //     `Key balance of ${signer.address} is ${await publicLock.balanceOf(
+    //       signer.address
+    //     )}`
+    //   )
+
+    //   console.log('-----------------------------')
+    // }
+
+    // for (let index = 0; index < signers.length; index++) {
+    //   const signer = signers[index]
+    //   const tokenId = await publicLock
+    //     .connect(signer)
+    //     .tokenOfOwnerByIndex(signer.address, 0)
+
+    //   // approve key trasfer from keyBurner in publickLock
+    //   await publicLock.connect(signer).approve(keyBurner.address, tokenId)
+    //   console.log(
+    //     `One time trasfer of ERC721 '${tokenId}:${publicLock.address}' has been granted to keyBurner ${keyBurner.address}`
+    //   )
+
+    //   // burn the token
+    //   const txBurn = await keyBurner.connect(signer).burnKey(publicLock.address, tokenId)
+    //   const txBurnRec = await txBurn.wait()
+    //   const keyBurnEvent = txBurnRec.events.find((v) => v.event === 'KeyBurn')
+    //   const nftMintEvent = txBurnRec.events.find((v) => v.event === 'Transfer' && v.args.from == web3.utils.padLeft(0, 40))
+
+    //   console.log(
+    //     `Key '${keyBurnEvent.args.tokenId}:${keyBurnEvent.args.lock}' has been burned by keyBurner on behalf of user ${keyBurnEvent.args.from}`
+    //   )
+    //   console.log(
+    //     `User received the OPA NFT #${nftMintEvent.args.tokenId} in return, it's tokenUri is ${await keyBurner.tokenURI(nftMintEvent.args.tokenId)}`
+    //   )
+
+    //   const originalKey = await keyBurner.readOriginalKey(nftMintEvent.args.tokenId)
+    //   console.log('Original Key info:')
+    //   console.log(originalKey)
+
+    //   console.log('-----------------------------')
+    // }
   })
 /* eslint-enable */
