@@ -43,6 +43,7 @@ task('tool:erc20:approve', 'Approve spending')
 task('tool:event:createEvent', 'create Event and returns lock address')
   .addParam('outwaveaddr', 'the address of the outwave organization')
   .addOptionalParam('eventid', 'the eventId ')
+  .addOptionalParam('lockid', 'the lockid ')
   .addOptionalParam('lockname', 'the lock name')
   .addOptionalParam('keytokenaddr', 'token address')
   .addOptionalParam('keyprice', 'key price')
@@ -51,7 +52,7 @@ task('tool:event:createEvent', 'create Event and returns lock address')
   .setAction(async ({
     outwaveaddr,
     eventid = 'event1',
-    lockId = 'lock1',
+    lockid = 'lock1',
     lockname = 'New Outwave Lock',
     keytokenaddr = web3.utils.padLeft(0, 40), //address(0)
     keyprice = web3.utils.toWei('0.000001', 'ether'),
@@ -65,7 +66,7 @@ task('tool:event:createEvent', 'create Event and returns lock address')
 
 
     const eventHash = web3.utils.padLeft(web3.utils.asciiToHex(eventid), 64);
-    const lockHash = web3.utils.padLeft(web3.utils.asciiToHex(lockId), 64);
+    const lockHash = web3.utils.padLeft(web3.utils.asciiToHex(lockid), 64);
     const txEv = await outwave
       .eventCreate(
         eventHash,
