@@ -48,9 +48,12 @@ $ npx hardhat tool:erc20:approve --lockaddr 0x449dF2567E1E07F0790980D8E8Dd49a2e0
 - user balance is 7999999902
 - approved max 9000000000000000 for 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D
 
-//purchase an NFT directly from lock
+// purchase an NFT directly from lock
 $ npx hardhat tool:lock:purchase --lockaddr 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D  --network mumbai --erc20 true
 - Key balance of 0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877 is 1
+
+// verify lock contracts
+$ npx verify <lockcontractaddress> --network mumbai  
 
 ```
 

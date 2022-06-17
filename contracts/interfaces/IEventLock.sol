@@ -39,6 +39,8 @@ interface IEventLock {
 
     function ownerOf(uint256 tokenId) external view returns (address _owner);
 
+    function approve(address to, uint256 tokenId) external;
+
     function purchase(uint256[] calldata _values,
         address[] calldata _recipients,
         address[] calldata _referrers,
