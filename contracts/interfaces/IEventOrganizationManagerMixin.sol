@@ -86,12 +86,10 @@ interface IEventOrganizationManagerMixin {
         documentation  for more info
         @param lockAddress the address of the lock 
         @param recipients the recipients
-        @param keyManagers the address of the lock 
      */
     function eventGrantKeys(
         address lockAddress,
-        address[] calldata recipients,
-        address[] calldata keyManagers
+        address[] calldata recipients
     ) external;
 
      /**

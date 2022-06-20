@@ -219,23 +219,22 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
         documentation  for more info
         @param lockAddress the address of the lock 
         @param recipients the recipients
-        @param keyManagers the address of the lock 
      */
     function eventGrantKeys(
         address lockAddress,
-        address[] calldata recipients,
-        address[] calldata keyManagers
+        address[] calldata recipients
     ) public override onlyLockOwner(lockAddress) lockAreEnabled {
         uint256[] memory expirationTimestamps = new uint256[](
             recipients.length
         );
-        for (uint256 i = 0; i < recipients.length - 1; i++) {
+        for (uint256 i = 0; i < recipients.length; i++) {
             expirationTimestamps[i] = MAX_INT;
         }
+        address[] memory addressArray = new address[](recipients.length);
         IPublicLock(lockAddress).grantKeys(
             recipients,
             expirationTimestamps,
-            keyManagers
+            addressArray
         );
     }
 
