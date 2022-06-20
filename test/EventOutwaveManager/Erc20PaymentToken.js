@@ -2,7 +2,7 @@ const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
 
-contract('EventOutwaveManager', () => {
+contract('Event Outwave Manager', () => {
   describe('Set and Get Erc20PaymentToken / behavior ', () => {
     let outwave
     let tokenDai

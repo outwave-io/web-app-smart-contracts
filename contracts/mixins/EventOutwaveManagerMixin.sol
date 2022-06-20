@@ -26,6 +26,7 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _erc20PaymentTokenRemove(erc20addr);
     }
 
+    // returs true if an erc20 can be used for new locks
     function erc20PaymentTokenIsAllowed(address addr) public view returns (bool) {
         return _erc20PaymentTokenIsAllowed(addr);
     }
@@ -35,6 +36,12 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         onlyOwner
     {
         _outwavePaymentAddress = newPaymentAddress;
+    }
+
+    function getOutwavePaymentAddress()
+        public view returns(address)
+    {
+        return _outwavePaymentAddress;
     }
 
     function outwaveUpdateUnlockFactory(address newUnlockAddr)
