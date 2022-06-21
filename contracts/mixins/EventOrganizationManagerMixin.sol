@@ -47,6 +47,7 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
 
         address newlocladd = IUnlock(_unlockAddr).createUpgradeableLock(data);
         IPublicLock lock = IPublicLock(newlocladd);
+        lock.setOwner(msg.sender);
         lock.setEventHooks(address(this), address(0), address(0), address(0));
         return newlocladd;
     }
