@@ -156,15 +156,15 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
      */
     function eventDisable(
         bytes32 eventId
-    ) public override {
+    ) public override onlyEventOwner(eventId) {
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
-                //eventLockDisable(userLocks[i].lockAddr);
-                require(
-                    _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
-                    "USER_NOT_OWNER"
-                );
+                // //eventLockDisable(userLocks[i].lockAddr);
+                // require(
+                //     _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
+                //     "USER_NOT_OWNER"
+                // );
                 IPublicLock lock = IPublicLock(userLocks[i].lockAddr);
                 lock.setMaxNumberOfKeys(lock.totalSupply());
                 _eventLockDeregister(
@@ -294,4 +294,14 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
     ) public override onlyLockOwner(lockAddress) {
         IPublicLock(lockAddress).setMaxKeysPerAddress(maxKeysPerAddress);
     }
+
+    //   /**
+    //     @notice upgrades and event to a new event manager
+    //     @param eventId the id of the event 
+    //     @param newEventApiAddress the new address of the event manager. Only authorized address can be used
+    //  */
+    // function eventUpgradeApi(
+    //      bytes32 eventId,
+    //      address newEventApiAddress
+    // ) external;
 }

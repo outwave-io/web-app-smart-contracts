@@ -15,7 +15,7 @@ contract('Organization Event Manager', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[, addr1, addr2, addr3] = await ethers.getSigners()
+      ;[, addr1, addr2, addr3] = await ethers.getSigners()
 
       const tx = await outwave.connect(addr1).eventCreate(
         web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
@@ -109,19 +109,19 @@ contract('Organization Event Manager', () => {
   })
   describe('disable event lock / security', () => {
     let outwave
-    let lockAddress // the address of the lock
     let owner
     let addr1 // user 1
     let addr2 // user 2
+    let eventId = web3.utils.padLeft(web3.utils.asciiToHex('1'), 64)
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[owner, addr1, addr2] = await ethers.getSigners()
+      ;[owner, addr1, addr2] = await ethers.getSigners()
 
-      const tx = await outwave.connect(addr1).eventCreate(
-        web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+      await outwave.connect(addr1).eventCreate(
+        eventId,
         'name',
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
@@ -129,36 +129,17 @@ contract('Organization Event Manager', () => {
         'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
-      await tx.wait()
-
-      let receipt = await tx.wait()
-      let evt = receipt.events.find((v) => v.event === 'LockRegistered')
-      lockAddress = evt.args.lockAddress
     })
 
-    it('should NOT allow updating from a different account (not owner)', async () => {
+    it('should NOT allow disabling from a different account (not owner)', async () => {
       await reverts(
-        outwave
-          .connect(addr2)
-          .eventLockUpdate(
-            lockAddress,
-            'updatedName',
-            web3.utils.toWei('1', 'ether'),
-            ethers.BigNumber.from(3000000)
-          ),
+        outwave.connect(addr2).eventDisable(eventId),
         'USER_NOT_OWNER'
       )
     })
     it('should NOT allow updating even from outwave owner (not owner)', async () => {
       await reverts(
-        outwave
-          .connect(owner)
-          .eventLockUpdate(
-            lockAddress,
-            'updatedName',
-            web3.utils.toWei('1', 'ether'),
-            ethers.BigNumber.from(3000000)
-          ),
+        outwave.connect(owner).eventDisable(eventId),
         'USER_NOT_OWNER'
       )
     })
