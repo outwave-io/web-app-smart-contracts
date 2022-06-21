@@ -54,20 +54,6 @@ contract('Organization Event Manager', () => {
       assert.equal(await readlock.name(), 'name')
     })
   })
-
-  // TODO
-  // describe('create event / behavior / single event with multiple locks', () => {
-  //   let addr1
-  //   let addr2
-
-  //   before(async () => {
-  //     let addresses = await require('../helpers/deploy').deployUnlock('10')
-  //     let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
-  //       ;[, addr1, addr2] = await ethers.getSigners()
-
-  //   })
-
-  // })
   describe('create event / security', () => {
     let outwave
     let lockAddress // the address of the lock
