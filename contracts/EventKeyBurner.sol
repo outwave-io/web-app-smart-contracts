@@ -89,7 +89,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         (bool deployed, , ) = _unlock.locks(parent);
         IPublicLock parentLock = IPublicLock(parent);
         require(
-            deployed && parentLock.isOwner(address(_outwave)),
+            deployed && parentLock.isLockManager(address(_outwave)),
             "NOT_PUBLIC_LOCK"
         );
 
