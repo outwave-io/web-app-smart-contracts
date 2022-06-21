@@ -135,4 +135,14 @@ interface IEventOrganizationManagerMixin {
         address lockAddress,
         uint256 maxKeysPerAddress
     ) external;
+
+    // /**
+    //     @notice upgrades and event to a new event manager
+    //     @param eventId the id of the event 
+    //     @param newEventApiAddress the new address of the event manager. Only authorized address can be used
+    //  */
+    // function eventUpgradeApi(
+    //      bytes32 eventId,
+    //      address newEventApiAddress
+    // ) external;
 }
