@@ -8,6 +8,7 @@ import "hardhat/console.sol";
  * @author Miro Radenovic (miro@demind.io)
  * @dev The Core of the Outwave Event provides access to common properties (fields) accessed by other mixins. Child mixins can access
  * to internal fields, only with proper get and set function, marked as internals. Direct access to fields is forbidden
+   EventCoore shall not exposes any public methods.
  */
 contract EventCoreMixin {
     struct OrganizationData {
@@ -21,6 +22,7 @@ contract EventCoreMixin {
         bytes32 eventId;    
         address lockAddr;
         bool exists;
+        bytes32 lockId; //todo
     }
 
     // EVENTS
@@ -51,6 +53,8 @@ contract EventCoreMixin {
         bytes32 indexed eventId,
         address indexed lockAddress
     );
+
+    mapping(address => bool) internal _upgradableEventManagers;
 
 
 
@@ -151,7 +155,8 @@ contract EventCoreMixin {
         Lock memory newLock = Lock({
             eventId: eventId,
             exists: true,
-            lockAddr: entityAdresses
+            lockAddr: entityAdresses,
+            lockId : lockId
         });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[

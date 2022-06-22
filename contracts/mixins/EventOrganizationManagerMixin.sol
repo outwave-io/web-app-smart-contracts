@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 
-import "./EventCoreMixin.sol";
+import "./EventTransferableMixin.sol";
 import "../interfaces/IEventOrganizationManagerMixin.sol";
 import "hardhat/console.sol";
 
@@ -14,7 +14,7 @@ import "hardhat/console.sol";
     @author Miro Radenovic | Demind.io
     @title Provides API's to organizations that creats events
  */
-contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationManagerMixin {
+contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganizationManagerMixin {
     /* unlock */
 
     uint256 MAX_INT =
@@ -295,13 +295,36 @@ contract EventOrganizationManagerMixin is EventCoreMixin, IEventOrganizationMana
         IPublicLock(lockAddress).setMaxKeysPerAddress(maxKeysPerAddress);
     }
 
-    //   /**
-    //     @notice upgrades and event to a new event manager
-    //     @param eventId the id of the event 
-    //     @param newEventApiAddress the new address of the event manager. Only authorized address can be used
-    //  */
-    // function eventUpgradeApi(
-    //      bytes32 eventId,
-    //      address newEventApiAddress
-    // ) external;
+      /**
+        @notice upgrades and event to a new event manager
+        @param eventId the id of the event 
+        @param newEventApiAddress the new address of the event manager. Only authorized address can be used
+        @dev this will basically transfert the struct containing the mapping of user and events, and reassign 
+            locks managers to new event manager
+
+
+    - Caso d’uso: upgrade delle api per la gesatione di un publiclock.Un utente deve poter chiamare upgradeLockApi(addressLock, newApiAddress)
+        per poter avere accesso alle nuove api. Questo implica però che deve essere fatto su un evento (upgradeEventApi(eventId, new lockaddress)), che 
+    - Trasferisce l’ownership ad un altro apiAddress
+    - Sposta la collezione di struct per registrare. Questo indica che deve poter essere chiamata anche da fuori da uno o
+         più indirizzi registrati.
+    - Per ogni eventmanager deve poter essere possibile  inserire una listache indirizzi che permettano alcune operazioni di registrazione e deregistrazione. Solo l’owner del contratto può essere colui che registra questi indirizzi
+
+     */
+    function eventUpgradeApi(
+         bytes32 eventId,
+         address newEventApiAddress
+    ) public override onlyEventOwner(eventId) {
+        require(upgradableEventManagersIsAllowed(newEventApiAddress), "UNAUTHORIZED");
+        IEventTransferableMixin eventTransfert = IEventTransferableMixin(newEventApiAddress);
+        Lock[] memory userLocks = eventLocksGetAll(eventId);
+        for (uint256 index = 0; index < userLocks.length; index++) {
+            eventLockDeregister(msg.sender,eventId,userLocks[index].lockAddr);
+            eventTransfert.eventLockRegister(msg.sender, eventId, userLocks[index].lockAddr, userLocks[index].lockId);
+            IPublicLock lock = IPublicLock(userLocks[index].lockAddr);
+            lock.addLockManager(newEventApiAddress);
+            lock.renounceLockManager();
+                // todo: shuold we emit?
+        }    
+    }
 }
