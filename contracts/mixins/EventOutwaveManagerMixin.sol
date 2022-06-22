@@ -55,17 +55,6 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _allowLockCreation = allowLockCreation;
     }
 
-    function outwaveAddNewOutwaveApi(address newoutWaveAddr) public onlyOwner {
-        //todo
-    }
-
-    function outwaveRemoveNewOutwaveApi(address outwaveEventAddr)
-        public
-        onlyOwner
-    {
-        //todo
-    }
-
     receive() external payable {
         emit PaymentReceived(msg.sender, msg.value);
     }
