@@ -112,24 +112,24 @@ contract EventCoreMixin {
         _allowedErc20Tokens[address(0)] = true;  // allow creation of lock with payment in native token
     }
 
-    /* manages organization lock collection */
+    // /* manages organization lock collection */
 
-    function _registerNewOrganization(
-        address ownerAddress,
-        address entityAddress
-    ) internal {
-        if (_userOrganizations[ownerAddress].exists) revert();
-        _userOrganizations[ownerAddress].exists = true;
-        _userOrganizations[ownerAddress].organizationAddress = entityAddress;
-    }
+    // function _registerNewOrganization(
+    //     address ownerAddress,
+    //     address entityAddress
+    // ) internal {
+    //     if (_userOrganizations[ownerAddress].exists) revert();
+    //     _userOrganizations[ownerAddress].exists = true;
+    //     _userOrganizations[ownerAddress].organizationAddress = entityAddress;
+    // }
 
-    function _isOrganizationAddressEntity(address ownerAddress)
-        internal
-        view
-        returns (bool isIndeed)
-    {
-        return _userOrganizations[ownerAddress].exists;
-    }
+    // function _isOrganizationAddressEntity(address ownerAddress)
+    //     internal
+    //     view
+    //     returns (bool isIndeed)
+    // {
+    //     return _userOrganizations[ownerAddress].exists;
+    // }
 
     function _isLockAddressEntity(address ownerAddress, address entityAddress)
         internal
