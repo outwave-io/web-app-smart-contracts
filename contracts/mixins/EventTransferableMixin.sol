@@ -4,29 +4,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./EventCoreMixin.sol";
+import "../interfaces/IEventTransferable.sol";
 
 /*
 
 */
 
-interface IEventTransferableMixin {
-
-    function eventLockRegister(
-        address ownerAddress,
-        bytes32 eventId,
-        address entityAdresses,
-        bytes32 lockId
-     ) external;
-
-    function eventLockDeregister(
-        address ownerAddress,
-        bytes32 eventId,
-        address entityAddress
-    ) external; 
-}
 
 
-contract EventTransferableMixin is EventCoreMixin, Ownable, IEventTransferableMixin {
+
+contract EventTransferableMixin is EventCoreMixin, Ownable, IEventTransferable {
 
     function upgradableEventManagersAdd(address newAddress) public onlyOwner{
         // todo: validate via interface

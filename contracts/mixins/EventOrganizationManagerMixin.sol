@@ -8,6 +8,7 @@ import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/Pub
 
 import "./EventTransferableMixin.sol";
 import "../interfaces/IEventOrganizationManagerMixin.sol";
+import "../interfaces/IEventTransferable.sol";
 import "hardhat/console.sol";
 
 /**
@@ -316,7 +317,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
          address newEventApiAddress
     ) public override onlyEventOwner(eventId) {
         require(upgradableEventManagersIsAllowed(newEventApiAddress), "UNAUTHORIZED_DESTINATION_ADDRESS");
-        IEventTransferableMixin eventTransfert = IEventTransferableMixin(newEventApiAddress);
+        IEventTransferable eventTransfert = IEventTransferable(newEventApiAddress);
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 index = 0; index < userLocks.length; index++) {
             _eventLockDeregister(msg.sender,eventId,userLocks[index].lockAddress);
