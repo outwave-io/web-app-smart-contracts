@@ -76,13 +76,11 @@ contract EventCoreMixin {
     }
 
     modifier onlyLockOwner(address lock) {
-        // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
         require(_isUserLockOwner(msg.sender, lock), "USER_NOT_LOCK_OWNER"); //fast and 0 gas checks
         _;
     }
 
     modifier onlyEventOwner(bytes32 eventId) {
-        // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
         require(_eventIds[eventId] == msg.sender, "USER_NOT_EVENT_OWNER"); //fast and 0 gas checks
         _;
     }
@@ -100,12 +98,6 @@ contract EventCoreMixin {
         return (_userOrganizations[user].locksEntity[lock].exists);
     }
 
-    // function onlyLockEntityOwner2(Lock memory lock) {
-    //   // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
-    //   require(_userOrganizations[msg.sender].locksEntity[lock.lockAddr].exists, "USER_NOT_OWNER");  //fast and 0 gas checks
-    //   _;
-    // }
-
     function _initializeOEMixinCore(
         address unlockaddr,
         address payable paymentAddr
@@ -115,25 +107,6 @@ contract EventCoreMixin {
         _allowLockCreation = true;
         _allowedErc20Tokens[address(0)] = true;  // allow creation of lock with payment in native token
     }
-
-    // /* manages organization lock collection */
-
-    // function _registerNewOrganization(
-    //     address ownerAddress,
-    //     address entityAddress
-    // ) internal {
-    //     if (_userOrganizations[ownerAddress].exists) revert();
-    //     _userOrganizations[ownerAddress].exists = true;
-    //     _userOrganizations[ownerAddress].organizationAddress = entityAddress;
-    // }
-
-    // function _isOrganizationAddressEntity(address ownerAddress)
-    //     internal
-    //     view
-    //     returns (bool isIndeed)
-    // {
-    //     return _userOrganizations[ownerAddress].exists;
-    // }
 
     function _isLockAddressEntity(address ownerAddress, address entityAddress)
         internal
