@@ -94,7 +94,7 @@ contract('Organization Event Manager', () => {
             web3.utils.toWei('1', 'ether'),
             ethers.BigNumber.from(3000000)
           ),
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
     it('should NOT allow updating even from outwave owner (not owner)', async () => {
@@ -107,7 +107,7 @@ contract('Organization Event Manager', () => {
             web3.utils.toWei('1', 'ether'),
             ethers.BigNumber.from(3000000)
           ),
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
   })

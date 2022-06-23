@@ -134,13 +134,13 @@ contract('Organization Event Manager', () => {
     it('should NOT allow disabling from a different account (not owner)', async () => {
       await reverts(
         outwave.connect(addr2).eventDisable(eventId),
-        'USER_NOT_OWNER'
+        'USER_NOT_EVENT_OWNER'
       )
     })
     it('should NOT allow updating even from outwave owner (not owner)', async () => {
       await reverts(
         outwave.connect(owner).eventDisable(eventId),
-        'USER_NOT_OWNER'
+        'USER_NOT_EVENT_OWNER'
       )
     })
   })

@@ -149,7 +149,7 @@ contract('Organization Event Manager', () => {
     it('shuold NOT allow withdraw to user that is not event owner (user3)', async () => {
       await reverts(
         outwave.connect(user3).withdraw(lockAddress, 1), //erc20, withdraw al
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
 
@@ -232,13 +232,13 @@ contract('Organization Event Manager', () => {
     it('shuold NOT allow withdraw to user that is not event owner (user3)', async () => {
       await reverts(
         outwave.connect(user3).withdraw(lockAddress, 1), //erc20, withdraw al
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
     it('shuold NOT allow withdraw to owner if different lock address is provided', async () => {
       await reverts(
         outwave.connect(eventOwner).withdraw(web3.utils.padLeft(0, 40), 1), //erc20, withdraw al
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
 

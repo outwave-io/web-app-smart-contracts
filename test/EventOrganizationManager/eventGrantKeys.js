@@ -84,7 +84,7 @@ contract('Organization Event Manager', () => {
         outwave
           .connect(addr2)
           .eventGrantKeys(lockAddress, [addr2.address, addr3.address]),
-        'USER_NOT_OWNER'
+        'USER_NOT_LOCK_OWNER'
       )
     })
 

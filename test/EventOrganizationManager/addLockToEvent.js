@@ -91,7 +91,7 @@ contract('Organization Event Manager', () => {
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           web3.utils.padLeft(web3.utils.asciiToHex('2'), 64) // same contract id
         ),
-        'USER_NOT_OWNER'
+        'USER_NOT_EVENT_OWNER'
       )
     })
 
@@ -106,7 +106,7 @@ contract('Organization Event Manager', () => {
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64) // same contract id
         ),
-        'USER_NOT_OWNER'
+        'USER_NOT_EVENT_OWNER'
       )
     })
 
@@ -121,7 +121,7 @@ contract('Organization Event Manager', () => {
           'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64) // different contract id
         ),
-        'USER_NOT_OWNER'
+        'USER_NOT_EVENT_OWNER'
       )
     })
   })
