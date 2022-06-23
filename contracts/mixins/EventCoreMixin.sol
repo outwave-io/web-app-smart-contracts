@@ -20,7 +20,7 @@ contract EventCoreMixin {
 
     struct Lock {
         bytes32 eventId;    
-        address lockAddr;
+        address lockAddress;
         bool exists;
         bytes32 lockId; //todo
     }
@@ -51,7 +51,8 @@ contract EventCoreMixin {
     event LockDeregistered(
         address indexed owner,
         bytes32 indexed eventId,
-        address indexed lockAddress
+        address indexed lockAddress,
+        bytes32 lockId
     );
 
     mapping(address => bool) internal _upgradableEventManagers;
@@ -77,13 +78,13 @@ contract EventCoreMixin {
 
     modifier onlyLockOwner(address lock) {
         // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
-        require(_isUserLockOwner(msg.sender, lock), "USER_NOT_OWNER"); //fast and 0 gas checks
+        require(_isUserLockOwner(msg.sender, lock), "USER_NOT_LOCK_OWNER"); //fast and 0 gas checks
         _;
     }
 
     modifier onlyEventOwner(bytes32 eventId) {
         // require(_userOrganizations[msg.sender].exists, "ORGANIZATION_REQUIRED");
-        require(_eventIds[eventId] == msg.sender, "USER_NOT_OWNER"); //fast and 0 gas checks
+        require(_eventIds[eventId] == msg.sender, "USER_NOT_EVENT_OWNER"); //fast and 0 gas checks
         _;
     }
 
@@ -155,14 +156,12 @@ contract EventCoreMixin {
         Lock memory newLock = Lock({
             eventId: eventId,
             exists: true,
-            lockAddr: entityAdresses,
+            lockAddress: entityAdresses,
             lockId : lockId
         });
         _userOrganizations[ownerAddress].locks.push(newLock);
-        _userOrganizations[ownerAddress].locksEntity[
-            entityAdresses
-        ] = newLock;
-        _eventIds[eventId] = msg.sender;
+        _userOrganizations[ownerAddress].locksEntity[entityAdresses] = newLock;
+        _eventIds[eventId] = ownerAddress;
         emit LockRegistered(
             ownerAddress,
             eventId,
@@ -179,18 +178,20 @@ contract EventCoreMixin {
     ) internal {
         require( _isLockAddressEntity(ownerAddress, entityAddress), "CORE_USER_NOT_OWNER");
         require(eventExists(eventId), "CORE_EVENTID_INVALID");
-        _userOrganizations[ownerAddress]
-            .locksEntity[entityAddress]
-            .exists = false;
+        _userOrganizations[ownerAddress].locksEntity[entityAddress].exists = false;
+
         for (uint i = 0; i < _userOrganizations[ownerAddress].locks.length;i++) {
-            if (_userOrganizations[ownerAddress].locks[i].lockAddr == entityAddress) {
+            console.log(i);
+            if (_userOrganizations[ownerAddress].locks[i].lockAddress == entityAddress) {
                 _userOrganizations[ownerAddress].locks[i].exists = false;
                 _eventIds[eventId] = address(0);
                 emit LockDeregistered(
                     ownerAddress,
                     _userOrganizations[ownerAddress].locks[i].eventId,
-                    _userOrganizations[ownerAddress].locks[i].lockAddr
+                    _userOrganizations[ownerAddress].locks[i].lockAddress,
+                    _userOrganizations[ownerAddress].locks[i].lockId
                 );
+                console.log("emitted");
                 break;
             }
         }

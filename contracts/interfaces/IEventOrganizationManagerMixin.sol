@@ -145,4 +145,5 @@ interface IEventOrganizationManagerMixin {
          bytes32 eventId,
          address newEventApiAddress
     ) external;
+
 }

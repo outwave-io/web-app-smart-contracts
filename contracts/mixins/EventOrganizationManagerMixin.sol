@@ -165,12 +165,12 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
                 //     _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
                 //     "USER_NOT_OWNER"
                 // );
-                IPublicLock lock = IPublicLock(userLocks[i].lockAddr);
+                IPublicLock lock = IPublicLock(userLocks[i].lockAddress);
                 lock.setMaxNumberOfKeys(lock.totalSupply());
                 _eventLockDeregister(
                     msg.sender,
                     eventId,
-                    userLocks[i].lockAddr
+                    userLocks[i].lockAddress
                 );
             }
         }
@@ -315,16 +315,17 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
          bytes32 eventId,
          address newEventApiAddress
     ) public override onlyEventOwner(eventId) {
-        require(upgradableEventManagersIsAllowed(newEventApiAddress), "UNAUTHORIZED");
+        require(upgradableEventManagersIsAllowed(newEventApiAddress), "UNAUTHORIZED_DESTINATION_ADDRESS");
         IEventTransferableMixin eventTransfert = IEventTransferableMixin(newEventApiAddress);
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 index = 0; index < userLocks.length; index++) {
-            eventLockDeregister(msg.sender,eventId,userLocks[index].lockAddr);
-            eventTransfert.eventLockRegister(msg.sender, eventId, userLocks[index].lockAddr, userLocks[index].lockId);
-            IPublicLock lock = IPublicLock(userLocks[index].lockAddr);
+            _eventLockDeregister(msg.sender,eventId,userLocks[index].lockAddress);
+            eventTransfert.eventLockRegister(msg.sender, eventId, userLocks[index].lockAddress, userLocks[index].lockId);
+            IPublicLock lock = IPublicLock(userLocks[index].lockAddress);
             lock.addLockManager(newEventApiAddress);
             lock.renounceLockManager();
                 // todo: shuold we emit?
         }    
     }
+
 }

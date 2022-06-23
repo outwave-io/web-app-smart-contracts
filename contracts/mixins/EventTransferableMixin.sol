@@ -56,7 +56,7 @@ contract EventTransferableMixin is EventCoreMixin, Ownable, IEventTransferableMi
         bytes32 eventId,
         address entityAddress
     ) public override {
-         require( _upgradableEventManagers[msg.sender], "UNAUTHORIZED" );
+         require( _upgradableEventManagers[msg.sender] , "UNAUTHORIZED" );
         _eventLockDeregister(ownerAddress, eventId, entityAddress);
     }
 
