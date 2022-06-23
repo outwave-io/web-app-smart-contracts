@@ -41,7 +41,6 @@ contract EventCoreMixin {
         address indexed owner,
         bytes32 indexed eventId,
         address indexed lockAddress,
-        address outwaveEventAddress,
         bytes32 lockId
     );
     event LockUpdated(
@@ -166,7 +165,6 @@ contract EventCoreMixin {
             ownerAddress,
             eventId,
             entityAdresses,
-            address(this),
             lockId
         );
     }
