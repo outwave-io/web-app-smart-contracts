@@ -63,7 +63,7 @@ contract EventCoreMixin {
     mapping(bytes32 => address) private _eventIds;
 
     // list of the tokens that can be used for key purchases in locks
-    mapping(address => bool) internal  _allowedErc20Tokens;
+    mapping(address => bool) private  _allowedErc20Tokens;
 
 
     address internal _unlockAddr;
