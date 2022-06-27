@@ -30,7 +30,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     IReadOutwave _outwave;
     IUnlock _unlock;
 
-    event KeyBurn(address indexed from, address indexed lock, uint256 tokenId);
+    event KeyBurn(address indexed from, address indexed lock, uint256 burnedTokenId, uint256 newTokenId);
 
     struct OriginalKey {
         uint256 keyId;
@@ -93,10 +93,11 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
             "NOT_PUBLIC_LOCK"
         );
 
+        string memory burnedTokenUri = string(bytes.concat(bytes(parentLock.tokenURI(tokenId)), abi.encodePacked("/burned")));
         parentLock.burn(tokenId);
 
         // mint the replacing token
-        uint256 mintedTokenId = _mint(msg.sender);
+        uint256 mintedTokenId = _mintToken(msg.sender);
 
         address eventOwner = _outwave.eventOwner(eventHash);
         require(eventOwner != address(0), "OWNER_NOT_FOUND");
@@ -104,7 +105,6 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
         require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
 
-        string memory burnedTokenUri = string(bytes.concat(bytes(parentLock.tokenURI(tokenId)), abi.encodePacked("/burned")));
 
         // store tokenUri
         _originalKeys[mintedTokenId] = OriginalKey(
@@ -114,7 +114,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
             retrievedEventHash
         );
 
-        emit KeyBurn(msg.sender, parent, tokenId);
+        emit KeyBurn(msg.sender, parent, tokenId, mintedTokenId);
     }
 
     function readUnlock() external view returns (address) {
@@ -155,7 +155,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         revert("FEATURE_DISABLED");
     }
 
-    function _mint(address to) private returns (uint256) {
+    function _mintToken(address to) private returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);

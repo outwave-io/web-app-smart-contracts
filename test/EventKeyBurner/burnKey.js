@@ -8,6 +8,7 @@ const { reverts } = require('truffle-assertions')
 
 const unlockContract = artifacts.require('Unlock.sol')
 const getProxy = require('../helpers/proxy')
+const { assert } = require('chai')
 
 contract('KeyBurner', (accounts) => {
   describe('burn key / behaviour', () => {
@@ -17,6 +18,8 @@ contract('KeyBurner', (accounts) => {
     let unlockAddr
     let outwaveAddr
     let eventHash
+    const baseTokenUri = 'https://uri.com/'
+    let mintedTokenId
 
     before(async () => {
       const { outwaveAddress, unlockAddress } = await deployer.deployUnlock('10')
@@ -31,6 +34,7 @@ contract('KeyBurner', (accounts) => {
 
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(outwaveAddr)
+      await outwave.setBaseTokenUri(baseTokenUri)
 
       const tx = await outwave
         .eventCreate(
@@ -93,7 +97,25 @@ contract('KeyBurner', (accounts) => {
       const keyBurnEvent = txBurnRec.events.find((v) => v.event === 'KeyBurn')
 
       assert.equal(keyBurnEvent.args.lock, outwaveLock.address)
-      assert.equal(keyBurnEvent.args.tokenId.toString(), tokenId.toString())
+      assert.equal(keyBurnEvent.args.burnedTokenId.toString(), tokenId.toString())
+      assert(keyBurnEvent.args.newTokenId)
+      mintedTokenId = keyBurnEvent.args.newTokenId
+
+    })
+    it('should keyburner implement erc721 and return correct tokenuri, returning a valid name', async () => {
+      let [, user1] = await ethers.getSigners()
+      const erc721 = new ethers.Contract(
+        keyBurner.address,
+        [
+          'function tokenURI(uint256 tokenId) public view returns (string memory)',
+        ],
+        user1
+      )
+      let uri = await erc721.tokenURI(mintedTokenId)
+      assert.equal(
+        uri.toLowerCase(),
+        (baseTokenUri + outwaveLock.address + '/burned').toLowerCase()
+      )
     })
   })
 
@@ -319,7 +341,7 @@ contract('KeyBurner', (accounts) => {
         const txBurnRec = await txBurn.wait()
         const keyBurnEvent = txBurnRec.events.find((v) => v.event === 'KeyBurn')
         assert.equal(keyBurnEvent.args.lock, lock.address)
-        assert.equal(keyBurnEvent.args.tokenId.toString(), tokenId.toString())
+        assert.equal(keyBurnEvent.args.burnedTokenId.toString(), tokenId.toString())
       })
     })
   })
