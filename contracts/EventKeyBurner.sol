@@ -98,30 +98,19 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         // mint the replacing token
         uint256 mintedTokenId = _mint(msg.sender);
 
-        // compose new tokenUri
-        string memory lockBaseURI = _subString(
-            parentLock.tokenURI(tokenId),
-            0,
-            54
-        );
-
         address eventOwner = _outwave.eventOwner(eventHash);
         require(eventOwner != address(0), "OWNER_NOT_FOUND");
 
         bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
         require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
 
+        string memory burnedTokenUri = string(bytes.concat(bytes(parentLock.tokenURI(tokenId)), abi.encodePacked("/burned")));
+
         // store tokenUri
         _originalKeys[mintedTokenId] = OriginalKey(
             tokenId,
             parent,
-            string(
-                abi.encodePacked(
-                    lockBaseURI,
-                    Strings.toString(tokenId),
-                    "_mk.json"
-                )
-            ),
+            burnedTokenUri,
             retrievedEventHash
         );
 
@@ -173,16 +162,5 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         return tokenId;
     }
 
-    function _subString(
-        string memory str,
-        uint256 startIndex,
-        uint256 endIndex
-    ) private pure returns (string memory) {
-        bytes memory strBytes = bytes(str);
-        bytes memory result = new bytes(endIndex - startIndex);
-        for (uint256 i = startIndex; i < endIndex; i++) {
-            result[i - startIndex] = strBytes[i];
-        }
-        return string(result);
-    }
+   
 }
