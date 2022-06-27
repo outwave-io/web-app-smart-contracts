@@ -273,18 +273,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
     }
 
     /**
-        @notice change the lock locks symbol. Check unlock's Public Lock documentation for more info
-        @param lockAddress the address of the lock 
-        @param baseTokenURI the base token uri
-     */
-    function eventLockSetBaseTokenURI(
-        address lockAddress,
-        string calldata baseTokenURI
-    ) public override onlyLockOwner(lockAddress) {
-        IPublicLock(lockAddress).setBaseTokenURI(baseTokenURI);
-    }
-
-    /**
         @notice change the max keys per address (default 1). Check unlock's Public Lock documentation for more info
         @param lockAddress the address of the lock 
         @param maxKeysPerAddress the max keys per address
