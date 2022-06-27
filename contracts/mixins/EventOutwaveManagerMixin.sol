@@ -38,6 +38,18 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _outwavePaymentAddress = newPaymentAddress;
     }
 
+    function setBaseTokenUri(string calldata newBaseTokenUri)  
+        public
+        onlyOwner
+    {
+        _setBaseTokenUri(newBaseTokenUri);
+    }
+
+    function getBaseTokenUri() public view returns (string memory){
+        return _getBaseTokenUri();
+    }
+
+
     function getOutwavePaymentAddress()
         public view returns(address)
     {

@@ -55,8 +55,7 @@ contract EventCoreMixin {
     );
 
     mapping(address => bool) internal _upgradableEventManagers;
-
-
+    
 
     //todo: waht is those become huge? do we even care?
     mapping(address => OrganizationData) private _userOrganizations;
@@ -64,6 +63,7 @@ contract EventCoreMixin {
 
     // list of the tokens that can be used for key purchases in locks
     mapping(address => bool) private  _allowedErc20Tokens;
+    string private _baseTokenUri;
 
 
     address internal _unlockAddr;
@@ -203,6 +203,15 @@ contract EventCoreMixin {
     function _erc20PaymentTokenIsAllowed (address erc20addr) internal view returns (bool) {
         return _allowedErc20Tokens[erc20addr];
     }
+
+    function _setBaseTokenUri(string memory newBaseTokenUri) internal{
+        _baseTokenUri = newBaseTokenUri;
+    }
+
+     function _getBaseTokenUri() internal view returns (string memory){
+        return _baseTokenUri;
+    }
+
 
     function eventExists(bytes32 eventId) public view returns (bool) {
         return (_eventIds[eventId] != address(0));
