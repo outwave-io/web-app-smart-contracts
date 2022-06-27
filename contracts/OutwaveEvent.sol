@@ -8,6 +8,8 @@ import "./mixins/EventOrganizationManagerMixin.sol";
 import "./mixins/EventOutwaveManagerMixin.sol";
 import "./mixins/EventCoreMixin.sol";
 import "./mixins/EventPurchaseHookMixin.sol";
+import "./mixins/EventTokenUriHookMixin.sol";
+
 
 /* 
   main todo
@@ -34,7 +36,8 @@ contract OutwaveEvent is
     EventCoreMixin,
     EventOutwaveManagerMixin,
     EventOrganizationManagerMixin,
-    EventPurchaseHookMixin
+    EventPurchaseHookMixin,
+    EventTokenUriHookMixin
 {
     constructor(address unlockaddr, address payable paymentAddr) {
         EventCoreMixin._initializeOEMixinCore(unlockaddr, paymentAddr);

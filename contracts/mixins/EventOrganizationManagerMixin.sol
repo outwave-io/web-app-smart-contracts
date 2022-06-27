@@ -49,8 +49,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address newlocladd = IUnlock(_unlockAddr).createUpgradeableLock(data);
         IPublicLock lock = IPublicLock(newlocladd);
         lock.setOwner(msg.sender);
-        lock.setBaseTokenURI(string(bytes.concat(bytes(_getBaseTokenUri()), abi.encodePacked(newlocladd))));
-        lock.setEventHooks(address(this), address(0), address(0), address(0));
+        lock.setEventHooks(address(this), address(0), address(0), address(this));
         return newlocladd;
     }
 
