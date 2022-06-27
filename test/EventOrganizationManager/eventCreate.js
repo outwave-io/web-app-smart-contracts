@@ -6,12 +6,17 @@ contract('Organization Event Manager', () => {
   describe('create event / behavior ', () => {
     let outwave
     let lockAddress
+    let keyPrice = web3.utils.toWei('0.01', 'ether')
     let addr1
+    let user1
+    const baseTokenUri = 'https://uri.com/'
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      await outwave.setBaseTokenUri(baseTokenUri)
+      ;[, user1] = await ethers.getSigners()
     })
 
     it('should create successfully and emit events EventCreated and LockRegistered when created', async () => {
@@ -20,7 +25,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
         'name',
         web3.utils.padLeft(0, 40), // address(0)
-        web3.utils.toWei('0.01', 'ether'),
+        keyPrice,
         100000,
         'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
@@ -52,6 +57,20 @@ contract('Organization Event Manager', () => {
     it('should create an smart contract implementing IEventLock, returning a valid name', async () => {
       let readlock = await ethers.getContractAt('IEventLock', lockAddress)
       assert.equal(await readlock.name(), 'name')
+    })
+    it('should implement erc721 and return corect tokenuri, returning a valid name', async () => {
+      const erc721 = new ethers.Contract(
+        lockAddress,
+        [
+          'function tokenURI(uint256 tokenId) public view returns (string memory)',
+        ],
+        user1
+      )
+      let uri = await erc721.tokenURI(1)
+      assert.equal(
+        uri.toLowerCase(),
+        (baseTokenUri + lockAddress).toLowerCase()
+      )
     })
   })
   describe('create event / security', () => {
