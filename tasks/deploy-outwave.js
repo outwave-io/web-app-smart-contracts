@@ -6,10 +6,16 @@ require("@tenderly/hardhat-tenderly");
 
 task('outwave:deploy', 'deploys unlock infrastructure')
   .addOptionalParam('verify', 'verify with hardhat-tenderly')
-  .setAction(async ({ verify = false }, { ethers }) => {
-    let receivePaymentAddress = "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877";
+  .addOptionalParam('paymentAddress', 'the address where fees will be sent')
+  .addOptionalParam('basetokenuri', 'sets the baseTokenUri for nfts')
+  .setAction(async ({ 
+    verify = false,
+    paymentAddress =  "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877",
+    basetokenuri
+  }, { ethers }) => {
+
     console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
-    console.log("!!! Outwave payments are set to: " + receivePaymentAddress);
+    console.log("!!! Outwave payments are set to: " + paymentAddress);
 
     let unlockVersion = "10";
     let unlockAddress = await run('deploy:unlock')
@@ -23,11 +29,17 @@ task('outwave:deploy', 'deploys unlock infrastructure')
     });
 
     let Outwave = await ethers.getContractFactory('OutwaveEvent')
-    let outwave = await Outwave.deploy(unlockAddress, receivePaymentAddress);
+    let outwave = await Outwave.deploy(unlockAddress, paymentAddress);
 
     console.log("- unlock deployed: " + unlockAddress);
     console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave org deployed: " + outwave.address);
+
+    if(basetokenuri){
+      await outwave.setBaseTokenUri(basetokenuri);
+      console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
+    }
+
 
     const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
     var eventKeyburnerAddress = await keyBurnerDeployer({
