@@ -12,7 +12,7 @@ contract('Organization Event Manager', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[, addr1] = await ethers.getSigners()
+      ;[, addr1] = await ethers.getSigners()
 
       const tx = await outwave.connect(addr1).eventCreate(
         web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
@@ -20,7 +20,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()
@@ -66,7 +65,7 @@ contract('Organization Event Manager', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[owner, addr1, addr2] = await ethers.getSigners()
+      ;[owner, addr1, addr2] = await ethers.getSigners()
 
       const tx = await outwave.connect(addr1).eventCreate(
         web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
@@ -74,7 +73,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()

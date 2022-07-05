@@ -63,11 +63,9 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri,
         bytes32 lockId
     ) private lockAreEnabled returns (address) {
         address result = _createLock(tokenAddress, keyprice, numberOfKey, name);
-        IPublicLock(result).setBaseTokenURI(baseTokenUri);
         _eventLockRegister(msg.sender, eventId, result, lockId);
         return result;
     }
@@ -82,7 +80,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Allowed ERC20 are defined from the owner of the contract by setting erc20PaymentTokenAdd in OEMixinManage.
         @param keyprice the price of each NFT (public lock key). this can be updated later
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
-        @param baseTokenUri the tokenuri
      */
     function eventCreate(
         bytes32 eventId, //todo: review this
@@ -90,7 +87,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri,
         bytes32 lockId
     )
         public override
@@ -105,7 +101,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
             tokenAddress,
             keyprice,
             numberOfKey,
-            baseTokenUri,
             lockId
         );
         emit EventCreated(msg.sender, eventId);
@@ -121,7 +116,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Allowed ERC20 are defined from the owner of the contract by setting erc20PaymentTokenAdd in OEMixinManage.
         @param keyprice the price of each NFT (public lock key). this can be updated later
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
-        @param baseTokenUri the tokenuri
      */
     function addLockToEvent(
         bytes32 eventId, //todo: review this
@@ -129,7 +123,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri,
         bytes32 lockId
     )
         public override
@@ -145,7 +138,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
                 tokenAddress,
                 keyprice,
                 numberOfKey,
-                baseTokenUri,
                 lockId
             );
     }

@@ -16,21 +16,18 @@ contract('Organization Event Manager', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[owner, proxyOwner, user1, user2] = await ethers.getSigners()
+      ;[, , user1] = await ethers.getSigners()
 
-      await outwave.updateOutwavePaymentAddress(randomWallet.address) //set dao payment address
+      await outwave.updateOutwavePaymentAddress(randomWallet.address) // set dao payment address
 
-      const tx = await outwave
-        .connect(user1)
-        .eventCreate(
-          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
-          'name',
-          web3.utils.padLeft(0, 40), // address(0),
-          keyPrice,
-          10, // num keys
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
-          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
-        )
+      const tx = await outwave.connect(user1).eventCreate(
+        web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+        'name',
+        web3.utils.padLeft(0, 40), // address(0),
+        keyPrice,
+        10, // num keys
+        web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
+      )
       let receipt = await tx.wait()
       // verify events
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
@@ -39,10 +36,12 @@ contract('Organization Event Manager', () => {
     })
 
     it('should change PublicLock::maxKeysPerAddress', async () => {
+      let lockOwner
       ;[, , lockOwner] = await ethers.getSigners()
 
-
-      await outwave.connect(lockOwner).eventLockSetMaxKeysPerAddress(lockAddress, 3)
+      await outwave
+        .connect(lockOwner)
+        .eventLockSetMaxKeysPerAddress(lockAddress, 3)
 
       let PublicLock = await ethers.getContractFactory('PublicLock')
       publiclock = await PublicLock.attach(lockAddress)
@@ -50,6 +49,7 @@ contract('Organization Event Manager', () => {
     })
 
     it('should allow user to purchase multiple keys', async () => {
+      let recipient
       ;[, recipient] = await ethers.getSigners()
 
       let PublicLock = await ethers.getContractFactory('PublicLock')
@@ -86,33 +86,29 @@ contract('Organization Event Manager', () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
       outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-        ;[owner, proxyOwner, user1, user2] = await ethers.getSigners()
+      ;[, , user1] = await ethers.getSigners()
 
-      await outwave.updateOutwavePaymentAddress(randomWallet.address) //set dao payment address
+      await outwave.updateOutwavePaymentAddress(randomWallet.address) // set dao payment address
 
-      const tx = await outwave
-        .connect(user1)
-        .eventCreate(
-          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
-          'name',
-          web3.utils.padLeft(0, 40), // address(0),
-          keyPrice,
-          10, // num keys
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
-          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
-        )
+      const tx = await outwave.connect(user1).eventCreate(
+        web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
+        'name',
+        web3.utils.padLeft(0, 40), // address(0),
+        keyPrice,
+        10, // num keys
+        web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
+      )
       let receipt = await tx.wait()
       // verify events
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
       assert(lockAddress)
 
-      await outwave
-        .connect(user1)
-        .eventLockSetMaxKeysPerAddress(lockAddress, 3)
+      await outwave.connect(user1).eventLockSetMaxKeysPerAddress(lockAddress, 3)
     })
 
     it('should NOT allow user to purchase more keys than maxKeysPerAddress', async () => {
+      let recipient
       ;[, recipient] = await ethers.getSigners()
 
       let PublicLock = await ethers.getContractFactory('PublicLock')

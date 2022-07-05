@@ -30,7 +30,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
@@ -102,7 +101,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         newLockId
       )
       let receipt = await tx.wait()
@@ -140,7 +138,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
@@ -202,7 +199,6 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         newLockId
       )
 
@@ -214,7 +210,6 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), // address(0)
           web3.utils.toWei('0.01', 'ether'),
           100000,
-          'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
           newLockId2
         ),
         'USER_NOT_EVENT_OWNER'

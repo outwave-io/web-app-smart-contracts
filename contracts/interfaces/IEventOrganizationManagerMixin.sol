@@ -15,7 +15,6 @@ interface IEventOrganizationManagerMixin {
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
         @param lockId id created from the outwave app to allow reconciliations,
         this is only emitted with events and not persisted in the contract
-    @param baseTokenUri the tokenuri
     */
     function eventCreate(
         bytes32 eventId, 
@@ -23,7 +22,6 @@ interface IEventOrganizationManagerMixin {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri,
         bytes32 lockId
     ) external returns (address);
 
@@ -36,7 +34,6 @@ interface IEventOrganizationManagerMixin {
         Allowed ERC20 are defined from the owner of the contract by setting erc20PaymentTokenAdd in OEMixinManage.
         @param keyprice the price of each NFT (public lock key). this can be updated later
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
-        @param baseTokenUri the tokenuri
         @param lockId id created from the outwave app to allow reconciliations,
         this is only emitted with events and not persisted in the contract
     */
@@ -46,7 +43,6 @@ interface IEventOrganizationManagerMixin {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
-        string memory baseTokenUri,
         bytes32 lockId
     ) external returns (address);
 

@@ -41,7 +41,6 @@ contract('Event Outwave Manager', () => {
         web3.utils.padLeft(0, 40), // address(0),
         keyPrice,
         10, // num keys
-        'ipfs://QmdBAufFCb7ProgWvWaNkZmeLDdPLXRKF3ku5tpe99vpPx',
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
