@@ -30,13 +30,16 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     IReadOutwave _outwave;
     IUnlock _unlock;
 
-    event KeyBurn(address indexed from, address indexed lock, uint256 burnedTokenId, uint256 newTokenId);
+    event KeyBurn(
+        address indexed from,
+        address indexed lock,
+        uint256 burnedTokenId,
+        uint256 newTokenId
+    );
 
     struct OriginalKey {
         uint256 keyId;
         address lockAddress;
-        string tokenURI;
-        bytes32 eventId;
     }
 
     constructor(address outwaveAddr, address unlockAddr)
@@ -46,7 +49,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         _unlock = IUnlock(unlockAddr);
     }
 
-    // Returns the json file of the corresponding token ID.
+    // Returns the json of the corresponding token ID.
     // Used for getting things like the NFT's name, properties, description etc.
     function tokenURI(uint256 tokenId)
         public
@@ -54,17 +57,21 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         override
         returns (string memory)
     {
+        // (keyBurnerAddress, opaTokenId) => {lockTokenURI}/burned
         require(_exists(tokenId), "TOKENID_NOT_EXISTS");
         assert(_originalKeys[tokenId].keyId != 0);
-        return _originalKeys[tokenId].tokenURI;
-    }
 
-    function setTokenURI(uint256 tokenId, string memory tokenUri)
-        external
-        onlyOwner
-    {
-        assert(_originalKeys[tokenId].keyId != 0);
-        _originalKeys[tokenId].tokenURI = tokenUri;
+        IPublicLock parentLock = IPublicLock(
+            _originalKeys[tokenId].lockAddress
+        );
+
+        return
+            string(
+                bytes.concat(
+                    bytes(parentLock.tokenURI(_originalKeys[tokenId].keyId)),
+                    abi.encodePacked("/burned")
+                )
+            );
     }
 
     function onERC721Received(
@@ -93,7 +100,6 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
             "NOT_PUBLIC_LOCK"
         );
 
-        string memory burnedTokenUri = string(bytes.concat(bytes(parentLock.tokenURI(tokenId)), abi.encodePacked("/burned")));
         parentLock.burn(tokenId);
 
         // mint the replacing token
@@ -105,14 +111,8 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
         require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
 
-
         // store tokenUri
-        _originalKeys[mintedTokenId] = OriginalKey(
-            tokenId,
-            parent,
-            burnedTokenUri,
-            retrievedEventHash
-        );
+        _originalKeys[mintedTokenId] = OriginalKey(tokenId, parent);
 
         emit KeyBurn(msg.sender, parent, tokenId, mintedTokenId);
     }
@@ -161,6 +161,4 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         _safeMint(to, tokenId);
         return tokenId;
     }
-
-   
 }
