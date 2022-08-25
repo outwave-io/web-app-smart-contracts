@@ -10,6 +10,9 @@
 - compile to generate artifacts: `npx hardhat compile`
 - deploy outwave contracts and setup, in a separate terminal: `npx hardhat outwave:deploy --network localhost`
 
+## How to deploy it on mumbai
+- deploy outwave contracts and setup, in a separate terminal: `npx hardhat outwave:deploy --basetokenuri https://outwave-jobs-test.azurewebsites.net/mumbai/event721/  --network mumbai`
+
 ## What else can be done?
 This project uses Hardhat.
 Try running some of the following tasks and always refer to official documentation for:
