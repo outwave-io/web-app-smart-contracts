@@ -108,5 +108,20 @@ contract('Organization Event Manager', () => {
         'USER_NOT_LOCK_OWNER'
       )
     })
+    it('should fails with CREATE_LOCKS_DISABLED on event creation when lock creation is disabled', async () => {
+      let instance = outwave.connect(owner)
+      await instance.outwaveAllowLockCreation(false)
+      await reverts(
+        instance.eventCreate(
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64),
+          'othername',
+          web3.utils.padLeft(0, 40), // address(0)
+          web3.utils.toWei('0.01', 'ether'),
+          100000,
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
+        ),
+        'CREATE_LOCKS_DISABLED'
+      )
+    })
   })
 })
