@@ -67,6 +67,10 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _allowLockCreation = allowLockCreation;
     }
 
+    function isLockCreationEnabled() public view returns(bool) {
+        return _allowLockCreation;
+    }
+
     receive() external payable {
         emit PaymentReceived(msg.sender, msg.value);
     }
