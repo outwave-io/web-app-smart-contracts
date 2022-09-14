@@ -67,7 +67,7 @@ contract EventOutwaveManagerMixin is EventCoreMixin, Ownable {
         _allowLockCreation = allowLockCreation;
     }
 
-    function isLockCreationEnabled() public view returns(bool) {
+    function  outwaveIsLockCreationEnabled() public view returns(bool) {
         return _allowLockCreation;
     }
 
