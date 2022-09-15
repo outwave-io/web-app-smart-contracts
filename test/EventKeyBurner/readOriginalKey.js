@@ -35,6 +35,7 @@ contract('KeyBurner', () => {
           web3.utils.padLeft(0, 40), // address(0) 
           web3.utils.toWei('0.0001', 'ether'),
           100000,
+          100,
           web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
         )
       await tx.wait()

@@ -27,6 +27,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0),
         keyPrice,
         10, // num keys
+        1,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
@@ -118,6 +119,7 @@ contract('Organization Event Manager', () => {
         tokenDai.address,
         keyPrice,
         10, // num keys
+        1,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
@@ -203,6 +205,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0),
         keyPrice,
         10, // num keys
+        1,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       let receipt = await tx.wait()
