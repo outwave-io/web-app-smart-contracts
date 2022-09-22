@@ -27,8 +27,8 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     // mapping(bytes32 => bool) private _eventUserOpa;
     mapping(uint256 => OriginalKey) private _originalKeys;
 
-    IReadOutwave _outwave;
-    IUnlock _unlock;
+    IReadOutwave private _outwave;
+    IUnlock private _unlock;
 
     event KeyBurn(
         address indexed from,
@@ -78,7 +78,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         address,
         address,
         uint256,
-        bytes calldata
+        bytes memory
     ) public pure override returns (bytes4) {
         return this.onERC721Received.selector;
     }
