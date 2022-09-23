@@ -10,7 +10,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradea
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 // import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "./ERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
@@ -23,7 +24,7 @@ import "./interfaces/IReadOutwave.sol";
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract EventKeyBurner is ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable, Ownable {
+contract EventKeyBurner is ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable, OwnableUpgradeable {
     using Counters for Counters.Counter;
     using AddressUpgradeable for address;
 
@@ -86,11 +87,11 @@ contract EventKeyBurner is ERC721Upgradeable, ERC721HolderUpgradeable, ERC721Enu
         super._mint(to, tokenId);
     }
 
-    function _msgSender() internal view override(Context, ContextUpgradeable) returns (address) {
+    function _msgSender() internal view override(ContextUpgradeable) returns (address) {
         return super._msgSender();
     }
 
-    function _msgData() internal view override(Context, ContextUpgradeable) returns (bytes calldata) {
+    function _msgData() internal view override(ContextUpgradeable) returns (bytes calldata) {
         return super._msgData();
     }
 
