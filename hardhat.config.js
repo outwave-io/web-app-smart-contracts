@@ -30,6 +30,9 @@ require('hardhat-contract-sizer')
 // tenderly plugin (contract debugging, profiling, etc)
 require('@tenderly/hardhat-tenderly')
 
+// upgradable contracts plug-in
+require('@openzeppelin/hardhat-upgrades')
+
 const { getHardhatNetwork } = require('./helpers/network')
 
 const settings = {
