@@ -15,6 +15,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "./interfaces/IReadOutwave.sol";
@@ -24,7 +25,7 @@ import "./interfaces/IReadOutwave.sol";
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract EventKeyBurner is ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable, OwnableUpgradeable {
+contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable {
     using Counters for Counters.Counter;
     using AddressUpgradeable for address;
 
@@ -49,7 +50,7 @@ contract EventKeyBurner is ERC721Upgradeable, ERC721HolderUpgradeable, ERC721Enu
         address lockAddress;
     }
 
-    function initialize(address outwaveAddr, address unlockAddr) public
+    function initialize(address outwaveAddr, address unlockAddr) initializer public
     {
         super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
         _outwave = IReadOutwave(outwaveAddr);
