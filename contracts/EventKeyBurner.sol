@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+// import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "./ERC721EnumerableUpgradeable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "./interfaces/IReadOutwave.sol";
@@ -18,8 +25,9 @@ import "./interfaces/IReadOutwave.sol";
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
+contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable {
     using Counters for Counters.Counter;
+    using AddressUpgradeable for address;
 
     Counters.Counter private _tokenIdCounter;
 
@@ -42,11 +50,63 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         address lockAddress;
     }
 
-    constructor(address outwaveAddr, address unlockAddr)
-        ERC721("OutwavePartecipantAttestation", "OPA")
+    function initialize(address outwaveAddr, address unlockAddr) initializer public
     {
+        super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
         _outwave = IReadOutwave(outwaveAddr);
         _unlock = IUnlock(unlockAddr);
+    }
+
+    // constructor(address outwaveAddr, address unlockAddr) 
+    //     ERC721("OutwavePartecipantAttestation", "OPA")
+    // {
+    //     _outwave = IReadOutwave(outwaveAddr);
+    //     _unlock = IUnlock(unlockAddr);
+    // }
+
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function approve(address to, uint256 tokenId) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    {
+        super.approve(to, tokenId);
+    }
+
+    function balanceOf(address owner) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (uint256)
+    {
+        return super.balanceOf(owner);
+    }
+
+    function getApproved(uint256 tokenId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address)
+    {
+        return super.getApproved(tokenId);
+    }
+
+    function isApprovedForAll(address owner, address operator) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool)
+    {
+        return super.isApprovedForAll(owner, operator);
+    }
+
+    function ownerOf(uint256 tokenId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address)
+    {
+        return super.ownerOf(tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) 
+    {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to,  uint256 tokenId, bytes memory _data) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    {
+        super.safeTransferFrom(from, to, tokenId, _data);
+    }
+
+    function setApprovalForAll(address operator, bool approved) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    {
+        super.setApprovalForAll(operator, approved);
     }
 
     // Returns the json of the corresponding token ID.
@@ -54,7 +114,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     function tokenURI(uint256 tokenId)
         public
         view
-        override
+        override(ERC721Upgradeable)
         returns (string memory)
     {
         // (keyBurnerAddress, opaTokenId) => {lockTokenURI}/burned
@@ -79,7 +139,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         address,
         uint256,
         bytes memory
-    ) public pure override returns (bytes4) {
+    ) public pure override(ERC721HolderUpgradeable, IERC721ReceiverUpgradeable) returns (bytes4) {
         return this.onERC721Received.selector;
     }
 
@@ -137,7 +197,7 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -147,11 +207,11 @@ contract EventKeyBurner is ERC721, ERC721Holder, ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
+    ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _baseURI() internal pure override returns (string memory) {
+    function _baseURI() internal pure override(ERC721Upgradeable) returns (string memory) {
         revert("FEATURE_DISABLED");
     }
 

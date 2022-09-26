@@ -112,7 +112,8 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 task('outwave:deploy:keyburner', 'deploys keyburner')
   .addParam('outwaveaddr', 'the outwave facade address')
   .addParam('unlockaddr', 'the unlock factory address')
-  .setAction(async ({ outwaveaddr, unlockaddr }, { run }) => {
+  .addOptionalParam('verify', 'verify with hardhat-tenderly')
+  .setAction(async ({ outwaveaddr, unlockaddr, verify }, { run }) => {
     // eslint-disable-next-line global-require
     const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
     var addressResult = await keyBurnerDeployer({
@@ -121,15 +122,18 @@ task('outwave:deploy:keyburner', 'deploys keyburner')
     })
     console.log("- event keyburner published at: " + addressResult);
 
-    await hre.tenderly.persistArtifacts({
-      name: "EventKeyBurner",
-      address: outwave.address,
-    })
+    if (verify) {
+      console.log(" * verify with hardhat-tenderly..");
+      await hre.tenderly.persistArtifacts({
+        name: "EventKeyBurner",
+        address: outwave.address,
+      })
 
-    await hre.tenderly.verify({
-      name: "EventKeyBurner",
-      address: outwave.address,
-    })
+      await hre.tenderly.verify({
+        name: "EventKeyBurner",
+        address: outwave.address,
+      })
+    }
 
   })
 
