@@ -64,66 +64,9 @@ contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable,
     //     _unlock = IUnlock(unlockAddr);
     // }
 
-    function _approve(address to, uint256 tokenId) internal override(ERC721Upgradeable)
-    {
-        super._approve(to, tokenId);
-    }
-
-    function _burn(uint256 tokenId) internal override(ERC721Upgradeable)
-    {
-        super._burn(tokenId);
-    }
-
-    function _exists(uint256 tokenId) internal override(ERC721Upgradeable) view returns (bool) {
-        return super._exists(tokenId);
-    }
-
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal override(ERC721Upgradeable) view returns (bool)
-    {
-        return super._isApprovedOrOwner(spender, tokenId);
-    }
-
-    function _mint(address to, uint256 tokenId) internal override(ERC721Upgradeable)
-    {
-        super._mint(to, tokenId);
-    }
-
-    function _msgSender() internal view override(ContextUpgradeable) returns (address) {
-        return super._msgSender();
-    }
-
-    function _msgData() internal view override(ContextUpgradeable) returns (bytes calldata) {
-        return super._msgData();
-    }
-
-    function _safeMint(address to, uint256 tokenId) internal override(ERC721Upgradeable)
-    {
-        super._safeMint(to, tokenId);
-    }
-
-    function _safeMint(address to, uint256 tokenId, bytes memory _data) internal override(ERC721Upgradeable)
-    {
-        super._safeMint(to, tokenId, _data);
-    }
-
-    function _safeTransfer(address from, address to, uint256 tokenId, bytes memory _data) internal override(ERC721Upgradeable)
-    {
-        super._safeTransfer(from, to, tokenId, _data);
-    } 
-
-    function _setApprovalForAll(address owner, address operator, bool approved) internal override(ERC721Upgradeable)
-    {
-        super._setApprovalForAll(owner, operator, approved);
-    }
-
     function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
     {
         super.transferFrom(from, to, tokenId);
-    }
-
-    function _transfer(address from, address to, uint256 tokenId) internal override(ERC721Upgradeable)
-    {
-        super._transfer(from, to, tokenId);
     }
 
     function approve(address to, uint256 tokenId) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
@@ -146,16 +89,6 @@ contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable,
         return super.isApprovedForAll(owner, operator);
     }
 
-    function name() public view override (ERC721Upgradeable) returns (string memory)
-    {
-        return super.name();
-    }
-
-    function symbol() public view override (ERC721Upgradeable) returns (string memory)
-    {
-        return super.symbol();
-    }    
-
     function ownerOf(uint256 tokenId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address)
     {
         return super.ownerOf(tokenId);
@@ -175,25 +108,6 @@ contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable,
     {
         super.setApprovalForAll(operator, approved);
     }
-
-    // function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data) private override(ERC721Upgradeable) returns (bool)
-    // {
-    //     if (to.isContract()) {
-    //         try IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-    //             return retval == IERC721ReceiverUpgradeable.onERC721Received.selector;
-    //         } catch (bytes memory reason) {
-    //             if (reason.length == 0) {
-    //                 revert("ERC721: transfer to non ERC721Receiver implementer");
-    //             } else {
-    //                 assembly {
-    //                     revert(add(32, reason), mload(reason))
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         return true;
-    //     }
-    // }
 
     // Returns the json of the corresponding token ID.
     // Used for getting things like the NFT's name, properties, description etc.
