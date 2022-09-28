@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "hardhat/console.sol";
 
 /*
@@ -9,7 +10,7 @@ import "hardhat/console.sol";
  * to internal fields, only with proper get and set function, marked as internals. Direct access to fields is forbidden
    EventCoore shall not exposes any public methods.
  */
-contract EventCoreMixin {
+contract EventCoreMixin is OwnableUpgradeable {
     struct OrganizationData {
         address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
         mapping(address => Lock) locksEntity; // fast searching

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 import "./EventCoreMixin.sol";
 import "../interfaces/IEventTransferable.sol";
@@ -10,10 +9,7 @@ import "../interfaces/IEventTransferable.sol";
 
 */
 
-
-
-
-contract EventTransferableMixin is EventCoreMixin, Ownable, IEventTransferable {
+contract EventTransferableMixin is EventCoreMixin, IEventTransferable {
 
     function upgradableEventManagersAdd(address newAddress) public onlyOwner{
         // todo: validate via interface

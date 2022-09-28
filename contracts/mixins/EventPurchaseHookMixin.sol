@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "../ILockKeyPurchaseHookV7.sol";
@@ -71,7 +71,7 @@ contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
         lock.withdraw(tokenadd, fee);
         if(tokenadd != address(0)){
             //todo: shall we use safeerc20upgradable?
-            IERC20 erc20 = IERC20(tokenadd);
+            IERC20Upgradeable erc20 = IERC20Upgradeable(tokenadd);
             erc20.transfer(_outwavePaymentAddress, fee);
         }
         else{
