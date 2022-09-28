@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 // extenal
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 // outwave
 import "./mixins/EventOrganizationManagerMixin.sol";
@@ -33,13 +33,14 @@ idee todo
  * https://eips.ethereum.org/EIPS/eip-721
  */
 contract OutwaveEvent is
+    Initializable,
     EventCoreMixin,
     EventOutwaveManagerMixin,
     EventOrganizationManagerMixin,
     EventPurchaseHookMixin,
     EventTokenUriHookMixin
 {
-    constructor(address unlockaddr, address payable paymentAddr) {
+    function initialize(address unlockaddr, address payable paymentAddr) initializer public {
         EventCoreMixin._initializeOEMixinCore(unlockaddr, paymentAddr);
     }
 }
