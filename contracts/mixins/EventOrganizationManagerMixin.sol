@@ -17,8 +17,9 @@ import "hardhat/console.sol";
 contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganizationManagerMixin {
     /* unlock */
 
-    uint256 MAX_INT =
-        115792089237316195423570985008687907853269984665640564039457584007913129639935;
+    function _getMaxInt() private pure returns (uint256) {
+        return 115792089237316195423570985008687907853269984665640564039457584007913129639935;
+    }
 
     /**
         @notice Creates an unlock's public lock, registering current contract in the hooks. 
@@ -39,7 +40,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         bytes memory data = abi.encodeWithSignature(
             "initialize(address,uint256,address,uint256,uint256,string)",
             address(this),
-            MAX_INT,
+            _getMaxInt(),
             tokenAddress,
             keyPrice,
             maxNumberOfKeys,
@@ -231,7 +232,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
             recipients.length
         );
         for (uint256 i = 0; i < recipients.length; i++) {
-            expirationTimestamps[i] = MAX_INT;
+            expirationTimestamps[i] = _getMaxInt();
         }
         address[] memory addressArray = new address[](recipients.length);
         IPublicLock(lockAddress).grantKeys(
