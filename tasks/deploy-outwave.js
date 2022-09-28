@@ -28,22 +28,21 @@ task('outwave:deploy', 'deploys unlock infrastructure')
       unlockVersion,
     });
 
-    let Outwave = await ethers.getContractFactory('OutwaveEvent')
-    let outwave = await Outwave.deploy(unlockAddress, paymentAddress);
+    const outwaveDeployer = require('../scripts/deployments/outwave.js')
+    var outwaveAddress = await outwaveDeployer({ unlockAddress, paymentAddress })
 
     console.log("- unlock deployed: " + unlockAddress);
     console.log("- publiclock template deployed: " + publicLockAddress);
-    console.log("- outwave org deployed: " + outwave.address);
+    console.log("- outwave org deployed: " + outwaveAddress);
 
     if(basetokenuri){
       await outwave.setBaseTokenUri(basetokenuri);
       console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
     }
 
-
     const keyBurnerDeployer = require('../scripts/deployments/eventKeyBurner')
     var eventKeyburnerAddress = await keyBurnerDeployer({
-      outwaveAddress: outwave.address,
+      outwaveAddress: outwaveAddress,
       unlockAddress: unlockAddress
     })
     console.log("- event keyburner published at: " + eventKeyburnerAddress);
@@ -53,17 +52,17 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 
       await hre.tenderly.persistArtifacts({
         name: "OutwaveEvent",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
       await hre.tenderly.verify({
         name: "OutwaveEvent",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
       await hre.tenderly.push({
         name: "OutwaveEvent",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
 
@@ -81,7 +80,7 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 
       await hre.tenderly.push({
         name: "EventKeyBurner",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
       console.log(" * EventKeyBurner, loadedin tenderly");
@@ -98,13 +97,13 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 
       await hre.tenderly.push({
         name: "Unlock",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
       console.log(" * Unlock, loadedin tenderly");
       console.log(" ...done! visit https://dashboard.tenderly.co/");
     }
-   	console.log("[onchain] To verify on blockchain: yarn verify " + outwave.address + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
+   	console.log("[onchain] To verify on blockchain: yarn verify " + outwaveAddress + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
   });
 
 
@@ -126,12 +125,12 @@ task('outwave:deploy:keyburner', 'deploys keyburner')
       console.log(" * verify with hardhat-tenderly..");
       await hre.tenderly.persistArtifacts({
         name: "EventKeyBurner",
-        address: outwave.address,
+        address: outwaveAddress,
       })
 
       await hre.tenderly.verify({
         name: "EventKeyBurner",
-        address: outwave.address,
+        address: outwaveAddress,
       })
     }
 
