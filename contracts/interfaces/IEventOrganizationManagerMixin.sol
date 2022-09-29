@@ -13,6 +13,7 @@ interface IEventOrganizationManagerMixin {
         Allowed ERC20 are defined from the owner of the contract by setting erc20PaymentTokenAdd in OEMixinManage.
         @param keyprice the price of each NFT (public lock key). this can be updated later
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
+        @param maxKeysPerAddress the max number of NFT that can be purchased
         @param lockId id created from the outwave app to allow reconciliations,
         this is only emitted with events and not persisted in the contract
     */
@@ -22,6 +23,7 @@ interface IEventOrganizationManagerMixin {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
+        uint256 maxKeysPerAddress,
         bytes32 lockId
     ) external returns (address);
 
@@ -43,6 +45,7 @@ interface IEventOrganizationManagerMixin {
         address tokenAddress,
         uint256 keyprice,
         uint256 numberOfKey,
+        uint256 maxKeysPerAddress,
         bytes32 lockId
     ) external returns (address);
 

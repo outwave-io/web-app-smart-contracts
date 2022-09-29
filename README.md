@@ -38,6 +38,14 @@ $ npx hardhat outwave:deploy --network mumbai
 - outwave org deployed: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
+// deploy keyburner (the only upgradable for now)
+npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
+- event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+
+// upgrade keyburnder
+npx hardhat outwave:deploy:keyburner --network mumbai --keyburnerAddr 0x11e48668d6db234F4EAE814360916E4f0Be61ff3 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
+- event keyburner upgraded at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+
 // allow outwave to create events using erc20 (usdc on mubai)
 $ npx hardhat tool:event:addErc20 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
 - erc20 address can be used in creating lock: 0x2b8920cBdDCc3e85753423eEceCd179cb9232554

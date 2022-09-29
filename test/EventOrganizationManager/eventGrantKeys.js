@@ -24,6 +24,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         nftPrice,
         100000,
+        100,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()
@@ -68,6 +69,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         nftPrice,
         100000,
+        100,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()

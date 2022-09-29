@@ -21,6 +21,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
+        100,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()
@@ -40,6 +41,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
+        100,
         newLockId
       )
       let receipt = await tx.wait()
@@ -72,6 +74,7 @@ contract('Organization Event Manager', () => {
         web3.utils.padLeft(0, 40), // address(0)
         web3.utils.toWei('0.01', 'ether'),
         100000,
+        100,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
       await tx.wait()
@@ -85,6 +88,7 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), // address(0)
           web3.utils.toWei('0.01', 'ether'),
           100000,
+          100,
           web3.utils.padLeft(web3.utils.asciiToHex('2'), 64) // same contract id
         ),
         'USER_NOT_EVENT_OWNER'
@@ -99,6 +103,7 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), // address(0)
           web3.utils.toWei('0.01', 'ether'),
           100000,
+          100,
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64) // same contract id
         ),
         'USER_NOT_EVENT_OWNER'
@@ -113,9 +118,27 @@ contract('Organization Event Manager', () => {
           web3.utils.padLeft(0, 40), // address(0)
           web3.utils.toWei('0.01', 'ether'),
           100000,
+          100,
           web3.utils.padLeft(web3.utils.asciiToHex('1'), 64) // different contract id
         ),
         'USER_NOT_EVENT_OWNER'
+      )
+    })
+
+    it('should fails with CREATE_LOCKS_DISABLED when adding lock to event when lock creation is disabled', async () => {
+      let instance = outwave.connect(owner)
+      await instance.outwaveAllowLockCreation(false)
+      await reverts(
+        instance.connect(addr1).addLockToEvent(
+          web3.utils.padLeft(web3.utils.asciiToHex('1'), 64), // same event id
+          'name3',
+          web3.utils.padLeft(0, 40), // address(0)
+          web3.utils.toWei('0.01', 'ether'),
+          100000,
+          100,
+          web3.utils.padLeft(web3.utils.asciiToHex('2'), 64) // same contract id
+        ),
+        'CREATE_LOCKS_DISABLED'
       )
     })
   })

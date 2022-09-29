@@ -30,6 +30,9 @@ require('hardhat-contract-sizer')
 // tenderly plugin (contract debugging, profiling, etc)
 require('@tenderly/hardhat-tenderly')
 
+// upgradable contracts plug-in
+require('@openzeppelin/hardhat-upgrades')
+
 const { getHardhatNetwork } = require('./helpers/network')
 
 const settings = {
@@ -56,6 +59,7 @@ require('./tasks/toolbox')
 
 // outwave
 require('./tasks/deploy-outwave')
+require('./tasks/upgrade-outwave')
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
