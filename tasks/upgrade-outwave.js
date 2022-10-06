@@ -22,21 +22,21 @@ task('outwave:upgrade', 'deploys unlock infrastructure')
     console.log("!!! Outwave payments are set to: " + paymentAddress);
 
     const outwaveUpgrader = require('../scripts/upgrades/outwave.js')
-    outwaveAddress = await outwaveUpgrader({ outwaveAddress, unlockAddress, paymentAddress })
+    outwaveAddress = await outwaveUpgrader({ outwaveAddress, unlockAddress, paymentAddress, basetokenuri })
 
     console.log("- outwave org upgraded at: " + outwaveAddress);
 
-    if(basetokenuri){
-      await outwave.setBaseTokenUri(basetokenuri);
-      console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
-    }
+    // if(basetokenuri){
+    //   await outwave.setBaseTokenUri(basetokenuri);
+    //   console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
+    // }
 
-    const keyBurnerDeployer = require('../scripts/upgrades/eventKeyBurner')
-    var eventKeyburnerAddress = await keyBurnerDeployer({
-      outwaveAddress: outwaveAddress,
-      unlockAddress: unlockAddress
-    })
-    console.log("- event keyburner upgraded at: " + eventKeyburnerAddress);
+    // const keyBurnerDeployer = require('../scripts/upgrades/eventKeyBurner')
+    // var eventKeyburnerAddress = await keyBurnerDeployer({
+    //   outwaveAddress: outwaveAddress,
+    //   unlockAddress: unlockAddress
+    // })
+    // console.log("- event keyburner upgraded at: " + eventKeyburnerAddress);
 
     if (verify) {
       console.log(" * verify with hardhat-tenderly..");
@@ -59,15 +59,15 @@ task('outwave:upgrade', 'deploys unlock infrastructure')
 
       console.log(" * OutwaveEvent, loadedin tenderly");
 
-      await hre.tenderly.persistArtifacts({
-        name: "EventKeyBurner",
-        address: eventKeyburnerAddress,
-      })
+      // await hre.tenderly.persistArtifacts({
+      //   name: "EventKeyBurner",
+      //   address: eventKeyburnerAddress,
+      // })
 
-      await hre.tenderly.verify({
-        name: "EventKeyBurner",
-        address: eventKeyburnerAddress,
-      })
+      // await hre.tenderly.verify({
+      //   name: "EventKeyBurner",
+      //   address: eventKeyburnerAddress,
+      // })
 
       await hre.tenderly.push({
         name: "EventKeyBurner",
@@ -94,7 +94,7 @@ task('outwave:upgrade', 'deploys unlock infrastructure')
       console.log(" * Unlock, loaded in tenderly");
       console.log(" ...done! visit https://dashboard.tenderly.co/");
     }
-   	console.log("[onchain] To verify on blockchain: yarn verify " + outwaveAddress + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
+   	console.log("[onchain] To verify on blockchain: yarn verify " + outwaveAddress + " " + unlockAddress + " --network XXXXXXXXXXXXX")
   });
 
 task('outwave:upgrade:keyburner', 'upgrades keyburner')
