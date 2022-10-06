@@ -33,7 +33,7 @@ task('outwave:deploy', 'deploys unlock infrastructure')
 
     console.log("- unlock deployed: " + unlockAddress);
     console.log("- publiclock template deployed: " + publicLockAddress);
-    console.log("- outwave org deployed: " + outwaveAddress);
+    console.log("- outwave event manager deployed: " + outwaveAddress);
 
     if(basetokenuri){
       await outwave.setBaseTokenUri(basetokenuri);

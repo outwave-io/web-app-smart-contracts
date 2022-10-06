@@ -62,6 +62,11 @@ module.exports = {
     url: 'https://kovan.optimism.io',
     name: 'optimism kovan',
   },
+  optimisticGoerli: {
+    chainId: 420,
+    url: 'https://opt-goerli.g.alchemy.com/v2/xvmUe2COEAAcn_caQeRbtiDITCCZFyj1',
+    name: 'optimism goerli',
+  },
   optimism: {
     chainId: 10,
     url: 'https://mainnet.optimism.io',
