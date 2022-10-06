@@ -41,6 +41,7 @@ contract OutwaveEvent is
     EventTokenUriHookMixin
 {
     function initialize(address unlockaddr, address payable paymentAddr) initializer public {
+        __Ownable_init();
         EventCoreMixin._initializeOEMixinCore(unlockaddr, paymentAddr);
     }
 }
