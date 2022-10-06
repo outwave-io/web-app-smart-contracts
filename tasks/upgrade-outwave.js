@@ -22,14 +22,14 @@ task('outwave:upgrade', 'deploys unlock infrastructure')
     console.log("!!! Outwave payments are set to: " + paymentAddress);
 
     const outwaveUpgrader = require('../scripts/upgrades/outwave.js')
-    outwaveAddress = await outwaveUpgrader({ outwaveAddress, unlockAddress, paymentAddress })
+    outwaveAddress = await outwaveUpgrader({ outwaveAddress, unlockAddress, paymentAddress, basetokenuri })
 
     console.log("- outwave org upgraded at: " + outwaveAddress);
 
-    if(basetokenuri){
-      await outwave.setBaseTokenUri(basetokenuri);
-      console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
-    }
+    // if(basetokenuri){
+    //   await outwave.setBaseTokenUri(basetokenuri);
+    //   console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
+    // }
 
     const keyBurnerDeployer = require('../scripts/upgrades/eventKeyBurner')
     var eventKeyburnerAddress = await keyBurnerDeployer({

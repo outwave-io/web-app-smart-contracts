@@ -1,6 +1,11 @@
 const { ethers, upgrades } = require('hardhat')
 
-async function main({ outwaveAddress, unlockAddress, paymentAddress }) {
+async function main({
+  outwaveAddress,
+  unlockAddress,
+  paymentAddress,
+  basetokenuri,
+}) {
   // eslint-disable-next-line no-console
   // console.log('KEYBURNER DEPLOY > creating a new keyBurner...')
 
@@ -16,6 +21,13 @@ async function main({ outwaveAddress, unlockAddress, paymentAddress }) {
   // console.log(
   //   `KEYBURNER DEPLOY > deployed to: ${keyBurner.address} (tx: ${keyBurner.deployTransaction.hash})`
   // )
+
+  if (basetokenuri) {
+    await outwave.setBaseTokenUri(basetokenuri)
+    console.log(
+      '- eventmanager:setBaseTokenUri has been set to: ' + basetokenuri
+    )
+  }
 
   return outwave.address
 }
