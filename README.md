@@ -39,9 +39,8 @@ $ npx hardhat outwave:deploy --network mumbai
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
 // upgrade outwave (note: keyburner must be upgraded individually)
-npx hardhat outwave:upgrade --unlock-address 0x3e6E08f85E87504Fb4C3a07C347a28BB9C0175A2 --outwave-address 0x5155f2Ebd1F5BAf46Dd05CF516cF77999E94f483 --network mumbai
-- outwave org upgraded at: 0x5155f2Ebd1F5BAf46Dd05CF516cF77999E94f483
-[onchain] To verify on blockchain: yarn verify 0x5155f2Ebd1F5BAf46Dd05CF516cF77999E94f483 0x3e6E08f85E87504Fb4C3a07C347a28BB9C0175A2 --network XXXXXXXXXXXXX
+npx hardhat outwave:upgrade --unlock-address 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --outwave-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
+- outwave org upgraded at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 
 // deploy keyburner
 npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
