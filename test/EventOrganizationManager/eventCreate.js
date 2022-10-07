@@ -2,6 +2,19 @@ const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
 
+/*
+ NOTE: to test correctly the usage of the contract, users shall interract via interface IEventOrganizationManagerMixin
+ and avoid accessing via concrete implementation.
+
+ Tests shall use:
+  - outwave = await ethers.getContractAt("IEventOrganizationManagerMixin", addresses.outwaveAddress);
+ Tests shall NOT use
+  -  let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+     outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+
+ Concrete implementation is allowed only for setting up the contract in the before() event.
+*/
+
 contract('Organization Event Manager', () => {
   describe('create event / behavior ', () => {
     let outwave
@@ -14,8 +27,12 @@ contract('Organization Event Manager', () => {
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
-      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
-      await outwave.setBaseTokenUri(baseTokenUri)
+      let outwaveManager = await outwaveFactory.attach(addresses.outwaveAddress)
+      outwave = await ethers.getContractAt(
+        'IEventOrganizationManagerMixin',
+        addresses.outwaveAddress
+      )
+      await outwaveManager.setBaseTokenUri(baseTokenUri)
       ;[, user1] = await ethers.getSigners()
     })
 
@@ -100,7 +117,7 @@ contract('Organization Event Manager', () => {
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
       lockAddress = evt.args.lockAddress
     })
-    it('should NOT allow lock creator to manage directly the publiclokc', async () => {
+    it('should NOT allow lock creator to manage directly the publiclock', async () => {
       let PublicLock = await ethers.getContractFactory('PublicLock')
       let publiclock = await PublicLock.attach(lockAddress)
 

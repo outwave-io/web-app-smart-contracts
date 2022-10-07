@@ -10,8 +10,10 @@ contract('Organization Event Manager', () => {
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
-      let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
-      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      outwave = await ethers.getContractAt(
+        'IEventOrganizationManagerMixin',
+        addresses.outwaveAddress
+      )
       ;[, addr1] = await ethers.getSigners()
 
       const tx = await outwave.connect(addr1).eventCreate(

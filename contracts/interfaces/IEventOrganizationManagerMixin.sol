@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.5.17 <0.9.0;
 
-interface IEventOrganizationManagerMixin {
+import "./IEventSendEvents.sol";
+
+interface IEventOrganizationManagerMixin is IEventSendEvents {
 
     /**
         @notice Public method to create events. Creating an event, a public lock is created.
