@@ -1,8 +1,20 @@
 const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
-
 const keyPrice = web3.utils.toWei('0.01', 'ether')
+
+/*
+ NOTE: to test correctly the usage of the contract, users shall interract via interface IEventOrganizationManagerMixin
+ and avoid accessing via concrete implementation.
+
+ Tests shall use:
+  - outwave = await ethers.getContractAt("IEventOrganizationManagerMixin", addresses.outwaveAddress);
+ Tests shall NOT use
+  -  let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+     outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+
+ Concrete implementation is allowed only for setting up the contract in the before() event.
+*/
 
 contract('Organization Event Manager', () => {
   describe('set max keys per address / behaviour ', () => {
@@ -15,11 +27,14 @@ contract('Organization Event Manager', () => {
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
       let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
-      outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+      let outwaveManager = await outwaveFactory.attach(addresses.outwaveAddress)
       ;[, , user1] = await ethers.getSigners()
+      await outwaveManager.updateOutwavePaymentAddress(randomWallet.address) // set dao payment address
 
-      await outwave.updateOutwavePaymentAddress(randomWallet.address) // set dao payment address
-
+      outwave = await ethers.getContractAt(
+        'IEventOrganizationManagerMixin',
+        addresses.outwaveAddress
+      )
       const tx = await outwave.connect(user1).eventCreate(
         web3.utils.padLeft(web3.utils.asciiToHex('1'), 64),
         'name',

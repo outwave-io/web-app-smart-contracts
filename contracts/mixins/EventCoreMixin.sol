@@ -3,6 +3,8 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "hardhat/console.sol";
 
+import "../interfaces/IEventSendEvents.sol";
+
 /*
  * @title OEMixinCore
  * @author Miro Radenovic (miro@demind.io)
@@ -10,7 +12,7 @@ import "hardhat/console.sol";
  * to internal fields, only with proper get and set function, marked as internals. Direct access to fields is forbidden
    EventCoore shall not exposes any public methods.
  */
-contract EventCoreMixin is OwnableUpgradeable {
+contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
     struct OrganizationData {
         address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
         mapping(address => Lock) locksEntity; // fast searching
@@ -24,35 +26,6 @@ contract EventCoreMixin is OwnableUpgradeable {
         bool exists;
         bytes32 lockId; //todo
     }
-
-    // EVENTS
-
-    event EventCreated(
-         address indexed owner,
-         bytes32 eventId
-    );
-
-    event EventDisabled(
-         address indexed owner,
-         bytes32 eventId
-    );
-
-    event LockRegistered(
-        address indexed owner,
-        bytes32 indexed eventId,
-        address indexed lockAddress,
-        bytes32 lockId
-    );
-    event LockUpdated(
-        address indexed lockAddress
-    );
-
-    event LockDeregistered(
-        address indexed owner,
-        bytes32 indexed eventId,
-        address indexed lockAddress,
-        bytes32 lockId
-    );
 
     mapping(address => bool) internal _upgradableEventManagers;
     
