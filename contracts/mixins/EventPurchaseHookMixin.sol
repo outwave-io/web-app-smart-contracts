@@ -15,7 +15,7 @@ import "hardhat/console.sol";
 
 */
 contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
-    event OutwavePaymentTransfered(address from, uint amount);
+   
 
     /**
      * @notice Used to determine the purchase price before issueing a transaction.

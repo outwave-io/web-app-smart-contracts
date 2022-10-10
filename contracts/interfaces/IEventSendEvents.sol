@@ -49,4 +49,19 @@ interface IEventSendEvents {
         bytes32 lockId
     );
 
+    /** 
+        @notice emitted when a payment is received to outwave manager
+    **/
+    event PaymentReceived(address, uint);
+
+     /** 
+        @notice emmited when an organization withdraws from a lock
+    **/
+    event OutwaveWithdraw(address beneficiaryAddr, address tokenAddr, uint amount);
+
+    /** 
+        @notice emitted when organization has withdrawed and outwave dao receives fee
+    **/
+    event OutwavePaymentTransfered(address from, uint amount);
+
 }

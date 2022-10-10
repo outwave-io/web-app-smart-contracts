@@ -12,9 +12,6 @@ import "./EventCoreMixin.sol";
 */
 contract EventOutwaveManagerMixin is EventCoreMixin {
 
-    event PaymentReceived(address, uint);
-    event OutwaveWithdraw(address beneficiaryAddr, address tokenAddr, uint amount);
- 
     // allows the creations of public locks that will use specific erc20 token
     function erc20PaymentTokenAdd (address erc20addr) public onlyOwner{
         _erc20PaymentTokenAdd(erc20addr);
