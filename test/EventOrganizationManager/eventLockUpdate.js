@@ -1,8 +1,23 @@
 const { assert } = require('chai')
 const { ethers } = require('hardhat')
 const { reverts } = require('truffle-assertions')
+const { setSourceMapRange } = require('typescript')
+
+/*
+ NOTE: to test correctly the usage of the contract, users shall interract via interface IEventOrganizationManagerMixin
+ and avoid accessing via concrete implementation.
+
+ Tests shall use:
+  - outwave = await ethers.getContractAt("IEventOrganizationManagerMixin", addresses.outwaveAddress);
+ Tests shall NOT use
+  -  let outwaveFactory = await ethers.getContractFactory('OutwaveEvent')
+     outwave = await outwaveFactory.attach(addresses.outwaveAddress)
+
+ Concrete implementation is allowed only for setting up the contract in the before() event.
+*/
 
 contract('Organization Event Manager', () => {
+
   describe('update event lock / behaviour ', () => {
     let outwave
     let lockAddress // the address of the lock
@@ -10,10 +25,7 @@ contract('Organization Event Manager', () => {
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
-      outwave = await ethers.getContractAt(
-        'IEventOrganizationManagerMixin',
-        addresses.outwaveAddress
-      )
+      outwave = await ethers.getContractAt("IEventOrganizationManagerMixin", addresses.outwaveAddress);
       ;[, addr1] = await ethers.getSigners()
 
       const tx = await outwave.connect(addr1).eventCreate(
@@ -32,7 +44,7 @@ contract('Organization Event Manager', () => {
       lockAddress = evt.args.lockAddress
     })
 
-    it('should update [lockName], [keyPrice] and [maxNumberOfKeys] and should emit event LockUpadated ', async () => {
+    it('should update [lockName], [keyPrice], [maxNumberOfKeys] and [maxKeysPerAddress] and should emit event LockUpadated ', async () => {
       ;[, addr1] = await ethers.getSigners()
       const tx = await outwave
         .connect(addr1)
@@ -40,7 +52,8 @@ contract('Organization Event Manager', () => {
           lockAddress,
           'updatedName',
           web3.utils.toWei('1', 'ether'),
-          ethers.BigNumber.from(3000000)
+          ethers.BigNumber.from(3000000),
+          ethers.BigNumber.from(3)
         )
       let receipt = await tx.wait()
       let evt = receipt.events.find((v) => v.event === 'LockUpdated')
@@ -54,8 +67,69 @@ contract('Organization Event Manager', () => {
       assert.isTrue(
         (await readLock.maxNumberOfKeys()).eq(ethers.BigNumber.from(3000000))
       )
+      assert.isTrue(
+        (await readLock.maxKeysPerAddress()).eq(ethers.BigNumber.from(3))
+      )
       // assert.equal(await readLock.maxNumberOfKeys(), ethers.BigNumber.from(3000000)) // cannot be used due to js imprecision
     })
+
+    it('should NOT allow user to purchase more keys than maxKeysPerAddress', async () => {
+      const keyPrice = web3.utils.toWei('1', 'ether')
+      let recipient
+      ;[, recipient] = await ethers.getSigners()
+
+      let PublicLock = await ethers.getContractFactory('PublicLock')
+      publiclock = await PublicLock.attach(lockAddress)
+
+      // allowed purchases
+      await Promise.all([
+        publiclock.purchase(
+          [keyPrice],
+          [recipient.address],
+          [web3.utils.padLeft(0, 40)],
+          [web3.utils.padLeft(0, 40)],
+          [[]],
+          {
+            value: keyPrice,
+          }
+        ),
+        publiclock.purchase(
+          [keyPrice],
+          [recipient.address],
+          [web3.utils.padLeft(0, 40)],
+          [web3.utils.padLeft(0, 40)],
+          [[]],
+          {
+            value: keyPrice,
+          }
+        ),
+        publiclock.purchase(
+          [keyPrice],
+          [recipient.address],
+          [web3.utils.padLeft(0, 40)],
+          [web3.utils.padLeft(0, 40)],
+          [[]],
+          {
+            value: keyPrice,
+          }
+        ),
+      ])
+
+      const unallowedPurchase = publiclock.purchase(
+        [keyPrice],
+        [recipient.address],
+        [web3.utils.padLeft(0, 40)],
+        [web3.utils.padLeft(0, 40)],
+        [[]],
+        {
+          value: keyPrice,
+        }
+      )
+
+      await reverts(unallowedPurchase, 'MAX_KEYS')
+    })
+
+
   })
   describe('update event lock / security', () => {
     let outwave
@@ -94,7 +168,8 @@ contract('Organization Event Manager', () => {
             lockAddress,
             'updatedName',
             web3.utils.toWei('1', 'ether'),
-            ethers.BigNumber.from(3000000)
+            ethers.BigNumber.from(3000000),
+            ethers.BigNumber.from(3)
           ),
         'USER_NOT_LOCK_OWNER'
       )
@@ -107,7 +182,8 @@ contract('Organization Event Manager', () => {
             lockAddress,
             'updatedName',
             web3.utils.toWei('1', 'ether'),
-            ethers.BigNumber.from(3000000)
+            ethers.BigNumber.from(3000000),
+            ethers.BigNumber.from(3)
           ),
         'USER_NOT_LOCK_OWNER'
       )

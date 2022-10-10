@@ -253,12 +253,14 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address lockAddress,
         string calldata lockName,
         uint256 keyPrice, // the price of each key (nft)
-        uint256 maxNumberOfKeys
+        uint256 maxNumberOfKeys,
+        uint256 maxKeysPerAddress
     ) public override onlyLockOwner(lockAddress) {
         IPublicLock lock = IPublicLock(lockAddress);
         lock.updateLockName(lockName);
         lock.updateKeyPricing(keyPrice, lock.tokenAddress());
         lock.setMaxNumberOfKeys(maxNumberOfKeys);
+        lock.setMaxKeysPerAddress(maxKeysPerAddress);
         emit LockUpdated(lockAddress);
     }
 
@@ -272,18 +274,6 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         string calldata lockSymbol
     ) public override onlyLockOwner(lockAddress) {
         IPublicLock(lockAddress).updateLockSymbol(lockSymbol);
-    }
-
-    /**
-        @notice change the max keys per address (default 1). Check unlock's Public Lock documentation for more info
-        @param lockAddress the address of the lock 
-        @param maxKeysPerAddress the max keys per address
-     */
-    function eventLockSetMaxKeysPerAddress(
-        address lockAddress,
-        uint256 maxKeysPerAddress
-    ) public override onlyLockOwner(lockAddress) {
-        IPublicLock(lockAddress).setMaxKeysPerAddress(maxKeysPerAddress);
     }
 
       /**

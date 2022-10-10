@@ -27,6 +27,8 @@ interface IEventLock {
 
     function maxNumberOfKeys() external view returns (uint256);
 
+    function maxKeysPerAddress() external view returns (uint256);
+
     function keyManagerOf(uint) external view returns (address);
 
     function refundPenaltyBasisPoints() external view returns (uint256);

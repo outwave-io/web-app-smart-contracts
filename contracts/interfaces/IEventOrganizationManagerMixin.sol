@@ -104,7 +104,8 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
         address lockAddress,
         string calldata lockName,
         uint256 keyPrice, // the price of each key (nft)
-        uint256 maxNumberOfKeys
+        uint256 maxNumberOfKeys,
+        uint256 maxKeysPerAddress
     ) external;
 
      /**
@@ -115,16 +116,6 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
     function eventLockUpdateLockSymbol(
         address lockAddress,
         string calldata lockSymbol
-    ) external;
-
-    /**
-        @notice change the max keys per address (default 1). Check unlock's Public Lock documentation for more info
-        @param lockAddress the address of the lock 
-        @param maxKeysPerAddress the max keys per address
-     */
-    function eventLockSetMaxKeysPerAddress(
-        address lockAddress,
-        uint256 maxKeysPerAddress
     ) external;
 
     /**
