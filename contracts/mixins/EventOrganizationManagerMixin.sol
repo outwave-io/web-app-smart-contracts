@@ -309,4 +309,15 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         }    
     }
 
+        /**
+        @notice changes the owner of an organization
+        @param actualOwnerAddress the actual owner address
+        @param newOwnerAddress the new owner address
+     */
+    function organizationChangeOwner(
+        address actualOwnerAddress,
+        address newOwnerAddress
+    ) external override onlyOwner {
+        _organizationChangeOwner(actualOwnerAddress, newOwnerAddress);
+    }
 }

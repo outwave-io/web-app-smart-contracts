@@ -228,4 +228,26 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
     {
         return _eventIds[eventId];
     }
+
+    /**
+        @notice changes the owner of an organization
+        @param actualOwnerAddress the actual owner address
+        @param newOwnerAddress the new owner address
+     */
+    function _organizationChangeOwner(
+        address actualOwnerAddress,
+        address newOwnerAddress
+    ) internal {
+        OrganizationData storage actualOrg = _userOrganizations[actualOwnerAddress];
+        require(actualOrg.exists, "ORGANIZATION_NOT_EXISTS");
+
+        OrganizationData storage newOrg = _userOrganizations[newOwnerAddress];
+        newOrg.locks = actualOrg.locks;
+        for (uint i=0; i<actualOrg.locks.length; i++) {
+            newOrg.locksEntity[actualOrg.locks[i].lockAddress] = actualOrg.locks[i];
+        }
+        newOrg.exists = true;
+
+        delete _userOrganizations[actualOwnerAddress];
+    }
 }
