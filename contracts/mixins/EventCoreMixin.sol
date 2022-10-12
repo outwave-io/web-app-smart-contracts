@@ -14,7 +14,6 @@ import "../interfaces/IEventSendEvents.sol";
  */
 contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
     struct OrganizationData {
-        address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
         mapping(address => Lock) locksEntity; // fast searching
         Lock[] locks; //fast returnig of all locks
         bool exists;
