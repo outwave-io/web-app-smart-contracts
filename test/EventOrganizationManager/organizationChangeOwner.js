@@ -1,5 +1,6 @@
 const { assert } = require('chai')
 const { ethers } = require('hardhat')
+const { reverts } = require('truffle-assertions')
 
 contract('Organization Event Manager', () => {
   describe('change organization owner / behavior ', () => {
@@ -7,6 +8,7 @@ contract('Organization Event Manager', () => {
     let keyPrice = web3.utils.toWei('0.01', 'ether')
     let addr1
     const baseTokenUri = 'https://uri.com/'
+    const newOwner = '0x2CAF3950d36D92165dc7b51DCeA3f1314cE20B84'
 
     before(async () => {
       let addresses = await require('../helpers/deploy').deployUnlock('10')
@@ -43,11 +45,19 @@ contract('Organization Event Manager', () => {
       // change owner and performs checks
       assert.isTrue(await outwave.organizationIsOwned(eventCreate.args.owner))
 
-      const newOwner = '0x2CAF3950d36D92165dc7b51DCeA3f1314cE20B84'
       outwave.organizationChangeOwner(eventCreate.args.owner, newOwner)
 
       assert.isTrue(await outwave.organizationIsOwned(newOwner))
       assert.isFalse(await outwave.organizationIsOwned(eventCreate.args.owner))
+    })
+
+    it('should fail with ORGANIZATION_NOT_EXISTS when owner is not in state', async () => {
+      const unknownAddr = '0x23165d9BDFD7921F8f7504F4569090b731df5A27'
+
+      await reverts(
+        outwave.organizationChangeOwner(unknownAddr, newOwner),
+        'ORGANIZATION_NOT_EXISTS'
+      )
     })
   })
 })
