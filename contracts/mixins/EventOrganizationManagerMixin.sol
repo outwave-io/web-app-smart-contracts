@@ -311,14 +311,15 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
 
     /**
         @notice changes the owner of an organization
-        @param actualOwnerAddress the actual owner address
         @param newOwnerAddress the new owner address
      */
     function organizationChangeOwner(
-        address actualOwnerAddress,
         address newOwnerAddress
-    ) external override onlyOwner {
-        _organizationChangeOwner(actualOwnerAddress, newOwnerAddress);
+    ) external override {
+        require(_organizationIsOwned(msg.sender), "UNAUTHORIZED_SENDER_NOT_OWNER");
+        require(!_organizationIsOwned(newOwnerAddress), "UNAUTHORIZED_ALREADY_OWNED");
+
+        _organizationChangeOwner(msg.sender, newOwnerAddress);
     }
 
     /**
@@ -327,7 +328,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
      */
     function organizationIsOwned(
         address ownerAddress
-    ) external override view onlyOwner returns(bool)
+    ) external override view returns(bool)
     {
         return _organizationIsOwned(ownerAddress);
     }

@@ -130,11 +130,9 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
 
     /**
         @notice changes the owner of an organization
-        @param actualOwnerAddress the actual owner address
         @param newOwnerAddress the new owner address
      */
     function organizationChangeOwner(
-        address actualOwnerAddress,
         address newOwnerAddress
     ) external;
 
