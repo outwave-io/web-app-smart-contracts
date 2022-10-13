@@ -320,6 +320,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         require(!_organizationIsOwned(newOwnerAddress), "UNAUTHORIZED_ALREADY_OWNED");
 
         _organizationChangeOwner(msg.sender, newOwnerAddress);
+
+        emit OrganizationOwnerChanged(msg.sender, newOwnerAddress);
     }
 
     /**

@@ -46,7 +46,17 @@ contract('Organization Event Manager', () => {
       // change owner and performs checks
       assert.isTrue(await outwave.organizationIsOwned(eventCreate.args.owner))
 
-      await outwave.connect(addr1).organizationChangeOwner(newOwner)
+      const chTx = await outwave
+        .connect(addr1)
+        .organizationChangeOwner(newOwner)
+      let chReceipt = await chTx.wait()
+
+      // check event consistency
+      let orgOwnerChanged = chReceipt.events.find(
+        (v) => v.event === 'OrganizationOwnerChanged'
+      )
+      assert.equal(orgOwnerChanged.args.actualOwner, addr1.address)
+      assert.equal(orgOwnerChanged.args.newOwner, newOwner)
 
       assert.isTrue(await outwave.organizationIsOwned(newOwner))
       assert.isFalse(await outwave.organizationIsOwned(eventCreate.args.owner))
