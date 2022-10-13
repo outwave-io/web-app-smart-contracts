@@ -105,6 +105,7 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses] = newLock;
+        _userOrganizations[ownerAddress].exists = true;
         _eventIds[eventId] = ownerAddress;
         emit LockRegistered(
             ownerAddress,
@@ -249,5 +250,13 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         newOrg.exists = true;
 
         delete _userOrganizations[actualOwnerAddress];
+    }
+
+    function _organizationIsOwned(
+        address ownerAddress
+    ) internal view returns(bool) {
+        OrganizationData storage organization = _userOrganizations[ownerAddress];
+
+        return organization.exists;
     }
 }
