@@ -309,7 +309,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         }    
     }
 
-        /**
+    /**
         @notice changes the owner of an organization
         @param actualOwnerAddress the actual owner address
         @param newOwnerAddress the new owner address
@@ -319,5 +319,16 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address newOwnerAddress
     ) external override onlyOwner {
         _organizationChangeOwner(actualOwnerAddress, newOwnerAddress);
+    }
+
+    /**
+        @notice checks if an address own an organization
+        @param ownerAddress the address to check
+     */
+    function organizationIsOwned(
+        address ownerAddress
+    ) external override view onlyOwner returns(bool)
+    {
+        return _organizationIsOwned(ownerAddress);
     }
 }

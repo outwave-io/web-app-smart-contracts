@@ -137,4 +137,12 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
         address actualOwnerAddress,
         address newOwnerAddress
     ) external;
+
+    /**
+        @notice checks if an address own an organization
+        @param ownerAddress the address to check
+     */
+    function organizationIsOwned(
+        address ownerAddress
+    ) external view returns(bool);
 }

@@ -252,6 +252,10 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         delete _userOrganizations[actualOwnerAddress];
     }
 
+    /**
+        @notice checks if an address own an organization
+        @param ownerAddress the address to check
+     */
     function _organizationIsOwned(
         address ownerAddress
     ) internal view returns(bool) {
