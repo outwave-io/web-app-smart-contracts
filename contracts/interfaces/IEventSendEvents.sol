@@ -64,4 +64,7 @@ interface IEventSendEvents {
     **/
     event OutwavePaymentTransfered(address from, uint amount);
 
+    event OrganizationOwnerChanged(
+        address indexed actualOwner,
+        address indexed newOwner);
 }

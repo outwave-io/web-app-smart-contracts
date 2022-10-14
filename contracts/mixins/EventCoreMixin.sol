@@ -14,7 +14,6 @@ import "../interfaces/IEventSendEvents.sol";
  */
 contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
     struct OrganizationData {
-        address organizationAddress; // todo: is this needed? We have the address in the _userOrganizations mapping key
         mapping(address => Lock) locksEntity; // fast searching
         Lock[] locks; //fast returnig of all locks
         bool exists;
@@ -106,6 +105,7 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         });
         _userOrganizations[ownerAddress].locks.push(newLock);
         _userOrganizations[ownerAddress].locksEntity[entityAdresses] = newLock;
+        _userOrganizations[ownerAddress].exists = true;
         _eventIds[eventId] = ownerAddress;
         emit LockRegistered(
             ownerAddress,
@@ -228,5 +228,39 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         returns (address owner) 
     {
         return _eventIds[eventId];
+    }
+
+    /**
+        @notice changes the owner of an organization
+        @param actualOwnerAddress the actual owner address
+        @param newOwnerAddress the new owner address
+     */
+    function _organizationChangeOwner(
+        address actualOwnerAddress,
+        address newOwnerAddress
+    ) internal {
+        OrganizationData storage actualOrg = _userOrganizations[actualOwnerAddress];
+        require(actualOrg.exists, "ORGANIZATION_NOT_EXISTS");
+
+        OrganizationData storage newOrg = _userOrganizations[newOwnerAddress];
+        newOrg.locks = actualOrg.locks;
+        for (uint i=0; i<actualOrg.locks.length; i++) {
+            newOrg.locksEntity[actualOrg.locks[i].lockAddress] = actualOrg.locks[i];
+        }
+        newOrg.exists = true;
+
+        delete _userOrganizations[actualOwnerAddress];
+    }
+
+    /**
+        @notice checks if an address own an organization
+        @param ownerAddress the address to check
+     */
+    function _organizationIsOwned(
+        address ownerAddress
+    ) internal view returns(bool) {
+        OrganizationData storage organization = _userOrganizations[ownerAddress];
+
+        return organization.exists;
     }
 }

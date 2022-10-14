@@ -128,4 +128,19 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
          address newEventApiAddress
     ) external;
 
+    /**
+        @notice changes the owner of an organization
+        @param newOwnerAddress the new owner address
+     */
+    function organizationChangeOwner(
+        address newOwnerAddress
+    ) external;
+
+    /**
+        @notice checks if an address own an organization
+        @param ownerAddress the address to check
+     */
+    function organizationIsOwned(
+        address ownerAddress
+    ) external view returns(bool);
 }
