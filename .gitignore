@@ -4,6 +4,9 @@ coverage
 coverage.json
 typechain
 
+
+
+
 #Hardhat files
 cache
 artifacts
@@ -12,6 +15,8 @@ artifacts
 /.openzeppelin
 /deployments
 /yarn.lock
+/accounts.optimisticGoerli.js
+/accounts.mumbai.js
 
 /binaries
 /output
