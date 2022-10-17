@@ -48,6 +48,8 @@ task('tool:event:createEvent', 'create Event and returns lock address')
   .addOptionalParam('keytokenaddr', 'token address')
   .addOptionalParam('keyprice', 'key price')
   .addOptionalParam('keyquantity', 'key quantity')
+  .addOptionalParam('maxkeys', 'max Keys Per Address')
+
   .setAction(async ({
     outwaveaddr,
     eventid = 'event1',
@@ -56,6 +58,7 @@ task('tool:event:createEvent', 'create Event and returns lock address')
     keytokenaddr = web3.utils.padLeft(0, 40), //address(0)
     keyprice = web3.utils.toWei('0.000001', 'ether'),
     keyquantity = 100000,
+    maxkeys = 10
   }, { ethers }) => {
 
 
@@ -72,11 +75,14 @@ task('tool:event:createEvent', 'create Event and returns lock address')
         keytokenaddr,
         keyprice,
         keyquantity,
+        maxkeys,
         lockHash
       )
+      await txEv.wait()
 
     let evRec = await txEv.wait()
     let evtLock = evRec.events.find((v) => v.event === 'LockRegistered')
+
     console.log("event created. lock address is: " + evtLock.args.lockAddress)
   })
 
