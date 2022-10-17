@@ -17,6 +17,7 @@ artifacts
 /yarn.lock
 /accounts.optimisticGoerli.js
 /accounts.mumbai.js
+/accounts.optimismTest.js
 
 /binaries
 /output
