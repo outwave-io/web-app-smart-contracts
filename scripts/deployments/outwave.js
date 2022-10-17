@@ -1,8 +1,8 @@
 const { ethers, upgrades } = require('hardhat')
 
 async function main({ unlockAddress, paymentAddress }) {
-  // eslint-disable-next-line no-console
-  // console.log('KEYBURNER DEPLOY > creating a new keyBurner...')
+  console.log(" ---> deployerparam unlockaddress: "+ unlockAddress)
+  console.log(" ---> deployerparam paymentaddress: "+ paymentAddress)
 
   let Outwave = await ethers.getContractFactory('OutwaveEvent')
   let outwave = await upgrades.deployProxy(Outwave, [
@@ -11,12 +11,6 @@ async function main({ unlockAddress, paymentAddress }) {
   ])
 
   await outwave.deployed()
-
-  // eslint-disable-next-line no-console
-  // console.log(
-  //   `KEYBURNER DEPLOY > deployed to: ${keyBurner.address} (tx: ${keyBurner.deployTransaction.hash})`
-  // )
-
   return outwave.address
 }
 
