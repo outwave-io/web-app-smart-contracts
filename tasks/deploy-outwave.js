@@ -4,18 +4,44 @@
 const { task } = require('hardhat/config')
 require("@tenderly/hardhat-tenderly");
 
+
+task('outwave:deploy:outwaveevent', 'deploys unlock infrastructure')
+  .addParam('unlockAddress', 'the unlock factory address')
+  .addParam('paymentAddress', 'the address where fees will be sent')
+  .setAction(async ({ 
+    unlockAddress,
+    paymentAddress
+  }, { ethers }) => { 
+
+    let [owner] = await ethers.getSigners()
+    console.log("- deploying from: " + owner.address)
+    console.log("- param unlockaddress: "+ unlockAddress)
+    console.log("- param paymentaddress: "+ paymentAddress)
+
+    const outwaveDeployer = require('../scripts/deployments/outwave.js')
+    var outwaveAddress = await outwaveDeployer({ unlockAddress, paymentAddress})
+    console.log("- outwave event manager deployed: " + outwaveAddress);
+
+   });
+
+
+
 task('outwave:deploy', 'deploys unlock infrastructure')
   .addOptionalParam('verify', 'verify with hardhat-tenderly')
   .addOptionalParam('paymentAddress', 'the address where fees will be sent')
   .addOptionalParam('basetokenuri', 'sets the baseTokenUri for nfts')
   .setAction(async ({ 
     verify = false,
-    paymentAddress =  "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877",
+    paymentAddress =  "0xD7eFf125a429de3f38334bD863520789e5818017",
     basetokenuri
   }, { ethers }) => {
 
     console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
     console.log("!!! Outwave payments are set to: " + paymentAddress);
+    
+    let [owner] = await ethers.getSigners()
+    console.log("- deploying from: " + owner.address)
+    
 
     let unlockVersion = "10";
     let unlockAddress = await run('deploy:unlock')
@@ -28,11 +54,12 @@ task('outwave:deploy', 'deploys unlock infrastructure')
       unlockVersion,
     });
 
+    console.log("- unlock deployed: " + unlockAddress);
+    console.log("- publiclock template deployed: " + publicLockAddress);
+
     const outwaveDeployer = require('../scripts/deployments/outwave.js')
     var outwaveAddress = await outwaveDeployer({ unlockAddress, paymentAddress })
 
-    console.log("- unlock deployed: " + unlockAddress);
-    console.log("- publiclock template deployed: " + publicLockAddress);
     console.log("- outwave event manager deployed: " + outwaveAddress);
 
     if(basetokenuri){
