@@ -18,6 +18,7 @@ artifacts
 /accounts.optimisticGoerli.js
 /accounts.mumbai.js
 /accounts.optimismTest.js
+/etherscan.js
 
 /binaries
 /output

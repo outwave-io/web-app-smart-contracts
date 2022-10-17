@@ -69,12 +69,7 @@ require('./tasks/upgrade-outwave')
  */
 module.exports = {
   networks,
-  etherscan: {
-    apiKey: {
-      polygonMumbai: 'IES3ED9IU77E9TEWYUEJKTJEQG2DYFW4UF',
-      optimisticGoerli: 'A9TT7428AZR29X2NXGRTGPVDTXFTMTZVQS',
-    },
-  },
+  etherscan: require('./etherscan'),
   gasReporter: {
     currency: 'USD',
     excludeContracts: ['Migrations', 'TestNoop'],
