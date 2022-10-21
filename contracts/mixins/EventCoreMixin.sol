@@ -249,7 +249,7 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         }
         newOrg.exists = true;
 
-        delete _userOrganizations[actualOwnerAddress];
+        _userOrganizations[actualOwnerAddress].exists = false;
     }
 
     /**
