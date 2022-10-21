@@ -163,18 +163,13 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
-                // //eventLockDisable(userLocks[i].lockAddr);
-                // require(
-                //     _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
-                //     "USER_NOT_OWNER"
-                // );
                 IPublicLock lock = IPublicLock(userLocks[i].lockAddress);
-                lock.setMaxNumberOfKeys(lock.totalSupply());
                 _eventLockDeregister(
                     msg.sender,
                     eventId,
                     userLocks[i].lockAddress
                 );
+                lock.setMaxNumberOfKeys(lock.totalSupply());
             }
         }
         emit EventDisabled(msg.sender, eventId);
