@@ -148,13 +148,13 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
     {
         Lock[] memory locks = _userOrganizations[owner].locks;
         //WTF https://stackoverflow.com/questions/68010434/why-cant-i-return-dynamic-array-in-solidity
-        uint count;
+        uint count = 0;
         for (uint i = 0; i < locks.length; i++) {
             if (locks[i].eventId == eventId) {
                 count++;
             }
         }
-        uint returnIndex;
+        uint returnIndex = 0;
         Lock[] memory result = new Lock[](count);
         for (uint i = 0; i < locks.length; i++) {
             if (locks[i].eventId == eventId) {
@@ -249,7 +249,7 @@ contract EventCoreMixin is IEventSendEvents, OwnableUpgradeable {
         }
         newOrg.exists = true;
 
-        delete _userOrganizations[actualOwnerAddress];
+        _userOrganizations[actualOwnerAddress].exists = false;
     }
 
     /**

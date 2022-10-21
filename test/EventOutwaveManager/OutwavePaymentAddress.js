@@ -19,6 +19,14 @@ contract('Event Outwave Manager', () => {
     it('shuold allow to set a OutwavePaymentAddress address', async () => {
       await outwave.updateOutwavePaymentAddress(randomWallet.address)
     })
+    it('shuold disallow to set a OutwavePaymentAddress with zero address', async () => {
+      await reverts(
+        outwave.updateOutwavePaymentAddress(
+          '0x0000000000000000000000000000000000000000'
+        ),
+        'ZERO_ADDRESS_NOT_ALLOWED'
+      )
+    })
     it('shuold get the address', async () => {
       assert.equal(
         await outwave.getOutwavePaymentAddress(),

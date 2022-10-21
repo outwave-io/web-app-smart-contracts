@@ -31,6 +31,8 @@ contract EventOutwaveManagerMixin is EventCoreMixin {
         public
         onlyOwner
     {
+        require(newPaymentAddress != address(0), "ZERO_ADDRESS_NOT_ALLOWED");
+
         _outwavePaymentAddress = newPaymentAddress;
     }
 
@@ -56,6 +58,8 @@ contract EventOutwaveManagerMixin is EventCoreMixin {
         public
         onlyOwner
     {
+        require(newUnlockAddr != address(0), "ZERO_ADDRESS_NOT_ALLOWED");
+
         _unlockAddr = newUnlockAddr;
     }
 

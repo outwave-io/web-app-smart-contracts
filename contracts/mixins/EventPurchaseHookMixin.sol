@@ -72,7 +72,8 @@ contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
         if(tokenadd != address(0)){
             //todo: shall we use safeerc20upgradable?
             IERC20Upgradeable erc20 = IERC20Upgradeable(tokenadd);
-            erc20.transfer(_outwavePaymentAddress, fee);
+            bool success = erc20.transfer(_outwavePaymentAddress, fee);
+            require(success, "ON_KEY_PURCHASE_TRANSFER_FAILED");
         }
         else{
             _outwavePaymentAddress.transfer(address(this).balance);

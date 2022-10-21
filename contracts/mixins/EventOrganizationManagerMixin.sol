@@ -163,18 +163,13 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
-                // //eventLockDisable(userLocks[i].lockAddr);
-                // require(
-                //     _isUserLockOwner(msg.sender, userLocks[i].lockAddr),
-                //     "USER_NOT_OWNER"
-                // );
                 IPublicLock lock = IPublicLock(userLocks[i].lockAddress);
-                lock.setMaxNumberOfKeys(lock.totalSupply());
                 _eventLockDeregister(
                     msg.sender,
                     eventId,
                     userLocks[i].lockAddress
                 );
+                lock.setMaxNumberOfKeys(lock.totalSupply());
             }
         }
         emit EventDisabled(msg.sender, eventId);
@@ -192,8 +187,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
     ) public override onlyLockOwner(lockAddress)
     {
         IPublicLock lock = IPublicLock(lockAddress);
-        lock.setMaxNumberOfKeys(lock.totalSupply());
         _eventLockDeregister(msg.sender, eventId, lockAddress);
+        lock.setMaxNumberOfKeys(lock.totalSupply());
     }
 
     /**
@@ -212,7 +207,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         if (tokenadd != address(0)) {
             //todo: shall we use safeerc20upgradable?
             IERC20Upgradeable erc20 = IERC20Upgradeable(tokenadd);
-            erc20.transfer(msg.sender, amount);
+            bool success = erc20.transfer(msg.sender, amount);
+            require(success, "WITHDRAW_FROM_LOCK_FAILED");
         } else {
             payable(msg.sender).transfer(amount);
         }
