@@ -187,8 +187,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
     ) public override onlyLockOwner(lockAddress)
     {
         IPublicLock lock = IPublicLock(lockAddress);
-        lock.setMaxNumberOfKeys(lock.totalSupply());
         _eventLockDeregister(msg.sender, eventId, lockAddress);
+        lock.setMaxNumberOfKeys(lock.totalSupply());
     }
 
     /**
