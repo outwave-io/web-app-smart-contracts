@@ -211,9 +211,9 @@ contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable,
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _baseURI() internal pure override(ERC721Upgradeable) returns (string memory) {
-        revert("FEATURE_DISABLED");
-    }
+    // function _baseURI() internal pure override(ERC721Upgradeable) returns (string memory) {
+    //     revert("FEATURE_DISABLED");
+    // }
 
     function _mintToken(address to) private returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
