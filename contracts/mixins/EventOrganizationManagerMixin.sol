@@ -212,7 +212,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         if (tokenadd != address(0)) {
             //todo: shall we use safeerc20upgradable?
             IERC20Upgradeable erc20 = IERC20Upgradeable(tokenadd);
-            erc20.transfer(msg.sender, amount);
+            bool success = erc20.transfer(msg.sender, amount);
+            require(success, "WITHDRAW_FROM_LOCK_FAILED");
         } else {
             payable(msg.sender).transfer(amount);
         }
