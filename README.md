@@ -96,7 +96,7 @@ Then ask to the fellow devs to be added to the project on tenderly.co
 
 ## Slither
 
-Slither is a solidity source code analyzier and requires Python 3.x and solc-select (to properly work).
+Slither is a Solidity source code analyzier and requires Python 3.x and solc-select (to properly work).
 
 ```shell
 # install choco if not present on your system (admin console)
@@ -105,7 +105,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 # install solc-select deps (admin console)
 choco install visualstudio2017buildtools
 
-# install solc-select and set correct solidity verison
+# install solc-select and set correct Solidity verison
 pip install solc-select
 solc-select install 0.8.7
 solc-select use 0.8.7
@@ -118,3 +118,15 @@ yarn slither
 ```
 
 Be aware that the command `yarn slither` may fail from VS Code integrated terminal, please run it eg in a regular Windows Terminal.
+
+## Solhint
+
+Solhint is a Solidity linter and can be installed with npm and runned with yarn:
+
+```shell
+# install solhint
+npm install -g solhint
+
+#  run it (from repo root)
+yarn solhint
+```
