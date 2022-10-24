@@ -1,16 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 
-// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
-// import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "./ERC721EnumerableUpgradeable.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -59,13 +53,6 @@ contract EventKeyBurner is
         _outwave = IReadOutwave(outwaveAddr);
         _unlock = IUnlock(unlockAddr);
     }
-
-    // constructor(address outwaveAddr, address unlockAddr)
-    //     ERC721("OutwavePartecipantAttestation", "OPA")
-    // {
-    //     _outwave = IReadOutwave(outwaveAddr);
-    //     _unlock = IUnlock(unlockAddr);
-    // }
 
     function transferFrom(
         address from,
@@ -248,10 +235,6 @@ contract EventKeyBurner is
     ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
-
-    // function _baseURI() internal pure override(ERC721Upgradeable) returns (string memory) {
-    //     revert("FEATURE_DISABLED");
-    // }
 
     function _mintToken(address to) private returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
