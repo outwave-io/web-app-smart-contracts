@@ -12,3 +12,6 @@ artifacts
 /.openzeppelin
 /deployments
 /yarn.lock
+
+/binaries
+/output
