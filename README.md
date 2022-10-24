@@ -176,3 +176,18 @@ python ~/src/rattle/rattle-cli.py --input ./binaries/EventKeyBurner/contracts_Ev
 
 On Windows machines rattle will fail in the end cause `dot` command of `graphviz` package is not available, so it's recommended to use Ubuntu Terminal.
 Otherwise an Ubuntu VM or Docker image will be fine.
+
+## ASM JSON files
+
+Some tools like [GASOL](https://github.com/costa-group/gasol-optimizer) could need a ASM JSON file as input. You can use the following commands to produce them (from an Ubuntu machine):
+
+```shell
+# use a version of solc that supports --include-path parameter
+solc-select install 0.8.17
+solc-select use 0.8.17
+
+# invoke solc to output the asm json files
+solc --combined-json asm ./contracts/OutwaveEvent.sol --base-path . --include-path ./node_modules 1> ./asmjsonfiles/OutwaveEvent.asmjson
+
+solc --combined-json asm ./contracts/EventKeyBurner.sol --base-path . --include-path ./node_modules 1> ./asmjsonfiles/EventKeyBurner.asmjson
+```
