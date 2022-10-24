@@ -19,31 +19,25 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
 import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
 import "./interfaces/IReadOutwave.sol";
+import "./interfaces/IKeyBurnerSendEvents.sol";
 
 /**
  * @title OutwaveKeyBurner
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract EventKeyBurner is Initializable, OwnableUpgradeable, ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable {
+contract EventKeyBurner is IKeyBurnerSendEvents, Initializable, OwnableUpgradeable, ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable {
     using Counters for Counters.Counter;
     using AddressUpgradeable for address;
 
     Counters.Counter private _tokenIdCounter;
 
-    // // key is keccak256("{eventId}:{userAddress}"), useful to tell if a user has already burned a key for a given event
+    // key is keccak256("{eventId}:{userAddress}"), useful to tell if a user has already burned a key for a given event
     // mapping(bytes32 => bool) private _eventUserOpa;
     mapping(uint256 => OriginalKey) private _originalKeys;
 
     IReadOutwave private _outwave;
     IUnlock private _unlock;
-
-    event KeyBurn(
-        address indexed from,
-        address indexed lock,
-        uint256 burnedTokenId,
-        uint256 newTokenId
-    );
 
     struct OriginalKey {
         uint256 keyId;
