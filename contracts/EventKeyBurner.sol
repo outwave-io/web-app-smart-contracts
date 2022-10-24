@@ -26,7 +26,14 @@ import "./interfaces/IKeyBurnerSendEvents.sol";
  * @author Raffaele Brivio (demind.io)
  * @notice Burns Unlock Keys coming from Outwave ecosystem, giving back a freshly minted NFT.
  **/
-contract EventKeyBurner is IKeyBurnerSendEvents, Initializable, OwnableUpgradeable, ERC721Upgradeable, ERC721HolderUpgradeable, ERC721EnumerableUpgradeable {
+contract EventKeyBurner is
+    IKeyBurnerSendEvents,
+    Initializable,
+    OwnableUpgradeable,
+    ERC721Upgradeable,
+    ERC721HolderUpgradeable,
+    ERC721EnumerableUpgradeable
+{
     using Counters for Counters.Counter;
     using AddressUpgradeable for address;
 
@@ -44,61 +51,93 @@ contract EventKeyBurner is IKeyBurnerSendEvents, Initializable, OwnableUpgradeab
         address lockAddress;
     }
 
-    function initialize(address outwaveAddr, address unlockAddr) initializer public
+    function initialize(address outwaveAddr, address unlockAddr)
+        public
+        initializer
     {
         super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
         _outwave = IReadOutwave(outwaveAddr);
         _unlock = IUnlock(unlockAddr);
     }
 
-    // constructor(address outwaveAddr, address unlockAddr) 
+    // constructor(address outwaveAddr, address unlockAddr)
     //     ERC721("OutwavePartecipantAttestation", "OPA")
     // {
     //     _outwave = IReadOutwave(outwaveAddr);
     //     _unlock = IUnlock(unlockAddr);
     // }
 
-    function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
-    {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super.transferFrom(from, to, tokenId);
     }
 
-    function approve(address to, uint256 tokenId) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    function approve(address to, uint256 tokenId)
+        public
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
     {
         super.approve(to, tokenId);
     }
 
-    function balanceOf(address owner) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (uint256)
+    function balanceOf(address owner)
+        public
+        view
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        returns (uint256)
     {
         return super.balanceOf(owner);
     }
 
-    function getApproved(uint256 tokenId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address)
+    function getApproved(uint256 tokenId)
+        public
+        view
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        returns (address)
     {
         return super.getApproved(tokenId);
     }
 
-    function isApprovedForAll(address owner, address operator) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool)
+    function isApprovedForAll(address owner, address operator)
+        public
+        view
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        returns (bool)
     {
         return super.isApprovedForAll(owner, operator);
     }
 
-    function ownerOf(uint256 tokenId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address)
+    function ownerOf(uint256 tokenId)
+        public
+        view
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        returns (address)
     {
         return super.ownerOf(tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) 
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to,  uint256 tokenId, bytes memory _data) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super.safeTransferFrom(from, to, tokenId, _data);
     }
 
-    function setApprovalForAll(address operator, bool approved) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    function setApprovalForAll(address operator, bool approved)
+        public
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -133,7 +172,12 @@ contract EventKeyBurner is IKeyBurnerSendEvents, Initializable, OwnableUpgradeab
         address,
         uint256,
         bytes memory
-    ) public pure override(ERC721HolderUpgradeable, IERC721ReceiverUpgradeable) returns (bytes4) {
+    )
+        public
+        pure
+        override(ERC721HolderUpgradeable, IERC721ReceiverUpgradeable)
+        returns (bytes4)
+    {
         return this.onERC721Received.selector;
     }
 
