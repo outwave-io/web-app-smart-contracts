@@ -31,19 +31,17 @@ contract EventKeyBurner is
     using Counters for Counters.Counter;
     using AddressUpgradeable for address;
 
-    Counters.Counter private _tokenIdCounter;
-
-    // key is keccak256("{eventId}:{userAddress}"), useful to tell if a user has already burned a key for a given event
-    // mapping(bytes32 => bool) private _eventUserOpa;
-    mapping(uint256 => OriginalKey) private _originalKeys;
-
-    IReadOutwave private _outwave;
-    IUnlock private _unlock;
-
     struct OriginalKey {
         uint256 keyId;
         address lockAddress;
     }
+
+    Counters.Counter private _tokenIdCounter;
+
+    mapping(uint256 => OriginalKey) private _originalKeys;
+
+    IReadOutwave private _outwave;
+    IUnlock private _unlock;
 
     function initialize(address outwaveAddr, address unlockAddr)
         public
@@ -67,6 +65,67 @@ contract EventKeyBurner is
         override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
     {
         super.approve(to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+        super.safeTransferFrom(from, to, tokenId, _data);
+    }
+
+    function setApprovalForAll(address operator, bool approved)
+        public
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    /**
+     * @notice Burn the key of an Outwave Lock
+     * @param parent The address of the parent PublicLock
+     * @param tokenId The id of the PublickLock key to be burned
+     */
+    function burnKey(
+        address parent,
+        uint256 tokenId,
+        bytes32 eventHash
+    ) external {
+        (bool deployed, , ) = _unlock.locks(parent);
+        IPublicLock parentLock = IPublicLock(parent);
+        require(
+            deployed && parentLock.isLockManager(address(_outwave)),
+            "NOT_PUBLIC_LOCK"
+        );
+
+        address eventOwner = _outwave.eventOwner(eventHash);
+        require(eventOwner != address(0), "OWNER_NOT_FOUND");
+
+        bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
+        require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
+
+        // generate tokenId for OPA
+        uint256 newOpaTokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+
+        // store tokenUri
+        _originalKeys[newOpaTokenId] = OriginalKey(tokenId, parent);
+
+        emit KeyBurn(msg.sender, parent, tokenId, newOpaTokenId);
+
+        // mint the OPA and burn the public lock's key
+        _safeMint(msg.sender, newOpaTokenId);
+        parentLock.burn(tokenId);
     }
 
     function balanceOf(address owner)
@@ -103,30 +162,6 @@ contract EventKeyBurner is
         returns (address)
     {
         return super.ownerOf(tokenId);
-    }
-
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
-        super.safeTransferFrom(from, to, tokenId);
-    }
-
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) public override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
-        super.safeTransferFrom(from, to, tokenId, _data);
-    }
-
-    function setApprovalForAll(address operator, bool approved)
-        public
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
-    {
-        super.setApprovalForAll(operator, approved);
     }
 
     // Returns the json of the corresponding token ID.
@@ -168,40 +203,6 @@ contract EventKeyBurner is
         return this.onERC721Received.selector;
     }
 
-    /**
-     * @notice Burn the key of an Outwave Lock
-     * @param parent The address of the parent PublicLock
-     * @param tokenId The id of the PublickLock key to be burned
-     */
-    function burnKey(
-        address parent,
-        uint256 tokenId,
-        bytes32 eventHash
-    ) external {
-        (bool deployed, , ) = _unlock.locks(parent);
-        IPublicLock parentLock = IPublicLock(parent);
-        require(
-            deployed && parentLock.isLockManager(address(_outwave)),
-            "NOT_PUBLIC_LOCK"
-        );
-
-        parentLock.burn(tokenId);
-
-        // mint the replacing token
-        uint256 mintedTokenId = _mintToken(msg.sender);
-
-        address eventOwner = _outwave.eventOwner(eventHash);
-        require(eventOwner != address(0), "OWNER_NOT_FOUND");
-
-        bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
-        require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
-
-        // store tokenUri
-        _originalKeys[mintedTokenId] = OriginalKey(tokenId, parent);
-
-        emit KeyBurn(msg.sender, parent, tokenId, mintedTokenId);
-    }
-
     function readUnlock() external view returns (address) {
         return address(_unlock);
     }
@@ -234,12 +235,5 @@ contract EventKeyBurner is
         uint256 tokenId
     ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function _mintToken(address to) private returns (uint256) {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        return tokenId;
     }
 }
