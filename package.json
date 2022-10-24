@@ -85,7 +85,8 @@
     "deploy-all": "hardhat deploy",
     "postinstall": "husky install",
     "nuke": "./.scripts/nuke.sh",
-    "slither": "slither . --filter-paths PublicLock.sol,Unlock.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin --exclude naming-convetion,external-function,low-level-calls --buidler-ignore-compile"
+    "slither": "slither . --filter-paths PublicLock.sol,Unlock.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin --exclude naming-convetion,external-function,low-level-calls --buidler-ignore-compile",
+    "solhint": "solhint ./contracts/*.sol"
   },
   "author": "demind.io",
   "license": "ISC"

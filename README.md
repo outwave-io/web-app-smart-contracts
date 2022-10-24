@@ -42,15 +42,15 @@ $ npx hardhat outwave:deploy --network mumbai
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
 # upgrade outwave (note: keyburner must be upgraded individually)
-npx hardhat outwave:upgrade --unlock-address 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --outwave-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
+$ npx hardhat outwave:upgrade --unlock-address 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --outwave-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
 - outwave org upgraded at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 
 # deploy keyburner
-npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
+$ npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
 # upgrade keyburnder
-npx hardhat outwave:deploy:keyburner --network mumbai --keyburnerAddr 0x11e48668d6db234F4EAE814360916E4f0Be61ff3 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
+$ npx hardhat outwave:deploy:keyburner --network mumbai --keyburnerAddr 0x11e48668d6db234F4EAE814360916E4f0Be61ff3 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
 - event keyburner upgraded at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
 # allow outwave to create events using erc20 (usdc on mubai)
@@ -96,7 +96,7 @@ Then ask to the fellow devs to be added to the project on tenderly.co
 
 ## Slither
 
-Slither is a solidity source code analyzier and requires Python 3.x and solc-select (to properly work).
+Slither is a Solidity source code analyzier and requires Python 3.x and solc-select (to properly work).
 
 ```shell
 # install choco if not present on your system (admin console)
@@ -105,7 +105,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 # install solc-select deps (admin console)
 choco install visualstudio2017buildtools
 
-# install solc-select and set correct solidity verison
+# install solc-select and set correct Solidity verison
 pip install solc-select
 solc-select install 0.8.7
 solc-select use 0.8.7
@@ -118,3 +118,76 @@ yarn slither
 ```
 
 Be aware that the command `yarn slither` may fail from VS Code integrated terminal, please run it eg in a regular Windows Terminal.
+
+## Solhint
+
+Solhint is a Solidity linter and can be installed with npm and runned with yarn:
+
+```shell
+# install solhint
+npm install -g solhint
+
+#  run it (from repo root)
+yarn solhint
+```
+
+## Binaries analysis
+
+It could be useful to genrate contracts binaries for static analysis tools like [Rattle](https://github.com/crytic/rattle).
+
+You need `soljs` command and invoke it as follow:
+
+```shell
+# instal soljs command
+npm install -g solc
+
+# generate binary artifacts
+solcjs --bin --include-path ./node_modules --base-path . ./contracts/OutwaveEvent.sol -o ./binaries/OutwaveEvent
+
+solcjs --bin --include-path ./node_modules --base-path . ./contracts/EventKeyBurner.sol -o ./binaries/EventKeyBurner
+```
+
+### Rattle
+
+In first instance Rattle requires Python 3. Clone rattle repo and install its dependencies:
+
+```shell
+# choose a location outside the repo
+cd ~/src
+
+# clone the rattle repo
+git clone https://github.com/crytic/rattle
+
+# install dependencies
+cd rattle
+pip install -r ./requirements.txt
+sudo apt install graphviz # pip install graphviz (on Windows won't achieve the same effect)
+```
+
+Analyze Outwave contracts binaries:
+
+```shell
+# analyze OutwaveEvent contract
+python ~/src/rattle/rattle-cli.py --input ./binaries/OutwaveEvent/contracts_OutwaveEvent_sol_OutwaveEvent.bin -O
+
+# analyze EventKeyBurner contract
+python ~/src/rattle/rattle-cli.py --input ./binaries/EventKeyBurner/contracts_EventKeyBurner_sol_EventKeyBurner.bin -O
+```
+
+On Windows machines rattle will fail in the end cause `dot` command of `graphviz` package is not available, so it's recommended to use Ubuntu Terminal.
+Otherwise an Ubuntu VM or Docker image will be fine.
+
+## ASM JSON files
+
+Some tools like [GASOL](https://github.com/costa-group/gasol-optimizer) could need a ASM JSON file as input. You can use the following commands to produce them (from an Ubuntu machine):
+
+```shell
+# use a version of solc that supports --include-path parameter
+solc-select install 0.8.17
+solc-select use 0.8.17
+
+# invoke solc to output the asm json files
+solc --combined-json asm ./contracts/OutwaveEvent.sol --base-path . --include-path ./node_modules 1> ./asmjsonfiles/OutwaveEvent.asmjson
+
+solc --combined-json asm ./contracts/EventKeyBurner.sol --base-path . --include-path ./node_modules 1> ./asmjsonfiles/EventKeyBurner.asmjson
+```
