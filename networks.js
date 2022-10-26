@@ -48,11 +48,7 @@ module.exports = {
     chainId: 31337,
     name: 'hardhat',
   },
-  arbitrum: {
-    chainId: 42161,
-    url: 'https://arb1.arbitrum.io/rpc',
-    name: 'arbitrum',
-  },
+  arbitrum: private.arbitrum,
   binance: {
     chainId: 56,
     url: 'https://bsc-dataseed.binance.org/',
@@ -63,11 +59,7 @@ module.exports = {
     url: 'https://kovan.optimism.io',
     name: 'optimism kovan',
   },
-  optimism: {
-    chainId: 10,
-    url: 'https://mainnet.optimism.io',
-    name: 'optimism',
-  },
+  optimism: private.optimismTest,
   optimisticGoerli: private.optimisticGoerli,
   optimismTest: private.optimismTest,
   mumbai: private.mumbai,
