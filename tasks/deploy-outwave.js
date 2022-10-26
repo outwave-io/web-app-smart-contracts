@@ -4,7 +4,6 @@
 const { task } = require('hardhat/config')
 require("@tenderly/hardhat-tenderly");
 
-
 task('outwave:deploy:outwaveevent', 'deploys unlock infrastructure')
   .addParam('unlockAddress', 'the unlock factory address')
   .addParam('paymentAddress', 'the address where fees will be sent')

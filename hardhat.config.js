@@ -3,6 +3,8 @@
 require('@nomiclabs/hardhat-ethers')
 require('@nomiclabs/hardhat-truffle5')
 
+require('dotenv').config()
+
 // full stack trace if needed
 require('hardhat-tracer')
 

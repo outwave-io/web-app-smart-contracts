@@ -1,5 +1,7 @@
+console.log(process.env)
+
 module.exports = {
-  mnemonic: 'test test test test test test test test test test test junk',
+  mnemonic: process.env.LOCAL_MNEMONIC,
   initialIndex: 0,
   count: 100,
   accountsBalance: '100000000000000000000000000',

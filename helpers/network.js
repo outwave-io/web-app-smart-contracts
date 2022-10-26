@@ -28,7 +28,7 @@ const getNetworkName = (chainId) => {
 const getAccounts = (networkName) => {
   if (process.env.CI === 'true') {
     return {
-      mnemonic: 'test test test test test test test test test test test junk',
+      mnemonic: process.env.LOCAL_MNEMONIC,
       initialIndex: 0,
     }
   }

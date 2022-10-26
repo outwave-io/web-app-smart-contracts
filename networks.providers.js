@@ -5,17 +5,17 @@ const testHost = process.env.CI === 'true' ? 'eth-node' : '127.0.0.1'
 module.exports = {
   optimisticGoerli: {
     chainId: 420,
-    url: 'https://opt-goerli.g.alchemy.com/v2/xvmUe2COEAAcn_caQeRbtiDITCCZFyj1',
+    url: process.env.OPTIMISMGOERLI_PROVIDER,
     name: 'optimism goerli',
   },
   optimismTest: {
     chainId: 10,
-    url: 'https://opt-mainnet.g.alchemy.com/v2/Db3tVIWDDMfLSmZNXwiwQZ2GCwbEj8VU',
+    url:  process.env.OPTIMISMTEST_PROVIDER,
     name: 'optimism test',
   },
   mumbai: {
     chainId: 80001,
     name: 'mumbai',
-    url: 'https://polygon-mumbai.g.alchemy.com/v2/IFm_wxxCk2b0TFTQwPjDK6QXWFDjxer_',
+    url:  process.env.POLYGONMUMBAI_PROVIDER,
   },
 }
