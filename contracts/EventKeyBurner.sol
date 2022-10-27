@@ -124,8 +124,8 @@ contract EventKeyBurner is
         emit KeyBurn(msg.sender, parent, tokenId, newOpaTokenId);
 
         // mint the OPA and burn the public lock's key
-        _safeMint(msg.sender, newOpaTokenId);
         parentLock.burn(tokenId);
+        _safeMint(msg.sender, newOpaTokenId);
     }
 
     function balanceOf(address owner)
