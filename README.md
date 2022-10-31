@@ -26,7 +26,6 @@ npx hardhat compile
 npx hardhat clean
 npx hardhat test
 npx hardhat node
-
 ```
 
 Outwave have developed several tasks that helps to start transactions on localhost or remote nertworks. networks are selected with `--network localhost/mumbai`.  See `/tasks.js` or run `npx hardhat --help` for more info.
@@ -41,17 +40,25 @@ $ npx hardhat outwave:deploy --network mumbai
 - outwave org deployed: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
-# upgrade outwave (note: keyburner must be upgraded individually)
+# upgrade outwave (note: keyburner must be upgraded by its own)
 $ npx hardhat outwave:upgrade --unlock-address 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --outwave-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
 - outwave org upgraded at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
+
+# force upgrade outwave  (note: keyburner must be forcely ugraded by its own)
+$ npx hardhat 'outwave:forceupgrade' --network mumbai --outwave-address 0x0bf7ac8b30F33a57495dd428cFB8320ED1E5B144
+- outwave force upgraded at: 0x0bf7ac8b30F33a57495dd428cFB8320ED1E5B144
 
 # deploy keyburner
 $ npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
 - event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
-# upgrade keyburnder
+# upgrade keyburner
 $ npx hardhat outwave:deploy:keyburner --network mumbai --keyburnerAddr 0x11e48668d6db234F4EAE814360916E4f0Be61ff3 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
 - event keyburner upgraded at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+
+# force ugrade keyburner
+$ npx hardhat 'outwave:forceupgrade:keyburner' --network mumbai --keyburner-address 0x1000c21BbAC6F230Fb570E6c13C24Ee8fBFb60dA 
+- key burner forcely upgraded at: 0x0bf7ac8b30F33a57495dd428cFB8320ED1E5B144
 
 # allow outwave to create events using erc20 (usdc on mubai)
 $ npx hardhat tool:event:addErc20 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
@@ -72,7 +79,6 @@ $ npx hardhat tool:lock:purchase --lockaddr 0x449dF2567E1E07F0790980D8E8Dd49a2e0
 
 # verify lock contracts
 $ npx verify <lockcontractaddress> --network mumbai  
-
 ```
 
 ## Git
