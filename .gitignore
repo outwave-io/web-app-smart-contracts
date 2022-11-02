@@ -15,11 +15,6 @@ artifacts
 /.openzeppelin
 /deployments
 /yarn.lock
-# /accounts.optimisticGoerli.js
-# /accounts.mumbai.js
-# /accounts.optimismTest.js
-# /accounts.optimism.js
-# /etherscan.js
 
 /binaries
 /output

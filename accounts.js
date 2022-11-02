@@ -1,5 +1,3 @@
-console.log(process.env)
-
 module.exports = {
   mnemonic: process.env.LOCAL_MNEMONIC,
   initialIndex: 0,

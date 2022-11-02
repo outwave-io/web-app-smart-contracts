@@ -1,6 +1,6 @@
 module.exports = {
-    apiKey: {
-        polygonMumbai: process.env.POLYGONMUMBAI_ETHERSCANKEY,
-        optimisticGoerli: process.env.OPTIMISMGOERLI_ETHERSCANKEY
-    }
+  apiKey: {
+    polygonMumbai: process.env.POLYGONMUMBAI_ETHERSCANKEY,
+    arbitrumOne: process.env.ARBITRUM_ETHERSCANKEY,
+  },
 }
