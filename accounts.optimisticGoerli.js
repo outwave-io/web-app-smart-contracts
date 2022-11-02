@@ -1,5 +1,5 @@
 module.exports = {
-  mnemonic:
-    'drive cube human share enhance gauge wage wet setup run useless soup',
-  initialIndex: 0,
-}
+    mnemonic: process.env.OPTIMISMGOERLI_MNEMONIC,
+    initialIndex: 0,
+  }
+  

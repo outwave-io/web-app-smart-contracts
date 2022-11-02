@@ -21,6 +21,7 @@
     "bignumber.js": "9.0.2",
     "cross-fetch": "3.1.5",
     "debug": "4.3.4",
+    "dotenv": "^16.0.3",
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-plugin-mocha": "10.0.4",
     "eth-gas-reporter": "0.2.25",

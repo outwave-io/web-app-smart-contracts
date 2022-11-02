@@ -1,5 +1,6 @@
 // When running CI, we connect to the hardhat node container
 const testHost = process.env.CI === 'true' ? 'eth-node' : '127.0.0.1'
+var private = require('./networks.providers')
 
 // URL value are public defaults. You should probably replace with your own providers...
 module.exports = {
@@ -47,11 +48,7 @@ module.exports = {
     chainId: 31337,
     name: 'hardhat',
   },
-  arbitrum: {
-    chainId: 42161,
-    url: 'https://arb1.arbitrum.io/rpc',
-    name: 'arbitrum',
-  },
+  arbitrum: private.arbitrum,
   binance: {
     chainId: 56,
     url: 'https://bsc-dataseed.binance.org/',
@@ -62,19 +59,8 @@ module.exports = {
     url: 'https://kovan.optimism.io',
     name: 'optimism kovan',
   },
-  optimisticGoerli: {
-    chainId: 420,
-    url: 'https://opt-goerli.g.alchemy.com/v2/xvmUe2COEAAcn_caQeRbtiDITCCZFyj1',
-    name: 'optimism goerli',
-  },
-  optimism: {
-    chainId: 10,
-    url: 'https://mainnet.optimism.io',
-    name: 'optimism',
-  },
-  mumbai: {
-    chainId: 80001,
-    name: 'mumbai',
-    url: 'https://polygon-mumbai.g.alchemy.com/v2/IFm_wxxCk2b0TFTQwPjDK6QXWFDjxer_',
-  },
+  optimism: private.optimismTest,
+  optimisticGoerli: private.optimisticGoerli,
+  optimismTest: private.optimismTest,
+  mumbai: private.mumbai,
 }

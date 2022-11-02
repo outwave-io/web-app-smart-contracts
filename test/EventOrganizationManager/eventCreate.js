@@ -111,7 +111,7 @@ contract('Organization Event Manager', () => {
         100,
         web3.utils.padLeft(web3.utils.asciiToHex('2'), 64)
       )
-      await tx.wait()
+   
 
       let receipt = await tx.wait()
       let evt = receipt.events.find((v) => v.event === 'LockRegistered')
