@@ -1,589 +1,13 @@
+// based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/PublicLock/PublicLockV11.sol
+
 // Sources flattened with hardhat v2.8.0 https://hardhat.org
+
+// File @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol@v4.6.0
+
 // SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 
-// File contracts/interfaces/IPublicLock.sol
-pragma solidity >=0.5.17 <0.9.0;
-pragma experimental ABIEncoderV2;
-
-/**
-* @title The PublicLock Interface
-* @author Nick Furfaro (unlock-protocol.com)
- */
-
-
-interface IPublicLock
-{
-
-// See indentationissue description here:
-// https://github.com/duaraghav8/Ethlint/issues/268
-// solium-disable indentation
-
-  /// Functions
-  function initialize(
-    address _lockCreator,
-    uint _expirationDuration,
-    address _tokenAddress,
-    uint _keyPrice,
-    uint _maxNumberOfKeys,
-    string calldata _lockName
-  ) external;
-
-  /**
-   * @notice Allow the contract to accept tips in ETH sent directly to the contract.
-   * @dev This is okay to use even if the lock is priced in ERC-20 tokens
-   */
-  // receive() external payable;
-
-  // roles
-  function DEFAULT_ADMIN_ROLE() external pure returns (bytes32);
-  function KEY_GRANTER_ROLE() external pure returns (bytes32);
-  function LOCK_MANAGER_ROLE() external pure returns (bytes32);
-
-  /**
-  * @notice The version number of the current implementation on this network.
-  * @return The current version number.
-  */
-  function publicLockVersion() external pure returns (uint16);
-
-  /**
-   * @dev Called by a lock manager or beneficiary to withdraw all funds from the lock and send them to the `beneficiary`.
-   * @dev Throws if called by other than a lock manager or beneficiary
-   * @param _tokenAddress specifies the token address to withdraw or 0 for ETH. This is usually
-   * the same as `tokenAddress` in MixinFunds.
-   * @param _amount specifies the max amount to withdraw, which may be reduced when
-   * considering the available balance. Set to 0 or MAX_UINT to withdraw everything.
-   *  -- however be wary of draining funds as it breaks the `cancelAndRefund` and `expireAndRefundFor`
-   * use cases.
-   */
-  function withdraw(
-    address _tokenAddress,
-    uint _amount
-  ) external;
-
-  /**
-   * @notice An ERC-20 style approval, allowing the spender to transfer funds directly from this lock.
-   */
-  function approveBeneficiary(
-    address _spender,
-    uint _amount
-  ) external
-    returns (bool);
-
-  /**
-   * A function which lets a Lock manager of the lock to change the price for future purchases.
-   * @dev Throws if called by other than a Lock manager
-   * @dev Throws if lock has been disabled
-   * @dev Throws if _tokenAddress is not a valid token
-   * @param _keyPrice The new price to set for keys
-   * @param _tokenAddress The address of the erc20 token to use for pricing the keys,
-   * or 0 to use ETH
-   */
-  function updateKeyPricing( uint _keyPrice, address _tokenAddress ) external;
-
-  /**
-   * A function to change the default duration of each key in the lock
-   * @notice keys previously bought are unaffected by this change (i.e.
-   * existing keys timestamps are not recalculated/updated)
-   * @param _newExpirationDuration the new amount of time for each key purchased 
-   * or type(uint).max for a non-expiring key
-   */
-  function setExpirationDuration(uint _newExpirationDuration) external;
-
-  /**
-   * A function which lets a Lock manager update the beneficiary account,
-   * which receives funds on withdrawal.
-   * @dev Throws if called by other than a Lock manager or beneficiary
-   * @dev Throws if _beneficiary is address(0)
-   * @param _beneficiary The new address to set as the beneficiary
-   */
-  function updateBeneficiary( address _beneficiary ) external;
-
-  /**
-   * Checks if the user has a non-expired key.
-   * @param _user The address of the key owner
-   */
-  function getHasValidKey(
-    address _user
-  ) external view returns (bool);
-
-  /**
-  * @dev Returns the key's ExpirationTimestamp field for a given owner.
-  * @param _tokenId the id of the key
-  * @dev Returns 0 if the owner has never owned a key for this lock
-  */
-  function keyExpirationTimestampFor(
-    uint _tokenId
-  ) external view returns (uint timestamp);
-  
-  /**
-   * Public function which returns the total number of unique owners (both expired
-   * and valid).  This may be larger than totalSupply.
-   */
-  function numberOfOwners() external view returns (uint);
-
-  /**
-   * Allows a Lock manager to assign a descriptive name for this Lock.
-   * @param _lockName The new name for the lock
-   * @dev Throws if called by other than a Lock manager
-   */
-  function updateLockName(
-    string calldata _lockName
-  ) external;
-
-  /**
-   * Allows a Lock manager to assign a Symbol for this Lock.
-   * @param _lockSymbol The new Symbol for the lock
-   * @dev Throws if called by other than a Lock manager
-   */
-  function updateLockSymbol(
-    string calldata _lockSymbol
-  ) external;
-
-  /**
-    * @dev Gets the token symbol
-    * @return string representing the token symbol
-    */
-  function symbol()
-    external view
-    returns(string memory);
-
-    /**
-   * Allows a Lock manager to update the baseTokenURI for this Lock.
-   * @dev Throws if called by other than a Lock manager
-   * @param _baseTokenURI String representing the base of the URI for this lock.
-   */
-  function setBaseTokenURI(
-    string calldata _baseTokenURI
-  ) external;
-
-  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
-   * @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
-   *  3986. The URI may point to a JSON file that conforms to the "ERC721
-   *  Metadata JSON Schema".
-   * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md
-   * @param _tokenId The tokenID we're inquiring about
-   * @return String representing the URI for the requested token
-   */
-  function tokenURI(
-    uint256 _tokenId
-  ) external view returns(string memory);
-
-  /**
-   * @notice Allows a Lock manager to add or remove an event hook
-   */
-  function setEventHooks(
-    address _onKeyPurchaseHook,
-    address _onKeyCancelHook,
-    address _onValidKeyHook,
-    address _onTokenURIHook
-  ) external;
-
-  /**
-   * Allows a Lock manager to give a collection of users a key with no charge.
-   * Each key may be assigned a different expiration date.
-   * @dev Throws if called by other than a Lock manager
-   * @param _recipients An array of receiving addresses
-   * @param _expirationTimestamps An array of expiration Timestamps for the keys being granted
-   */
-  function grantKeys(
-    address[] calldata _recipients,
-    uint[] calldata _expirationTimestamps,
-    address[] calldata _keyManagers
-  ) external;
-
-  /**
-  * @dev Purchase function
-  * @param _values array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
-  * (_values is ignored when using ETH)
-  * @param _recipients array of addresses of the recipients of the purchased key
-  * @param _referrers array of addresses of the users making the referral
-  * @param _keyManagers optional array of addresses to grant managing rights to a specific address on creation
-  * @param _data array of arbitrary data populated by the front-end which initiated the sale
-  * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored 
-  * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
-  * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
-  * than keyPrice is approved for spending).
-  */
-  function purchase(
-    uint256[] calldata _values,
-    address[] calldata _recipients,
-    address[] calldata _referrers,
-    address[] calldata _keyManagers,
-    bytes[] calldata _data
-  ) external payable;
-  
-  /**
-  * @dev Extend function
-  * @param _value the number of tokens to pay for this purchase >= the current keyPrice - any applicable discount
-  * (_value is ignored when using ETH)
-  * @param _tokenId the id of the key to extend
-  * @param _referrer address of the user making the referral
-  * @param _data arbitrary data populated by the front-end which initiated the sale
-  * @dev Throws if lock is disabled or key does not exist for _recipient. Throws if _recipient == address(0).
-  */
-  function extend(
-    uint _value,
-    uint _tokenId,
-    address _referrer,
-    bytes calldata _data
-  ) external payable;
-
-  /**
-   * Merge existing keys
-   * @param _tokenIdFrom the id of the token to substract time from
-   * @param _tokenIdTo the id of the destination token  to add time
-   * @param _amount the amount of time to transfer (in seconds)
-   */
-  function mergeKeys(uint _tokenIdFrom, uint _tokenIdTo, uint _amount) external;
-
-  /**
-   * Deactivate an existing key
-   * @param _tokenId the id of token to burn
-   * @notice the key will be expired and ownership records will be destroyed
-   */
-  function burn(uint _tokenId) external;
-
-  /**
-  * @param _gasRefundValue price in wei or token in smallest price unit
-  * @dev Set the value to be refunded to the sender on purchase
-  */
-  function setGasRefundValue(uint256 _gasRefundValue) external;
-  
-  /**
-  * _gasRefundValue price in wei or token in smallest price unit
-  * @dev Returns the value/rpice to be refunded to the sender on purchase
-  */
-  function gasRefundValue() external view returns (uint256 _gasRefundValue);
-
-  /**
-   * @notice returns the minimum price paid for a purchase with these params.
-   * @dev this considers any discount from Unlock or the OnKeyPurchase hook.
-   */
-  function purchasePriceFor(
-    address _recipient,
-    address _referrer,
-    bytes calldata _data
-  ) external view
-    returns (uint);
-
-  /**
-   * Allow a Lock manager to change the transfer fee.
-   * @dev Throws if called by other than a Lock manager
-   * @param _transferFeeBasisPoints The new transfer fee in basis-points(bps).
-   * Ex: 200 bps = 2%
-   */
-  function updateTransferFee(
-    uint _transferFeeBasisPoints
-  ) external;
-
-  /**
-   * Determines how much of a fee would need to be paid in order to
-   * transfer to another account.  This is pro-rated so the fee goes 
-   * down overtime.
-   * @dev Throws if _tokenId does not have a valid key
-   * @param _tokenId The id of the key check the transfer fee for.
-   * @param _time The amount of time to calculate the fee for.
-   * @return The transfer fee in seconds.
-   */
-  function getTransferFee(
-    uint _tokenId,
-    uint _time
-  ) external view returns (uint);
-
-  /**
-   * @dev Invoked by a Lock manager to expire the user's key 
-   * and perform a refund and cancellation of the key
-   * @param _tokenId The key id we wish to refund to
-   * @param _amount The amount to refund to the key-owner
-   * @dev Throws if called by other than a Lock manager
-   * @dev Throws if _keyOwner does not have a valid key
-   */
-  function expireAndRefundFor(
-    uint _tokenId,
-    uint _amount
-  ) external;
-
-   /**
-   * @dev allows the key manager to expire a given tokenId
-   * and send a refund to the keyOwner based on the amount of time remaining.
-   * @param _tokenId The id of the key to cancel.
-   */
-  function cancelAndRefund(uint _tokenId) external;
-
-  /**
-   * Allow a Lock manager to change the refund penalty.
-   * @dev Throws if called by other than a Lock manager
-   * @param _freeTrialLength The new duration of free trials for this lock
-   * @param _refundPenaltyBasisPoints The new refund penaly in basis-points(bps)
-   */
-  function updateRefundPenalty(
-    uint _freeTrialLength,
-    uint _refundPenaltyBasisPoints
-  ) external;
-
-  /**
-   * @dev Determines how much of a refund a key owner would receive if they issued
-   * @param _keyOwner The key owner to get the refund value for.
-   * a cancelAndRefund block.timestamp.
-   * Note that due to the time required to mine a tx, the actual refund amount will be lower
-   * than what the user reads from this call.
-   */
-  function getCancelAndRefundValue(
-    address _keyOwner
-  ) external view returns (uint refund);
-
-  function addKeyGranter(address account) external;
-
-  function addLockManager(address account) external;
-
-  function isKeyGranter(address account) external view returns (bool);
-
-  function isLockManager(address account) external view returns (bool);
-
-  function onKeyPurchaseHook() external view returns(address);
-
-  function onKeyCancelHook() external view returns(address);
-  
-  function onValidKeyHook() external view returns(bool);
-
-  function onTokenURIHook() external view returns(string memory);
-
-  function revokeKeyGranter(address _granter) external;
-
-  function renounceLockManager() external;
-
-  /**
-   * @dev Change the maximum number of keys the lock can edit
-   * @param _maxNumberOfKeys uint the maximum number of keys
-   */
-  function setMaxNumberOfKeys (uint _maxNumberOfKeys) external;
-
-   /**
-   * Set the maximum number of keys a specific address can use
-   * @param _maxKeysPerAddress the maximum amount of key a user can own
-   */
-  function setMaxKeysPerAddress (uint _maxKeysPerAddress) external;
-
-  /**
-   * @return the maximum number of key allowed for a single address
-   */
-  function maxKeysPerAddress() external view returns (uint);
-
-
-  ///===================================================================
-  /// Auto-generated getter functions from public state variables
-
-  function beneficiary() external view returns (address );
-
-  function expirationDuration() external view returns (uint256 );
-
-  function freeTrialLength() external view returns (uint256 );
-
-  function keyPrice() external view returns (uint256 );
-
-  function maxNumberOfKeys() external view returns (uint256 );
-
-  function refundPenaltyBasisPoints() external view returns (uint256 );
-
-  function tokenAddress() external view returns (address );
-
-  function transferFeeBasisPoints() external view returns (uint256 );
-
-  function unlockProtocol() external view returns (address );
-
-  function keyManagerOf(uint) external view returns (address );
-
-  ///===================================================================
-
-  /**
-  * @notice Allows the key owner to safely share their key (parent key) by
-  * transferring a portion of the remaining time to a new key (child key).
-  * @dev Throws if key is not valid.
-  * @dev Throws if `_to` is the zero address
-  * @param _to The recipient of the shared key
-  * @param _tokenId the key to share
-  * @param _timeShared The amount of time shared
-  * checks if `_to` is a smart contract (code size > 0). If so, it calls
-  * `onERC721Received` on `_to` and throws if the return value is not
-  * `bytes4(keccak256('onERC721Received(address,address,uint,bytes)'))`.
-  * @dev Emit Transfer event
-  */
-  function shareKey(
-    address _to,
-    uint _tokenId,
-    uint _timeShared
-  ) external;
-
-  /**
-  * @notice Update transfer and cancel rights for a given key
-  * @param _tokenId The id of the key to assign rights for
-  * @param _keyManager The address to assign the rights to for the given key
-  */
-  function setKeyManagerOf(
-    uint _tokenId,
-    address _keyManager
-  ) external;
-  
-  /**
-  * Check if a certain key is valid
-  * @param _tokenId the id of the key to check validity
-  * @notice this makes use of the onValidKeyHook if it is set
-  */
-  function isValidKey(
-    uint _tokenId
-  )
-    external
-    view
-    returns (bool);
-  
-  /// @notice A descriptive name for a collection of NFTs in this contract
-  function name() external view returns (string memory _name);
-  ///===================================================================
-
-  /// From ERC165.sol
-  function supportsInterface(bytes4 interfaceId) external view returns (bool);
-  ///===================================================================
-
-  /// From ERC-721
-  /**
-    * @dev Returns the number of NFTs in `owner`'s account.
-    */
-  function balanceOf(address _owner) external view returns (uint256 balance);
-
-  /**
-    * @dev Returns the owner of the NFT specified by `tokenId`.
-    */
-  function ownerOf(uint256 tokenId) external view returns (address _owner);
-
-  /**
-    * @dev Transfers a specific NFT (`tokenId`) from one account (`from`) to
-    * another (`to`).
-    *
-    * Requirements:
-    * - `from`, `to` cannot be zero.
-    * - `tokenId` must be owned by `from`.
-    * - If the caller is not `from`, it must be have been allowed to move this
-    * NFT by either {approve} or {setApprovalForAll}.
-    */
-  function safeTransferFrom(address from, address to, uint256 tokenId) external;
-  
-  /**
-    * @dev Transfers a specific NFT (`tokenId`) from one account (`from`) to
-    * another (`to`).
-    *
-    * Requirements:
-    * - If the caller is not `from`, it must be approved to move this NFT by
-    * either {approve} or {setApprovalForAll}.
-    */
-  function transferFrom(address from, address to, uint256 tokenId) external;
-  function approve(address to, uint256 tokenId) external;
-
-  /**
-    * @notice Get the approved address for a single NFT
-    * @dev Throws if `_tokenId` is not a valid NFT.
-    * @param _tokenId The NFT to find the approved address for
-    * @return operator The approved address for this NFT, or the zero address if there is none
-    */
-  function getApproved(uint256 _tokenId) external view returns (address operator);
-
-   /**
-   * @dev Sets or unsets the approval of a given operator
-   * An operator is allowed to transfer all tokens of the sender on their behalf
-   * @param _operator operator address to set the approval
-   * @param _approved representing the status of the approval to be set
-   * @notice disabled when transfers are disabled
-   */
-  function setApprovalForAll(address _operator, bool _approved) external;
-
-   /**
-   * @dev Tells whether an operator is approved by a given keyManager
-   * @param _owner owner address which you want to query the approval of
-   * @param _operator operator address which you want to query the approval of
-   * @return bool whether the given operator is approved by the given owner
-   */
-  function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-
-  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
-
-  function totalSupply() external view returns (uint256);
-  function tokenOfOwnerByIndex(address _owner, uint256 index) external view returns (uint256 tokenId);
-
-  function tokenByIndex(uint256 index) external view returns (uint256);
-
-  /**
-    * Innherited from Open Zeppelin AccessControl.sol
-    */
-  function getRoleAdmin(bytes32 role) external view returns (bytes32);
-  function grantRole(bytes32 role, address account) external;
-  function revokeRole(bytes32 role, address account) external;
-  function renounceRole(bytes32 role, address account) external;
-  function hasRole(bytes32 role, address account) external view returns (bool);
-
-  /**
-    * @notice An ERC-20 style transfer.
-    * @param _value sends a token with _value * expirationDuration (the amount of time remaining on a standard purchase).
-    * @dev The typical use case would be to call this with _value 1, which is on par with calling `transferFrom`. If the user
-    * has more than `expirationDuration` time remaining this may use the `shareKey` function to send some but not all of the token.
-    */
-  function transfer(
-    address _to,
-    uint _value
-  ) external
-    returns (bool success);
-
-  /** `owner()` is provided as an helper to mimick the `Ownable` contract ABI.
-    * The `Ownable` logic is used by many 3rd party services to determine
-    * contract ownership - e.g. who is allowed to edit metadata on Opensea.
-    * 
-    * @notice This logic is NOT used internally by the Unlock Protocol and is made 
-    * available only as a convenience helper.
-    */
-  function owner() external view returns (address);
-  function setOwner(address account) external;
-  function isOwner(address account) external returns (bool);
-
-  /**
-  * Migrate data from the previous single owner => key mapping to 
-  * the new data structure w multiple tokens.
-  * @param _calldata an ABI-encoded representation of the params (v10: the number of records to migrate as `uint`)
-  * @dev when all record schemas are sucessfully upgraded, this function will update the `schemaVersion`
-  * variable to the latest/current lock version
-  */
-  function migrate(bytes calldata _calldata) external;
-
-  /**
-  * Returns the version number of the data schema currently used by the lock
-  * @notice if this is different from `publicLockVersion`, then the ability to purchase, grant
-  * or extend keys is disabled.
-  * @dev will return 0 if no ;igration has ever been run
-  */
-  function schemaVersion() external view returns (uint);
-
-  /**
-   * Set the schema version to the latest
-   * @notice only lock manager call call this
-   */
-  function updateSchemaVersion() external;
-
-    /**
-  * Renew a given token
-  * @notice only works for non-free, expiring, ERC20 locks
-  * @param _tokenId the ID fo the token to renew
-  * @param _referrer the address of the person to be granted UDT
-  */
-  function renewMembershipFor(
-    uint _tokenId,
-    address _referrer
-  ) external;
-}
-
-
-// File @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol@v4.4.2
-
-
-// OpenZeppelin Contracts v4.4.1 (utils/Address.sol)
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.1;
 
 /**
  * @dev Collection of functions related to the address type
@@ -605,17 +29,22 @@ library AddressUpgradeable {
      *  - an address where a contract will be created
      *  - an address where a contract lived, but was destroyed
      * ====
+     *
+     * [IMPORTANT]
+     * ====
+     * You shouldn't rely on `isContract` to protect against flash loan attacks!
+     *
+     * Preventing calls from contracts is highly discouraged. It breaks composability, breaks support for smart wallets
+     * like Gnosis Safe, and does not provide security since it can be circumvented by calling from a contract
+     * constructor.
+     * ====
      */
     function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
+        // This method relies on extcodesize/address.code.length, which returns 0
+        // for contracts in construction, since the code is only stored at the end
+        // of the constructor execution.
 
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
+        return account.code.length > 0;
     }
 
     /**
@@ -772,18 +201,37 @@ library AddressUpgradeable {
 }
 
 
-// File @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol@v4.4.2
+// File @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol@v4.6.0
 
+// OpenZeppelin Contracts (last updated v4.6.0) (proxy/utils/Initializable.sol)
 
-// OpenZeppelin Contracts v4.4.1 (proxy/utils/Initializable.sol)
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.2;
 
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
- * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an
+ * behind a proxy. Since proxied contracts do not make use of a constructor, it's common to move constructor logic to an
  * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer
  * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.
+ *
+ * The initialization functions use a version number. Once a version number is used, it is consumed and cannot be
+ * reused. This mechanism prevents re-execution of each "step" but allows the creation of new initialization steps in
+ * case an upgrade adds a module that needs to be initialized.
+ *
+ * For example:
+ *
+ * [.hljs-theme-light.nopadding]
+ * ```
+ * contract MyToken is ERC20Upgradeable {
+ *     function initialize() initializer public {
+ *         __ERC20_init("MyToken", "MTK");
+ *     }
+ * }
+ * contract MyTokenV2 is MyToken, ERC20PermitUpgradeable {
+ *     function initializeV2() reinitializer(2) public {
+ *         __ERC20Permit_init("MyToken");
+ *     }
+ * }
+ * ```
  *
  * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as
  * possible by providing the encoded function call as the `_data` argument to {ERC1967Proxy-constructor}.
@@ -796,21 +244,24 @@ pragma solidity ^0.8.0;
  * Avoid leaving a contract uninitialized.
  *
  * An uninitialized contract can be taken over by an attacker. This applies to both a proxy and its implementation
- * contract, which may impact the proxy. To initialize the implementation contract, you can either invoke the
- * initializer manually, or you can include a constructor to automatically mark it as initialized when it is deployed:
+ * contract, which may impact the proxy. To prevent the implementation contract from being used, you should invoke
+ * the {_disableInitializers} function in the constructor to automatically lock it when it is deployed:
  *
  * [.hljs-theme-light.nopadding]
  * ```
  * /// @custom:oz-upgrades-unsafe-allow constructor
- * constructor() initializer {}
+ * constructor() {
+ *     _disableInitializers();
+ * }
  * ```
  * ====
  */
 abstract contract Initializable {
     /**
      * @dev Indicates that the contract has been initialized.
+     * @custom:oz-retyped-from bool
      */
-    bool private _initialized;
+    uint8 private _initialized;
 
     /**
      * @dev Indicates that the contract is in the process of being initialized.
@@ -818,44 +269,89 @@ abstract contract Initializable {
     bool private _initializing;
 
     /**
-     * @dev Modifier to protect an initializer function from being invoked twice.
+     * @dev Triggered when the contract has been initialized or reinitialized.
+     */
+    event Initialized(uint8 version);
+
+    /**
+     * @dev A modifier that defines a protected initializer function that can be invoked at most once. In its scope,
+     * `onlyInitializing` functions can be used to initialize parent contracts. Equivalent to `reinitializer(1)`.
      */
     modifier initializer() {
-        // If the contract is initializing we ignore whether _initialized is set in order to support multiple
-        // inheritance patterns, but we only do this in the context of a constructor, because in other contexts the
-        // contract may have been reentered.
-        require(_initializing ? _isConstructor() : !_initialized, "Initializable: contract is already initialized");
-
-        bool isTopLevelCall = !_initializing;
+        bool isTopLevelCall = _setInitializedVersion(1);
         if (isTopLevelCall) {
             _initializing = true;
-            _initialized = true;
         }
-
         _;
-
         if (isTopLevelCall) {
             _initializing = false;
+            emit Initialized(1);
+        }
+    }
+
+    /**
+     * @dev A modifier that defines a protected reinitializer function that can be invoked at most once, and only if the
+     * contract hasn't been initialized to a greater version before. In its scope, `onlyInitializing` functions can be
+     * used to initialize parent contracts.
+     *
+     * `initializer` is equivalent to `reinitializer(1)`, so a reinitializer may be used after the original
+     * initialization step. This is essential to configure modules that are added through upgrades and that require
+     * initialization.
+     *
+     * Note that versions can jump in increments greater than 1; this implies that if multiple reinitializers coexist in
+     * a contract, executing them in the right order is up to the developer or operator.
+     */
+    modifier reinitializer(uint8 version) {
+        bool isTopLevelCall = _setInitializedVersion(version);
+        if (isTopLevelCall) {
+            _initializing = true;
+        }
+        _;
+        if (isTopLevelCall) {
+            _initializing = false;
+            emit Initialized(version);
         }
     }
 
     /**
      * @dev Modifier to protect an initialization function so that it can only be invoked by functions with the
-     * {initializer} modifier, directly or indirectly.
+     * {initializer} and {reinitializer} modifiers, directly or indirectly.
      */
     modifier onlyInitializing() {
         require(_initializing, "Initializable: contract is not initializing");
         _;
     }
 
-    function _isConstructor() private view returns (bool) {
-        return !AddressUpgradeable.isContract(address(this));
+    /**
+     * @dev Locks the contract, preventing any future reinitialization. This cannot be part of an initializer call.
+     * Calling this in the constructor of a contract will prevent that contract from being initialized or reinitialized
+     * to any version. It is recommended to use this to lock implementation contracts that are designed to be called
+     * through proxies.
+     */
+    function _disableInitializers() internal virtual {
+        _setInitializedVersion(type(uint8).max);
+    }
+
+    function _setInitializedVersion(uint8 version) private returns (bool) {
+        // If the contract is initializing we ignore whether _initialized is set in order to support multiple
+        // inheritance patterns, but we only do this in the context of a constructor, and for the lowest level
+        // of initializers, because in other contexts the contract may have been reentered.
+        if (_initializing) {
+            require(
+                version == 1 && !AddressUpgradeable.isContract(address(this)),
+                "Initializable: contract is already initialized"
+            );
+            return false;
+        } else {
+            require(_initialized < version, "Initializable: contract is already initialized");
+            _initialized = version;
+            return true;
+        }
     }
 }
 
 
-// File @openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)
 
@@ -883,8 +379,7 @@ interface IERC165Upgradeable {
 }
 
 
-// File @openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/ERC165.sol)
 
@@ -907,7 +402,6 @@ pragma solidity ^0.8.0;
  */
 abstract contract ERC165Upgradeable is Initializable, IERC165Upgradeable {
     function __ERC165_init() internal onlyInitializing {
-        __ERC165_init_unchained();
     }
 
     function __ERC165_init_unchained() internal onlyInitializing {
@@ -918,12 +412,17 @@ abstract contract ERC165Upgradeable is Initializable, IERC165Upgradeable {
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IERC165Upgradeable).interfaceId;
     }
+
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
     uint256[50] private __gap;
 }
 
 
-// File @openzeppelin/contracts-upgradeable/utils/introspection/ERC165StorageUpgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/utils/introspection/ERC165StorageUpgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/ERC165Storage.sol)
 
@@ -938,8 +437,6 @@ pragma solidity ^0.8.0;
  */
 abstract contract ERC165StorageUpgradeable is Initializable, ERC165Upgradeable {
     function __ERC165Storage_init() internal onlyInitializing {
-        __ERC165_init_unchained();
-        __ERC165Storage_init_unchained();
     }
 
     function __ERC165Storage_init_unchained() internal onlyInitializing {
@@ -971,12 +468,17 @@ abstract contract ERC165StorageUpgradeable is Initializable, ERC165Upgradeable {
         require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
         _supportedInterfaces[interfaceId] = true;
     }
+
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
     uint256[49] private __gap;
 }
 
 
 // File contracts/mixins/MixinDisable.sol
-
 
 pragma solidity ^0.8.0;
 
@@ -992,8 +494,7 @@ contract MixinDisable {
 }
 
 
-// File @openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (access/IAccessControl.sol)
 
@@ -1084,8 +585,7 @@ interface IAccessControlUpgradeable {
 }
 
 
-// File @openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
@@ -1103,7 +603,6 @@ pragma solidity ^0.8.0;
  */
 abstract contract ContextUpgradeable is Initializable {
     function __Context_init() internal onlyInitializing {
-        __Context_init_unchained();
     }
 
     function __Context_init_unchained() internal onlyInitializing {
@@ -1115,12 +614,17 @@ abstract contract ContextUpgradeable is Initializable {
     function _msgData() internal view virtual returns (bytes calldata) {
         return msg.data;
     }
+
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
     uint256[50] private __gap;
 }
 
 
-// File @openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (utils/Strings.sol)
 
@@ -1190,10 +694,9 @@ library StringsUpgradeable {
 }
 
 
-// File @openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol@v4.4.2
+// File @openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol@v4.6.0
 
-
-// OpenZeppelin Contracts v4.4.1 (access/AccessControl.sol)
+// OpenZeppelin Contracts (last updated v4.6.0) (access/AccessControl.sol)
 
 pragma solidity ^0.8.0;
 
@@ -1241,9 +744,6 @@ pragma solidity ^0.8.0;
  */
 abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable, IAccessControlUpgradeable, ERC165Upgradeable {
     function __AccessControl_init() internal onlyInitializing {
-        __Context_init_unchained();
-        __ERC165_init_unchained();
-        __AccessControl_init_unchained();
     }
 
     function __AccessControl_init_unchained() internal onlyInitializing {
@@ -1268,7 +768,7 @@ abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable,
      * _Available since v4.1._
      */
     modifier onlyRole(bytes32 role) {
-        _checkRole(role, _msgSender());
+        _checkRole(role);
         _;
     }
 
@@ -1282,8 +782,20 @@ abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable,
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account) public view override returns (bool) {
+    function hasRole(bytes32 role, address account) public view virtual override returns (bool) {
         return _roles[role].members[account];
+    }
+
+    /**
+     * @dev Revert with a standard message if `_msgSender()` is missing `role`.
+     * Overriding this function changes the behavior of the {onlyRole} modifier.
+     *
+     * Format of the revert message is described in {_checkRole}.
+     *
+     * _Available since v4.6._
+     */
+    function _checkRole(bytes32 role) internal view virtual {
+        _checkRole(role, _msgSender());
     }
 
     /**
@@ -1293,7 +805,7 @@ abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable,
      *
      *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
      */
-    function _checkRole(bytes32 role, address account) internal view {
+    function _checkRole(bytes32 role, address account) internal view virtual {
         if (!hasRole(role, account)) {
             revert(
                 string(
@@ -1314,7 +826,7 @@ abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable,
      *
      * To change a role's admin, use {_setRoleAdmin}.
      */
-    function getRoleAdmin(bytes32 role) public view override returns (bytes32) {
+    function getRoleAdmin(bytes32 role) public view virtual override returns (bytes32) {
         return _roles[role].adminRole;
     }
 
@@ -1421,19 +933,98 @@ abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable,
             emit RoleRevoked(role, account, _msgSender());
         }
     }
+
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
     uint256[49] private __gap;
 }
 
 
-// File contracts/mixins/MixinRoles.sol
+// File contracts/mixins/MixinErrors.sol
 
+pragma solidity ^0.8.0;
+
+/**
+ * @title List of all error messages 
+ * (replace string errors message to save on contract size)
+ */
+contract MixinErrors {
+  
+  // generic
+  error OUT_OF_RANGE();
+  error NULL_VALUE();
+  error INVALID_ADDRESS();
+  error INVALID_TOKEN();
+  error INVALID_LENGTH();
+  error UNAUTHORIZED();
+
+  // erc 721
+  error NON_COMPLIANT_ERC721_RECEIVER();
+
+  // roles
+  error ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
+  error ONLY_KEY_MANAGER_OR_APPROVED();
+  error UNAUTHORIZED_KEY_MANAGER_UPDATE();
+  error ONLY_LOCK_MANAGER_OR_BENEFICIARY();
+  error ONLY_LOCK_MANAGER();
+
+  // single key status
+  error KEY_NOT_VALID();
+  error NO_SUCH_KEY();
+
+  // single key operations
+  error CANT_EXTEND_NON_EXPIRING_KEY();
+  error NOT_ENOUGH_TIME();
+  error NOT_ENOUGH_FUNDS();
+
+  // migration & data schema
+  error SCHEMA_VERSION_NOT_CORRECT();
+  error MIGRATION_REQUIRED();
+
+  // lock status/settings
+  error OWNER_CANT_BE_ADDRESS_ZERO();
+  error MAX_KEYS_REACHED();
+  error KEY_TRANSFERS_DISABLED();
+  error CANT_BE_SMALLER_THAN_SUPPLY();
+
+  // transfers and approvals
+  error TRANSFER_TO_SELF();
+  error CANNOT_APPROVE_SELF();
+
+  // keys management 
+  error LOCK_SOLD_OUT();
+
+  // purchase
+  error INSUFFICIENT_ERC20_VALUE();
+  error INSUFFICIENT_VALUE();
+
+  // renewals
+  error NON_RENEWABLE_LOCK();
+  error LOCK_HAS_CHANGED();
+  error NOT_READY_FOR_RENEWAL();
+
+  // gas refund
+  error GAS_REFUND_FAILED();
+
+  // hooks
+  // NB: `hookIndex` designed the index of hook address in the params of `setEventHooks`
+  error INVALID_HOOK(uint8 hookIndex);
+
+}
+
+
+// File contracts/mixins/MixinRoles.sol
 
 pragma solidity ^0.8.0;
 
 // This contract mostly follows the pattern established by openzeppelin in
 // openzeppelin/contracts-ethereum-package/contracts/access/roles
 
-contract MixinRoles is AccessControlUpgradeable {
+
+contract MixinRoles is AccessControlUpgradeable, MixinErrors {
 
   // roles
   bytes32 public constant LOCK_MANAGER_ROLE = keccak256("LOCK_MANAGER");
@@ -1468,7 +1059,9 @@ contract MixinRoles is AccessControlUpgradeable {
   internal 
   view
   {
-    require( hasRole(LOCK_MANAGER_ROLE, msg.sender), 'ONLY_LOCK_MANAGER');
+    if(!hasRole(LOCK_MANAGER_ROLE, msg.sender)) {
+      revert ONLY_LOCK_MANAGER();
+    }
   }
 
   // lock manager functions
@@ -1509,18 +1102,16 @@ contract MixinRoles is AccessControlUpgradeable {
 }
 
 
-// File contracts/interfaces/IUnlock.sol
-
+// File contracts/interfaces/IOutwaveUnlock.sol
 
 pragma solidity >=0.5.17 <0.9.0;
 
 
 /**
  * @title The Unlock Interface
- * @author Nick Furfaro (unlock-protocol.com)
 **/
 
-interface IUnlock
+interface IOutwaveUnlock
 {
   // Use initialize instead of a constructor to support proxies(for upgradeability via zos).
   function initialize(address _unlockOwner) external;
@@ -1789,10 +1380,9 @@ interface IUnlock
 }
 
 
-// File @openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol@v4.4.2
+// File @openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol@v4.6.0
 
-
-// OpenZeppelin Contracts v4.4.1 (token/ERC20/IERC20.sol)
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
 
 pragma solidity ^0.8.0;
 
@@ -1800,6 +1390,20 @@ pragma solidity ^0.8.0;
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
 interface IERC20Upgradeable {
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
     /**
      * @dev Returns the amount of tokens in existence.
      */
@@ -1811,13 +1415,13 @@ interface IERC20Upgradeable {
     function balanceOf(address account) external view returns (uint256);
 
     /**
-     * @dev Moves `amount` tokens from the caller's account to `recipient`.
+     * @dev Moves `amount` tokens from the caller's account to `to`.
      *
      * Returns a boolean value indicating whether the operation succeeded.
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -1845,7 +1449,7 @@ interface IERC20Upgradeable {
     function approve(address spender, uint256 amount) external returns (bool);
 
     /**
-     * @dev Moves `amount` tokens from `sender` to `recipient` using the
+     * @dev Moves `amount` tokens from `from` to `to` using the
      * allowance mechanism. `amount` is then deducted from the caller's
      * allowance.
      *
@@ -1854,29 +1458,14 @@ interface IERC20Upgradeable {
      * Emits a {Transfer} event.
      */
     function transferFrom(
-        address sender,
-        address recipient,
+        address from,
+        address to,
         uint256 amount
     ) external returns (bool);
-
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 
-// File @openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol@v4.4.2
-
+// File @openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol@v4.6.0
 
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/utils/SafeERC20.sol)
 
@@ -1978,8 +1567,8 @@ library SafeERC20Upgradeable {
 
 // File contracts/mixins/MixinFunds.sol
 
-
 pragma solidity ^0.8.0;
+
 
 
 
@@ -1987,7 +1576,7 @@ pragma solidity ^0.8.0;
  * @title An implementation of the money related functions.
  * @author HardlyDifficult (unlock-protocol.com)
  */
-contract MixinFunds
+contract MixinFunds is MixinErrors
 {
   using AddressUpgradeable for address payable;
   using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -2012,10 +1601,13 @@ contract MixinFunds
   internal 
   view
   {
-    require(
-      _tokenAddress == address(0) || IERC20Upgradeable(_tokenAddress).totalSupply() > 0,
-      'INVALID_TOKEN'
-    );
+    if(
+      _tokenAddress != address(0) 
+      && 
+      IERC20Upgradeable(_tokenAddress).totalSupply() < 0
+    ) {
+      revert INVALID_TOKEN();
+    }
   }
 
   /**
@@ -2046,7 +1638,6 @@ contract MixinFunds
 
 // File contracts/interfaces/hooks/ILockKeyCancelHook.sol
 
-
 pragma solidity >=0.5.17 <0.9.0;
 
 
@@ -2072,7 +1663,6 @@ interface ILockKeyCancelHook
 
 
 // File contracts/interfaces/hooks/ILockKeyPurchaseHook.sol
-
 
 pragma solidity >=0.5.17 <0.9.0;
 
@@ -2123,21 +1713,10 @@ interface ILockKeyPurchaseHook
     uint minKeyPrice,
     uint pricePaid
   ) external;
-
-  /**
-   * @notice If the lock owner has registered an implementer then this hook
-   * after tokens have been trasfered from the buyer.
-   * @param pricePaid the value/pricePaid included with the purchase transaction
-   * @dev the lock's address is the `msg.sender` when this function is called
-   */
-  function onKeyPurchased(
-    uint pricePaid
-  ) external;
 }
 
 
 // File contracts/interfaces/hooks/ILockValidKeyHook.sol
-
 
 pragma solidity >=0.5.17 <0.9.0;
 
@@ -2169,7 +1748,6 @@ interface ILockValidKeyHook
 
 // File contracts/interfaces/hooks/ILockTokenURIHook.sol
 
-
 pragma solidity >=0.5.17 <0.9.0;
 
 /**
@@ -2198,12 +1776,47 @@ interface ILockTokenURIHook
 }
 
 
-// File contracts/mixins/MixinLockCore.sol
+// File contracts/interfaces/hooks/ILockKeyTransferHook.sol
 
+pragma solidity >=0.5.17 <0.9.0;
+
+
+/**
+ * @notice Functions to be implemented by a hasValidKey Hook.
+ * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
+ */
+interface ILockKeyTransferHook
+{
+
+  /**
+   * @notice If the lock owner has registered an implementer then this hook
+   * is called every time balanceOf is called
+   * @param lockAddress the address of the current lock
+   * @param tokenId the Id of the transferred key 
+   * @param operator who initiated the transfer
+   * @param from the previous owner of transferred key 
+   * @param from the previous owner of transferred key 
+   * @param to the new owner of the key
+   * @param expirationTimestamp the key expiration timestamp (after transfer)
+   */
+  function onKeyTransfer(
+    address lockAddress,
+    uint tokenId,
+    address operator,
+    address from,
+    address to,
+    uint expirationTimestamp
+  ) external;
+}
+
+
+// File contracts/mixins/MixinLockCore.sol
 
 pragma solidity ^0.8.0;
 
 // import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
+
+
 
 
 
@@ -2257,7 +1870,7 @@ contract MixinLockCore is
 
   // Unlock Protocol address
   // TODO: should we make that private/internal?
-  IUnlock public unlockProtocol;
+  IOutwaveUnlock public unlockProtocol;
 
   // Duration in seconds for which the keys are valid, after creation
   // should we take a smaller type use less gas?
@@ -2279,23 +1892,26 @@ contract MixinLockCore is
   // The denominator component for values specified in basis points.
   uint internal constant BASIS_POINTS_DEN = 10000;
 
+  // lock hooks
   ILockKeyPurchaseHook public onKeyPurchaseHook;
   ILockKeyCancelHook public onKeyCancelHook;
   ILockValidKeyHook public onValidKeyHook;
   ILockTokenURIHook public onTokenURIHook;
 
-  // use to check data version
+  // use to check data version (added to v10)
   uint public schemaVersion;
 
-  // keep track of how many key a single address can use
+  // keep track of how many key a single address can use (added to v10)
   uint internal _maxKeysPerAddress;
+
+  // one more hook (added to v11)
+  ILockKeyTransferHook public onKeyTransferHook;
 
   // modifier to check if data has been upgraded
   function _lockIsUpToDate() internal view {
-    require(
-      schemaVersion == publicLockVersion(),
-      'MIGRATION_REQUIRED'
-    );
+    if(schemaVersion != publicLockVersion()) {
+      revert MIGRATION_REQUIRED();
+    }
   }
 
   // modifier
@@ -2303,10 +1919,9 @@ contract MixinLockCore is
   internal 
   view
   {
-    require(
-      isLockManager(msg.sender) || msg.sender == beneficiary,
-      'ONLY_LOCK_MANAGER_OR_BENEFICIARY'
-    );
+    if(!isLockManager(msg.sender) && msg.sender != beneficiary) {
+      revert ONLY_LOCK_MANAGER_OR_BENEFICIARY();
+    }
   }
   
   function _initializeMixinLockCore(
@@ -2316,7 +1931,7 @@ contract MixinLockCore is
     uint _maxNumberOfKeys
   ) internal
   {
-    unlockProtocol = IUnlock(msg.sender); // Make sure we link back to Unlock's smart contract.
+    unlockProtocol = IOutwaveUnlock(msg.sender); // Make sure we link back to Unlock's smart contract.
     beneficiary = _beneficiary;
     expirationDuration = _expirationDuration;
     keyPrice = _keyPrice;
@@ -2334,7 +1949,7 @@ contract MixinLockCore is
   ) public pure
     returns (uint16)
   {
-    return 10;
+    return 11;
   }
 
   /**
@@ -2362,7 +1977,9 @@ contract MixinLockCore is
     uint amount;
     if(_amount == 0 || _amount > balance)
     {
-      require(balance > 0, 'NOT_ENOUGH_FUNDS');
+      if(balance <= 0) {
+        revert NOT_ENOUGH_FUNDS();
+      }
       amount = balance;
     }
     else
@@ -2403,7 +2020,9 @@ contract MixinLockCore is
     address payable _beneficiary
   ) external {
     _onlyLockManagerOrBeneficiary();
-    require(_beneficiary != address(0), 'INVALID_ADDRESS');
+    if(_beneficiary == address(0)) {
+      revert INVALID_ADDRESS();
+    }
     beneficiary = _beneficiary;
   }
 
@@ -2414,18 +2033,23 @@ contract MixinLockCore is
     address _onKeyPurchaseHook,
     address _onKeyCancelHook,
     address _onValidKeyHook,
-    address _onTokenURIHook
+    address _onTokenURIHook,
+    address _onKeyTransferHook
   ) external
   {
     _onlyLockManager();
-    require(_onKeyPurchaseHook == address(0) || _onKeyPurchaseHook.isContract(), 'INVALID_ON_KEY_SOLD_HOOK');
-    require(_onKeyCancelHook == address(0) || _onKeyCancelHook.isContract(), 'INVALID_ON_KEY_CANCEL_HOOK');
-    require(_onValidKeyHook == address(0) || _onValidKeyHook.isContract(), 'INVALID_ON_VALID_KEY_HOOK');
-    require(_onTokenURIHook == address(0) || _onTokenURIHook.isContract(), 'INVALID_ON_TOKEN_URI_HOOK');
+
+    if(_onKeyPurchaseHook != address(0) && !_onKeyPurchaseHook.isContract()) { revert INVALID_HOOK(0); }
+    if(_onKeyCancelHook != address(0) && !_onKeyCancelHook.isContract()) { revert INVALID_HOOK(1); }
+    if(_onValidKeyHook != address(0) && !_onValidKeyHook.isContract()) { revert INVALID_HOOK(2); }
+    if(_onTokenURIHook != address(0) && !_onTokenURIHook.isContract()) { revert INVALID_HOOK(3); }
+    if(_onKeyTransferHook != address(0) && !_onKeyTransferHook.isContract()) { revert INVALID_HOOK(4); }
+    
     onKeyPurchaseHook = ILockKeyPurchaseHook(_onKeyPurchaseHook);
     onKeyCancelHook = ILockKeyCancelHook(_onKeyCancelHook);
     onTokenURIHook = ILockTokenURIHook(_onTokenURIHook);
     onValidKeyHook = ILockValidKeyHook(_onValidKeyHook);
+    onKeyTransferHook = ILockKeyTransferHook(_onKeyTransferHook);
   }
 
   function totalSupply()
@@ -2437,6 +2061,8 @@ contract MixinLockCore is
 
   /**
    * @notice An ERC-20 style approval, allowing the spender to transfer funds directly from this lock.
+   * @param _spender address that can spend tokens belonging to the lock
+   * @param _amount amount of tokens that can be spent by the spender
    */
   function approveBeneficiary(
     address _spender,
@@ -2450,14 +2076,15 @@ contract MixinLockCore is
 
 
   // decreased from 1000 to 998 when adding `schemaVersion` and `maxKeysPerAddress` in v10 
-  uint256[998] private __safe_upgrade_gap;
+  // decreased from 998 to 997 when adding `onKeyTransferHook` in v11
+  uint256[997] private __safe_upgrade_gap;
 }
 
 
 // File contracts/mixins/MixinKeys.sol
 
-
 pragma solidity ^0.8.0;
+
 
 /**
  * @title Mixin for managing `Key` data, as well as the * Approval related functions needed to meet the ERC721
@@ -2467,6 +2094,7 @@ pragma solidity ^0.8.0;
  * separates logically groupings of code to ease readability.
  */
 contract MixinKeys is
+  MixinErrors,
   MixinLockCore
 {
   // The struct for a key
@@ -2519,7 +2147,7 @@ contract MixinKeys is
   // the transfer of a key to another address where their key can be transferred
   // Note: the approver may actually NOT have a key... and there can only
   // be a single approved address
-  mapping (uint => address) private approved;
+  mapping (uint => address) internal approved;
 
   // Keeping track of approved operators for a given Key manager.
   // This approves a given operator for all keys managed by the calling "keyManager"
@@ -2552,28 +2180,14 @@ contract MixinKeys is
   internal
   view
   {
-    require(
-      _isKeyManager(_tokenId, msg.sender) ||
-      approved[_tokenId] == msg.sender ||
-      isApprovedForAll(_ownerOf[_tokenId], msg.sender),
-      'ONLY_KEY_MANAGER_OR_APPROVED'
-    );
-  }
-
-  /**
-   * Ensures that an owner has a valid key
-   * @param _user the account to check
-   * @dev This is a modifier
-   */ 
-  function _hasValidKey(
-    address _user
-  ) 
-  internal 
-  view 
-  {
-    require(
-      getHasValidKey(_user), 'KEY_NOT_VALID'
-    );
+    address realKeyOwner = keyManagerOf[_tokenId] == address(0) ? _ownerOf[_tokenId] : keyManagerOf[_tokenId];
+    if(
+      !_isKeyManager(_tokenId, msg.sender)
+      && approved[_tokenId] != msg.sender
+      && !isApprovedForAll(realKeyOwner, msg.sender)
+    ) {
+      revert ONLY_KEY_MANAGER_OR_APPROVED();
+    }
   }
 
   /**
@@ -2586,10 +2200,10 @@ contract MixinKeys is
   internal
   view
   {
-    require(
-      isValidKey(_tokenId),
-      'KEY_NOT_VALID'
-    );
+    if(!isValidKey(_tokenId)) {
+      revert KEY_NOT_VALID();
+    }
+    
   }
 
   /**
@@ -2602,9 +2216,9 @@ contract MixinKeys is
   internal
   view 
   {
-    require(
-      _keys[_tokenId].expirationTimestamp != 0, 'NO_SUCH_KEY'
-    );
+    if(_keys[_tokenId].expirationTimestamp == 0) {
+      revert NO_SUCH_KEY();
+    }
   }
 
   /**
@@ -2625,91 +2239,10 @@ contract MixinKeys is
   /**
     * Migrate data from the previous single owner => key mapping to 
     * the new data structure w multiple tokens.
-    * @param _calldata an ABI-encoded representation of the params 
-    * for v10: `(uint _startIndex, uint nbRecordsToUpdate)`
-    * -  `_startIndex` : the index of the first record to migrate
-    * -  `_nbRecordsToUpdate` : number of records to migrate
-    * @dev if all records can be processed at once, the `schemaVersion` will be updated
-    * if not, you will have to call `updateSchemaVersion`
-    * variable to the latest/current lock version
+    * No data migration needed for v10 > v11
     */
-  function migrate(
-    bytes calldata _calldata
-  ) virtual public {
-    
-    // make sure we have correct data version before migrating
-    require(
-      (
-        (schemaVersion == publicLockVersion() - 1)
-        ||
-        schemaVersion == 0
-      ),
-      'SCHEMA_VERSION_NOT_CORRECT'
-    );
-
-    // set default value to 1
-    if(_maxKeysPerAddress == 0) {
-      _maxKeysPerAddress = 1;
-    }
-
-    // count the records that are actually migrated
-    uint startIndex = 0;
-    
-    // count the records that are actually migrated
-    uint updatedRecordsCount;
-
-    // the index of the last record to migrate in this call
-    uint nbRecordsToUpdate;
-
-    // the total number of records to migrate
-    uint totalSupply = totalSupply();
-    
-    // default to 100 when sent from Unlock, as this is called by default in the upgrade script.
-    // If there are more than 100 keys, the migrate function will need to be called again until all keys have been migrated.
-    if( msg.sender == address(unlockProtocol) ) {
-      nbRecordsToUpdate = 100;
-    } else {
-      // decode param
-      (startIndex, nbRecordsToUpdate) = abi.decode(_calldata, (uint, uint));
-    }
-
-    // cap the number of records to migrate to totalSupply
-    if(nbRecordsToUpdate > totalSupply) nbRecordsToUpdate = totalSupply;
-
-    for (uint256 i = startIndex; i < startIndex + nbRecordsToUpdate; i++) {
-      // tokenId starts at 1
-      uint tokenId = i + 1;
-      address keyOwner = _ownerOf[tokenId];
-      Key memory k = keyByOwner[keyOwner];
-
-      // make sure key exists
-      if(k.tokenId != 0 && k.expirationTimestamp != 0) {
-
-        // copy key in new mapping
-        _keys[i + 1] = Key(k.tokenId, k.expirationTimestamp);
-        
-        // delete token from previous owner
-        delete keyByOwner[keyOwner];
-
-        // record new owner
-        _createOwnershipRecord(
-          tokenId,
-          keyOwner
-        );
-
-        // keep track of updated records
-        updatedRecordsCount++;
-      }
-    }
-    
-    // enable lock if all keys has been migrated in a single run
-    if(nbRecordsToUpdate >= totalSupply) {
-      schemaVersion = publicLockVersion();
-    }
-
-    emit KeysMigrated(
-      updatedRecordsCount // records that have been migrated
-    );
+  function migrate(bytes calldata) virtual public {
+    schemaVersion = publicLockVersion();
   }
 
   /**
@@ -2740,7 +2273,9 @@ contract MixinKeys is
     view
     returns (uint256)
   {
-      require(_index < balanceOf(_keyOwner), "OWNER_INDEX_OUT_OF_BOUNDS");
+      if(_index >= totalKeys(_keyOwner)) {
+        revert OUT_OF_RANGE();
+      }
       return _ownedKeyIds[_keyOwner][_index];
   }
 
@@ -2755,6 +2290,10 @@ contract MixinKeys is
   ) 
   internal 
   returns (uint tokenId) {
+
+    if(_recipient == address(0)) { 
+        revert INVALID_ADDRESS();
+    }
     
     // We increment the tokenId counter
     _totalSupply++;
@@ -2764,7 +2303,7 @@ contract MixinKeys is
     _keys[tokenId] = Key(tokenId, expirationTimestamp);
     
     // increase total number of unique owners
-    if(balanceOf(_recipient) == 0 ) {
+    if(totalKeys(_recipient) == 0 ) {
       numberOfOwners++;
     }
 
@@ -2783,7 +2322,8 @@ contract MixinKeys is
   }
 
   function _extendKey(
-    uint _tokenId
+    uint _tokenId,
+    uint _duration
   ) internal 
     returns (
       uint newTimestamp
@@ -2792,18 +2332,21 @@ contract MixinKeys is
     uint expirationTimestamp = _keys[_tokenId].expirationTimestamp;
 
     // prevent extending a valid non-expiring key
-    require(expirationTimestamp != type(uint).max, 'CANT_EXTEND_NON_EXPIRING_KEY');
+    if(expirationTimestamp == type(uint).max){
+      revert CANT_EXTEND_NON_EXPIRING_KEY();
+    }
     
     // if non-expiring but not valid then extend
-    if(expirationDuration == type(uint).max) {
+    uint duration = _duration == 0 ? expirationDuration : _duration;
+    if(duration == type(uint).max) {
       newTimestamp = type(uint).max;
     } else {
       if (expirationTimestamp > block.timestamp) {
         // extends a valid key  
-        newTimestamp = expirationTimestamp + expirationDuration;
+        newTimestamp = expirationTimestamp + duration;
       } else {
         // renew an expired or cancelled key
-        newTimestamp = block.timestamp + expirationDuration;
+        newTimestamp = block.timestamp + duration;
       }
     }
 
@@ -2824,7 +2367,9 @@ contract MixinKeys is
     uint length = balanceOf(_recipient);
     
     // make sure address does not have more keys than allowed
-    require(length < _maxKeysPerAddress, 'MAX_KEYS');
+    if(length >= _maxKeysPerAddress) {
+      revert MAX_KEYS_REACHED();
+    }
 
     // record new owner
     _ownedKeysIndex[_tokenId] = length;
@@ -2854,7 +2399,11 @@ contract MixinKeys is
     _isKey(_tokenIdTo);
     
     // make sure there is enough time remaining
-    require(keyExpirationTimestampFor(_tokenIdFrom) - block.timestamp >= _amount, 'NOT_ENOUGH_TIME');
+    if(
+      _amount > keyExpirationTimestampFor(_tokenIdFrom) - block.timestamp
+    ) {
+      revert NOT_ENOUGH_TIME();
+    }
 
     // deduct time from parent key
     _timeMachine(_tokenIdFrom, _amount, false);
@@ -2889,7 +2438,7 @@ contract MixinKeys is
     delete _ownedKeyIds[previousOwner][lastTokenIndex];
 
     // remove from owner count if thats the only key 
-    if(balanceOf(previousOwner) == 1 ) {
+    if(totalKeys(previousOwner) == 1 ) {
       numberOfOwners--;
     }
     // update balance
@@ -2916,18 +2465,39 @@ contract MixinKeys is
   }
 
   /**
-   * In the specific case of a Lock, each owner can own only at most 1 key.
-   * @return The number of NFTs owned by `_keyOwner`, either 0 or 1.
-  */
-  function balanceOf(
+   * @return numberOfKeys The number of keys owned by `_keyOwner` (expired or not)
+   */
+  function totalKeys(
     address _keyOwner
   )
     public
     view
     returns (uint)
   {
-    require(_keyOwner != address(0), 'INVALID_ADDRESS');
+    if(_keyOwner == address(0)) { 
+      revert INVALID_ADDRESS();
+    }
+
     return _balances[_keyOwner];
+  }
+
+  /**
+   * In the specific case of a Lock, `balanceOf` returns only the tokens with a valid expiration timerange
+   * @return balance The number of valid keys owned by `_keyOwner`
+  */
+  function balanceOf(
+    address _keyOwner
+  )
+    public
+    view
+    returns (uint balance)
+  {
+    uint length = totalKeys(_keyOwner);
+    for (uint i = 0; i < length; i++) {
+      if(isValidKey(tokenOfOwnerByIndex(_keyOwner, i))) {
+        balance++;
+      }
+    }
   }
 
   /**
@@ -3005,9 +2575,9 @@ contract MixinKeys is
   }
 
   /**
-   * @notice Public function for updating transfer and cancel rights for a given key
+   * @notice Public function for setting the manager for a given key
    * @param _tokenId The id of the key to assign rights for
-   * @param _keyManager The address with the manager's rights for the given key.
+   * @param _keyManager the address with the manager's rights for the given key.
    * Setting _keyManager to address(0) means the keyOwner is also the keyManager
    */
   function setKeyManagerOf(
@@ -3016,11 +2586,14 @@ contract MixinKeys is
   ) public
   {
     _isKey(_tokenId);
-    require(
-      _isKeyManager(_tokenId, msg.sender) ||
-      isLockManager(msg.sender),
-      'UNAUTHORIZED_KEY_MANAGER_UPDATE'
-    );
+    if(
+      // is already key manager
+      !_isKeyManager(_tokenId, msg.sender) 
+      // is lock manager
+      && !isLockManager(msg.sender)
+    ) {
+      revert UNAUTHORIZED_KEY_MANAGER_UPDATE();
+    }
     _setKeyManagerOf(_tokenId, _keyManager);
   }
 
@@ -3048,7 +2621,9 @@ contract MixinKeys is
     public
   {
     _onlyKeyManagerOrApproved(_tokenId);
-    require(msg.sender != _approved, 'APPROVE_SELF');
+    if(msg.sender == _approved) {
+      revert CANNOT_APPROVE_SELF();
+    }
 
     approved[_tokenId] = _approved;
     emit Approval(_ownerOf[_tokenId], _approved, _tokenId);
@@ -3086,7 +2661,8 @@ contract MixinKeys is
   }
 
   /**
-   * Returns true if _keyManager is the manager of the key
+   * Returns true if _keyManager is explicitly set as key manager, or if the 
+   * address is the owner but no km is set.
    * identified by _tokenId
    */
   function _isKeyManager(
@@ -3095,8 +2671,15 @@ contract MixinKeys is
   ) internal view
     returns (bool)
   {
-    if(keyManagerOf[_tokenId] == _keyManager ||
-      (keyManagerOf[_tokenId] == address(0) && ownerOf(_tokenId) == _keyManager)) {
+    if(
+      // is explicitely a key manager
+      keyManagerOf[_tokenId] == _keyManager 
+      ||
+      (
+        // is owner and no key manager is set
+        ownerOf(_tokenId) == _keyManager)
+        && keyManagerOf[_tokenId] == address(0) 
+      ) {
       return true;
     } else {
       return false;
@@ -3158,7 +2741,9 @@ contract MixinKeys is
    */
   function setMaxNumberOfKeys (uint _maxNumberOfKeys) external {
      _onlyLockManager();
-     require (_maxNumberOfKeys >= _totalSupply, "SMALLER_THAN_SUPPLY");
+     if (_maxNumberOfKeys < _totalSupply) {
+       revert CANT_BE_SMALLER_THAN_SUPPLY();
+     }
      maxNumberOfKeys = _maxNumberOfKeys;
   }
 
@@ -3180,7 +2765,9 @@ contract MixinKeys is
    */
   function setMaxKeysPerAddress(uint _maxKeys) external {
      _onlyLockManager();
-     require(_maxKeys != 0, 'NULL_VALUE');
+     if(_maxKeys == 0) {
+       revert NULL_VALUE();
+     }
      _maxKeysPerAddress = _maxKeys;
   }
 
@@ -3198,17 +2785,17 @@ contract MixinKeys is
 
 // File contracts/mixins/MixinERC721Enumerable.sol
 
-
 pragma solidity ^0.8.0;
 
 
-// import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
+
 
 /**
  * @title Implements the ERC-721 Enumerable extension.
  */
 contract MixinERC721Enumerable is
   ERC165StorageUpgradeable,
+  MixinErrors,
   MixinLockCore, // Implements totalSupply
   MixinKeys
 {
@@ -3234,7 +2821,9 @@ contract MixinERC721Enumerable is
   ) public view
     returns (uint256)
   {
-    require(_index < _totalSupply, 'OUT_OF_RANGE');
+    if(_index >= _totalSupply) {
+      revert OUT_OF_RANGE();
+    }
     return _index;
   }
 
@@ -3257,8 +2846,8 @@ contract MixinERC721Enumerable is
 
 // File contracts/mixins/MixinGrantKeys.sol
 
-
 pragma solidity ^0.8.0;
+
 
 
 /**
@@ -3268,6 +2857,7 @@ pragma solidity ^0.8.0;
  * separates logically groupings of code to ease readability.
  */
 contract MixinGrantKeys is
+  MixinErrors,
   MixinRoles,
   MixinKeys
 {
@@ -3279,20 +2869,39 @@ contract MixinGrantKeys is
     address[] calldata _recipients,
     uint[] calldata _expirationTimestamps,
     address[] calldata _keyManagers
-  ) external {
+  ) external 
+    returns (uint[] memory)
+  {
     _lockIsUpToDate();
-    require(isKeyGranter(msg.sender) || isLockManager(msg.sender), 'ONLY_LOCK_MANAGER_OR_KEY_GRANTER');
+    if(!isKeyGranter(msg.sender) && !isLockManager(msg.sender)) {
+      revert ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
+    }
 
+    uint[] memory tokenIds = new uint[](_recipients.length);
     for(uint i = 0; i < _recipients.length; i++) {
-      require(_recipients[i] != address(0), 'INVALID_ADDRESS');
-
       // an event is triggered
-      _createNewKey(
+      tokenIds[i] = _createNewKey(
         _recipients[i],
         _keyManagers[i],  
         _expirationTimestamps[i]
       ); 
     }
+    return tokenIds;
+  }
+  
+  /**
+   * Allows the Lock owner or key granter to extend an existing keys with no charge. This is the "renewal" equivalent of `grantKeys`.
+   * @param _tokenId The id of the token to extend
+   * @param _duration The duration in secondes to add ot the key
+   * @dev set `_duration` to 0 to use the default duration of the lock
+   */
+  function grantKeyExtension(uint _tokenId, uint _duration) external {
+    _lockIsUpToDate();
+    _isKey(_tokenId);
+    if(!isKeyGranter(msg.sender) && !isLockManager(msg.sender)) {
+      revert ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
+    }
+    _extendKey(_tokenId, _duration);
   }
 
   uint256[1000] private __safe_upgrade_gap;
@@ -3301,8 +2910,7 @@ contract MixinGrantKeys is
 
 // File contracts/UnlockUtils.sol
 
-
-pragma solidity >=0.5.17 <=0.8.7;
+pragma solidity >=0.5.17 <=0.8.17;
 
 // This contract provides some utility methods for use with the unlock protocol smart contracts.
 // Borrowed from:
@@ -3369,7 +2977,6 @@ library UnlockUtils {
 
 
 // File contracts/mixins/MixinLockMetadata.sol
-
 
 pragma solidity ^0.8.0;
 
@@ -3540,8 +3147,8 @@ contract MixinLockMetadata is
 
 // File contracts/mixins/MixinPurchase.sol
 
-
 pragma solidity ^0.8.0;
+
 
 
 
@@ -3553,13 +3160,12 @@ pragma solidity ^0.8.0;
  * separates logically groupings of code to ease readability.
  */
 contract MixinPurchase is
+  MixinErrors,
   MixinFunds,
   MixinDisable,
   MixinLockCore,
   MixinKeys
 {
-  event RenewKeyPurchase(address indexed owner, uint newExpiration);
-
   event GasRefunded(address indexed receiver, uint refundedAmount, address tokenAddress);
   
   event UnlockCallFailed(address indexed lockAddress, address unlockAddress);
@@ -3568,13 +3174,15 @@ contract MixinPurchase is
   uint256 internal _gasRefundValue;
 
   // Keep track of ERC20 price when purchased
-  mapping(uint256 => uint256) private _originalPrices;
+  mapping(uint256 => uint256) internal _originalPrices;
   
   // Keep track of duration when purchased
   mapping(uint256 => uint256) internal _originalDurations;
   
   // keep track of token pricing when purchased
-  mapping(uint256 => address) private _originalTokens;
+  mapping(uint256 => address) internal _originalTokens;
+
+  mapping(address => uint) public referrerFees;
 
   /**
   * @dev Set the value/price to be refunded to the sender on purchase
@@ -3590,6 +3198,41 @@ contract MixinPurchase is
   */
   function gasRefundValue() external view returns (uint256 _refundValue) {
     return _gasRefundValue;
+  }
+
+  /**
+  * Set a specific percentage of the keyPrice to be sent to the referrer while purchasing, 
+  * extending or renewing a key. 
+  * @param _referrer the address of the referrer. If set to the 0x address, any referrer will receive the fee.
+  * @param _feeBasisPoint the percentage of the price to be used for this 
+  * specific referrer (in basis points)
+  * @dev To send a fixed percentage of the key price to all referrers, sett a percentage to `address(0)`
+  */
+  function setReferrerFee(address _referrer, uint _feeBasisPoint) public {
+    _onlyLockManager();
+    referrerFees[_referrer] = _feeBasisPoint;
+  }
+
+  /** 
+  @dev internal function to execute the payments to referrers if any is set
+  */
+  function _payReferrer (address _referrer) internal {
+    // get default value
+    uint basisPointsToPay = referrerFees[address(0)];
+
+    // get value for the referrer
+    if(referrerFees[_referrer] != 0) {
+      basisPointsToPay = referrerFees[_referrer];
+    }
+    
+    // pay the referrer if necessary
+    if (basisPointsToPay != 0) {
+      _transfer(
+        tokenAddress,
+        payable(_referrer), 
+        keyPrice * basisPointsToPay / BASIS_POINTS_DEN
+      );
+    }
   }
 
   /**
@@ -3632,20 +3275,28 @@ contract MixinPurchase is
     address[] memory _keyManagers,
     bytes[] calldata _data
   ) external payable
+    returns (uint[] memory)
   {
     _lockIsUpToDate();
-    require(maxNumberOfKeys > _totalSupply, 'LOCK_SOLD_OUT');
-    require(_recipients.length == _referrers.length, 'INVALID_REFERRERS_LENGTH');
-    require(_recipients.length == _keyManagers.length, 'INVALID_KEY_MANAGERS_LENGTH');
+    if(_totalSupply +  _recipients.length > maxNumberOfKeys) {
+      revert LOCK_SOLD_OUT();
+    }
+    if(
+      (_recipients.length != _referrers.length)
+      ||
+      (_recipients.length != _keyManagers.length)
+      ) {
+      revert INVALID_LENGTH();
+    }
 
     uint totalPriceToPay;
     uint tokenId;
+    uint[] memory tokenIds = new uint[](_recipients.length);
 
     for (uint256 i = 0; i < _recipients.length; i++) {
       // check recipient address
       address _recipient = _recipients[i];
-      require(_recipient != address(0), 'INVALID_ADDRESS');
-      
+
       // check for a non-expiring key
       if (expirationDuration == type(uint).max) {
         // create a new key
@@ -3662,8 +3313,7 @@ contract MixinPurchase is
         );
       }
 
-      // price      
-
+      // price
       uint inMemoryKeyPrice = purchasePriceFor(_recipient, _referrers[i], _data[i]);
       totalPriceToPay = totalPriceToPay + inMemoryKeyPrice;
 
@@ -3671,9 +3321,12 @@ contract MixinPurchase is
       _originalPrices[tokenId] = inMemoryKeyPrice;
       _originalDurations[tokenId] = expirationDuration;
       _originalTokens[tokenId] = tokenAddress;
+
+      // store tokenIds 
+      tokenIds[i] = tokenId;
       
-      if(tokenAddress != address(0)) {
-        require(inMemoryKeyPrice <= _values[i], 'INSUFFICIENT_ERC20_VALUE');
+      if(tokenAddress != address(0) && _values[i] < inMemoryKeyPrice) {
+        revert INSUFFICIENT_ERC20_VALUE();
       }
 
       // store in unlock
@@ -3697,20 +3350,20 @@ contract MixinPurchase is
     if(tokenAddress != address(0)) {
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
       token.transferFrom(msg.sender, address(this), totalPriceToPay);
-      if(address(onKeyPurchaseHook) != address(0)) {
-        onKeyPurchaseHook.onKeyPurchased(totalPriceToPay);
-      }
-
-    } else {
+    } else if(msg.value < totalPriceToPay) {
       // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
-      require(totalPriceToPay <= msg.value, 'INSUFFICIENT_VALUE');
-      if(address(onKeyPurchaseHook) != address(0)) {
-        onKeyPurchaseHook.onKeyPurchased(msg.value);
-      }
+      revert INSUFFICIENT_VALUE();
     }
 
     // refund gas
     _refundGas();
+
+    // send what is due to referrers
+    for (uint256 i = 0; i < _referrers.length; i++) { 
+      _payReferrer(_referrers[i]);
+    }
+
+    return tokenIds;
   }
 
   /**
@@ -3735,25 +3388,94 @@ contract MixinPurchase is
     _isKey(_tokenId);
 
     // extend key duration
-    _extendKey(_tokenId);
+    _extendKey(_tokenId, 0);
 
     // transfer the tokens
     uint inMemoryKeyPrice = purchasePriceFor(ownerOf(_tokenId), _referrer, _data);
 
+    // process in unlock
+    _recordKeyPurchase(inMemoryKeyPrice, _referrer);
+
     if(tokenAddress != address(0)) {
-      require(inMemoryKeyPrice <= _value, 'INSUFFICIENT_ERC20_VALUE');
+      if(_value < inMemoryKeyPrice) {
+        revert INSUFFICIENT_ERC20_VALUE();
+      }
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
       token.transferFrom(msg.sender, address(this), inMemoryKeyPrice);
-    } else {
+    } else if(msg.value < inMemoryKeyPrice) {
       // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
-      require(inMemoryKeyPrice <= msg.value, 'INSUFFICIENT_VALUE');
+      revert INSUFFICIENT_VALUE();
+    }
+
+    // if params have changed, then update them
+    if(_originalPrices[_tokenId] != inMemoryKeyPrice) {
+      _originalPrices[_tokenId] = inMemoryKeyPrice;
+    }
+    if(_originalDurations[_tokenId] != expirationDuration) {
+      _originalDurations[_tokenId] = expirationDuration;
+    }
+    if(_originalTokens[_tokenId] != tokenAddress) {
+      _originalTokens[_tokenId] = tokenAddress;
     }
 
     // refund gas (if applicable)
     _refundGas();
+
+    // send what is due to referrer
+    _payReferrer(_referrer);
   }
 
+  /**
+  * Renew a given token
+  * @notice only works for non-free, expiring, ERC20 locks
+  * @param _tokenId the ID fo the token to renew
+  * @param _referrer the address of the person to be granted UDT
+  */
+  function renewMembershipFor(
+    uint _tokenId,
+    address _referrer
+  ) public {
+    _lockIsUpToDate();
+    _isKey(_tokenId);
 
+    // check the lock
+    if(_originalDurations[_tokenId] == type(uint).max || tokenAddress == address(0)) {
+      revert NON_RENEWABLE_LOCK();
+    }
+
+    // make sure duration and pricing havent changed  
+    uint keyPrice = purchasePriceFor(ownerOf(_tokenId), _referrer, '');
+    if(
+      _originalPrices[_tokenId] != keyPrice
+      ||
+      _originalDurations[_tokenId] != expirationDuration
+      || 
+      _originalTokens[_tokenId] != tokenAddress
+    ) {
+      revert LOCK_HAS_CHANGED();
+    }
+
+    // make sure key is ready for renewal
+    if(isValidKey(_tokenId)) {
+      revert NOT_READY_FOR_RENEWAL();
+    }
+
+    // extend key duration
+    _extendKey(_tokenId, 0);
+
+    // store in unlock
+    _recordKeyPurchase(keyPrice, _referrer);
+
+    // transfer the tokens
+    IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
+    token.transferFrom(ownerOf(_tokenId), address(this), keyPrice);
+
+    // refund gas if applicable
+    _refundGas();
+
+    // send what is due to referrer
+    _payReferrer(_referrer);
+  }
 
   /**
    * @notice returns the minimum price paid for a purchase with these params.
@@ -3784,22 +3506,25 @@ contract MixinPurchase is
     if (_gasRefundValue != 0) { 
       if(tokenAddress != address(0)) {
         IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-        token.transferFrom(address(this), msg.sender, _gasRefundValue);
+        // send tokens to refun gas
+        token.transfer(msg.sender, _gasRefundValue);
       } else {
         (bool success, ) = msg.sender.call{value: _gasRefundValue}("");
-        require(success, "REFUND_FAILED");
+        if(!success) {
+          revert GAS_REFUND_FAILED();
+        }
       }
       emit GasRefunded(msg.sender, _gasRefundValue, tokenAddress);
     }
   }
 
   // decreased from 1000 to 997 when added mappings for initial purchases pricing and duration on v10 
-  uint256[997] private __safe_upgrade_gap;
+  // decreased from 997 to 996 when added the `referrerFees` mapping on v11
+  uint256[996] private __safe_upgrade_gap;
 }
 
 
 // File contracts/mixins/MixinRefunds.sol
-
 
 pragma solidity ^0.8.0;
 
@@ -3908,6 +3633,7 @@ contract MixinRefunds is
 
     // make future reccuring transactions impossible
     _originalDurations[_tokenId] = 0;
+    _originalPrices[_tokenId] = 0;
     
     // inform the hook if there is one registered
     if(address(onKeyCancelHook) != address(0))
@@ -3960,10 +3686,9 @@ contract MixinRefunds is
 }
 
 
-// File @openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol@v4.4.2
+// File @openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol@v4.6.0
 
-
-// OpenZeppelin Contracts v4.4.1 (token/ERC721/IERC721Receiver.sol)
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC721/IERC721Receiver.sol)
 
 pragma solidity ^0.8.0;
 
@@ -3980,7 +3705,7 @@ interface IERC721ReceiverUpgradeable {
      * It must return its Solidity selector to confirm the token transfer.
      * If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
      *
-     * The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     * The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`.
      */
     function onERC721Received(
         address operator,
@@ -3993,8 +3718,8 @@ interface IERC721ReceiverUpgradeable {
 
 // File contracts/mixins/MixinTransfer.sol
 
-
 pragma solidity ^0.8.0;
+
 
 
 
@@ -4006,12 +3731,12 @@ pragma solidity ^0.8.0;
 /**
  * @title Mixin for the transfer-related functions needed to meet the ERC721
  * standard.
- * @author Nick Furfaro
  * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
  * separates logically groupings of code to ease readability.
  */
 
 contract MixinTransfer is
+  MixinErrors,
   MixinRoles,
   MixinFunds,
   MixinLockCore,
@@ -4046,13 +3771,16 @@ contract MixinTransfer is
   ) public
   {
     _lockIsUpToDate();
-    require(maxNumberOfKeys > _totalSupply, 'LOCK_SOLD_OUT');
+    if(maxNumberOfKeys <= _totalSupply) {
+      revert LOCK_SOLD_OUT();
+    }
     _onlyKeyManagerOrApproved(_tokenIdFrom);
     _isValidKey(_tokenIdFrom);
-    require(transferFeeBasisPoints < BASIS_POINTS_DEN, 'KEY_TRANSFERS_DISABLED');
-    require(_to != address(0), 'INVALID_ADDRESS');
+    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
+      revert KEY_TRANSFERS_DISABLED();
+    }
+
     address keyOwner = _ownerOf[_tokenIdFrom];
-    require(keyOwner != _to, 'TRANSFER_TO_SELF');
 
     // store time to be added
     uint time;
@@ -4092,10 +3820,20 @@ contract MixinTransfer is
       tokenIdTo
     );
 
-    require(_checkOnERC721Received(keyOwner, _to, tokenIdTo, ''), 'NON_COMPLIANT_ERC721_RECEIVER');
+    if(!_checkOnERC721Received(keyOwner, _to, tokenIdTo, '')) {
+      revert NON_COMPLIANT_ERC721_RECEIVER();
+    }
   }
 
-
+  /** 
+  * An ERC721-like function to transfer a token from one account to another. 
+  * @param _from the owner of token to transfer
+  * @param _recipient the address that will receive the token
+  * @param _tokenId the id of the token
+  * @dev Requirements: if the caller is not `from`, it must be approved to move this token by
+  * either {approve} or {setApprovalForAll}. 
+  * The key manager will be reset to address zero after the transfer
+  */
   function transferFrom(
     address _from,
     address _recipient,
@@ -4105,10 +3843,87 @@ contract MixinTransfer is
   {
     _isValidKey(_tokenId);
     _onlyKeyManagerOrApproved(_tokenId);
-    require(ownerOf(_tokenId) == _from, 'TRANSFER_FROM: NOT_KEY_OWNER');
-    require(transferFeeBasisPoints < BASIS_POINTS_DEN, 'KEY_TRANSFERS_DISABLED');
-    require(_recipient != address(0), 'INVALID_ADDRESS');
-    require(_from != _recipient, 'TRANSFER_TO_SELF');
+    
+    // reset key manager to address zero
+    keyManagerOf[_tokenId] = address(0);
+
+    _transferFrom(_from, _recipient, _tokenId);
+  }
+
+  /** 
+  * Lending a key allows you to transfer the token while retaining the 
+  * ownerships right by setting yourself as a key manager first. 
+  * @param _from the owner of token to transfer
+  * @param _recipient the address that will receive the token
+  * @param _tokenId the id of the token
+  * @notice This function can only called by 1) the key owner when no key manager is set or 2) the key manager.
+  * After calling the function, the `_recipient` will be the new owner, and the sender of the tx
+  * will become the key manager.
+  */
+  function lendKey(
+    address _from,
+    address _recipient,
+    uint _tokenId
+  )
+    public
+  {
+    // make sure caller is either owner or key manager 
+    if(!_isKeyManager(_tokenId, msg.sender)) {
+      revert UNAUTHORIZED();
+    }
+    
+    // transfer key ownership to lender
+    _transferFrom(_from, _recipient, _tokenId);
+
+    // set key owner as key manager
+    keyManagerOf[_tokenId] = msg.sender;
+  }
+
+  /** 
+  * Unlend is called when you have lent a key and want to claim its full ownership back. 
+  * @param _recipient the address that will receive the token ownership
+  * @param _tokenId the id of the token
+  * @dev Only the key manager of the token can call this function
+  */
+  function unlendKey(
+    address _recipient,
+    uint _tokenId
+  ) public {
+    _isValidKey(_tokenId);
+
+    if(msg.sender != keyManagerOf[_tokenId]) {
+      revert UNAUTHORIZED();
+    }
+    _transferFrom(ownerOf(_tokenId), _recipient, _tokenId);
+  }
+
+  /**
+   * This functions contains the logic to transfer a token
+   * from an account to another
+   */
+  function _transferFrom(
+    address _from,
+    address _recipient,
+    uint _tokenId
+  ) private {
+
+    _isValidKey(_tokenId);
+
+    // incorrect _from field
+    if (ownerOf(_tokenId) != _from) {
+      revert UNAUTHORIZED();
+    }
+
+    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
+      revert KEY_TRANSFERS_DISABLED();
+    }
+    if(_recipient == address(0)) {
+      revert INVALID_ADDRESS();
+    }
+    if(_from == _recipient) {
+      revert TRANSFER_TO_SELF();
+    }
+
 
     // subtract the fee from the senders key before the transfer
     _timeMachine(_tokenId, getTransferFee(_tokenId, 0), false);  
@@ -4131,11 +3946,11 @@ contract MixinTransfer is
     _createOwnershipRecord(_tokenId, _recipient);
 
     // clear any previous approvals
-    _setKeyManagerOf(_tokenId, address(0));
     _clearApproval(_tokenId);
 
     // make future reccuring transactions impossible
     _originalDurations[_tokenId] = 0;
+    _originalPrices[_tokenId] = 0;
 
     // trigger event
     emit Transfer(
@@ -4143,6 +3958,18 @@ contract MixinTransfer is
       _recipient,
       _tokenId
     );
+
+    // fire hook if it exists
+    if(address(onKeyTransferHook) != address(0)) {
+      onKeyTransferHook.onKeyTransfer(
+        address(this),
+        _tokenId,
+        msg.sender, // operator
+        _from,
+        _recipient,
+        key.expirationTimestamp
+      );
+    }
   }
 
   /**
@@ -4162,7 +3989,6 @@ contract MixinTransfer is
     _isValidKey(_tokenId);
     uint timeShared = ( keyExpirationTimestampFor(_tokenId) - block.timestamp ) * _valueBasisPoint / BASIS_POINTS_DEN;
     shareKey( _to, _tokenId, timeShared);
-    // Errors will cause a revert
     return true;
   }
 
@@ -4196,8 +4022,12 @@ contract MixinTransfer is
     bool _approved
   ) public
   {
-    require(_to != msg.sender, 'APPROVE_SELF');
-    require(transferFeeBasisPoints < BASIS_POINTS_DEN, 'KEY_TRANSFERS_DISABLED');
+    if(_to == msg.sender) {
+      revert CANNOT_APPROVE_SELF();
+    }
+    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
+      revert KEY_TRANSFERS_DISABLED();
+    }
     managerToOperatorApproved[msg.sender][_to] = _approved;
     emit ApprovalForAll(msg.sender, _to, _approved);
   }
@@ -4222,8 +4052,9 @@ contract MixinTransfer is
     public
   {
     transferFrom(_from, _to, _tokenId);
-    require(_checkOnERC721Received(_from, _to, _tokenId, _data), 'NON_COMPLIANT_ERC721_RECEIVER');
-
+    if(!_checkOnERC721Received(_from, _to, _tokenId, _data)) {
+      revert NON_COMPLIANT_ERC721_RECEIVER();
+    }
   }
 
   /**
@@ -4302,15 +4133,15 @@ contract MixinTransfer is
 
 // File contracts/mixins/MixinConvenienceOwnable.sol
 
-
 pragma solidity ^0.8.0;
+
 
 /**
  * @title Mixin to add support for `ownable()`
  * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
  * separates logically groupings of code to ease readability.
  */
-contract MixinConvenienceOwnable is MixinLockCore {
+contract MixinConvenienceOwnable is MixinErrors, MixinLockCore {
 
   // used for `owner()`convenience helper
   address private _convenienceOwner;
@@ -4340,7 +4171,9 @@ contract MixinConvenienceOwnable is MixinLockCore {
    */ 
   function setOwner(address account) public {
     _onlyLockManager();
-    require(account != address(0), 'OWNER_CANT_BE_ADDRESS_ZERO');
+    if(account == address(0)) {
+      revert OWNER_CANT_BE_ADDRESS_ZERO(); 
+    }
     address _previousOwner = _convenienceOwner;
     _convenienceOwner = account;
     emit OwnershipTransferred(_previousOwner, account);
@@ -4357,9 +4190,7 @@ contract MixinConvenienceOwnable is MixinLockCore {
 
 // File contracts/PublicLock.sol
 
-
-pragma solidity ^0.8.7;
-
+pragma solidity ^0.8.17;
 
 
 
@@ -4381,7 +4212,7 @@ pragma solidity ^0.8.7;
  * Every ERC-721 compliant contract must implement the ERC165 interface.
  * https://eips.ethereum.org/EIPS/eip-721
  */
-contract PublicLock is
+contract OutwavePublicLock is
   Initializable,
   ERC165StorageUpgradeable,
   MixinRoles,
