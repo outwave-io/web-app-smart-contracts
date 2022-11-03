@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -10,8 +11,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
-import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
+import "./interfaces/IOutwaveUnlock.sol";
+import "./interfaces/IOutwavePublicLock.sol";
 import "./interfaces/IReadOutwave.sol";
 import "./interfaces/IKeyBurnerSendEvents.sol";
 
@@ -41,7 +42,7 @@ contract EventKeyBurner is
     mapping(uint256 => OriginalKey) private _originalKeys;
 
     IReadOutwave private _outwave;
-    IUnlock private _unlock;
+    IOutwaveUnlock private _unlock;
 
     function initialize(address outwaveAddr, address unlockAddr)
         public
@@ -49,7 +50,7 @@ contract EventKeyBurner is
     {
         super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
         _outwave = IReadOutwave(outwaveAddr);
-        _unlock = IUnlock(unlockAddr);
+        _unlock = IOutwaveUnlock(unlockAddr);
     }
 
     function transferFrom(
@@ -102,7 +103,7 @@ contract EventKeyBurner is
         bytes32 eventHash
     ) external {
         (bool deployed, , ) = _unlock.locks(parent);
-        IPublicLock parentLock = IPublicLock(parent);
+        IOutwavePublicLock parentLock = IOutwavePublicLock(parent);
         require(
             deployed && parentLock.isLockManager(address(_outwave)),
             "NOT_PUBLIC_LOCK"
@@ -176,7 +177,7 @@ contract EventKeyBurner is
         require(_exists(tokenId), "TOKENID_NOT_EXISTS");
         assert(_originalKeys[tokenId].keyId != 0);
 
-        IPublicLock parentLock = IPublicLock(
+        IOutwavePublicLock parentLock = IOutwavePublicLock(
             _originalKeys[tokenId].lockAddress
         );
 

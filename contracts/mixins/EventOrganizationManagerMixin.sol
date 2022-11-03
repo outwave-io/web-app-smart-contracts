@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.8.7;
+
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-
-import {IUnlockV11 as IUnlock} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV11.sol";
-import {IPublicLockV10 as IPublicLock} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
-
+import "../interfaces/IOutwaveUnlock.sol";
+import "../interfaces/IOutwavePublicLock.sol";
 import "./EventTransferableMixin.sol";
 import "../interfaces/IEventOrganizationManagerMixin.sol";
 import "../interfaces/IEventTransferable.sol";
@@ -37,20 +37,22 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         lockAreEnabled
         returns (address)
     {
-        bytes memory data = abi.encodeWithSignature(
-            "initialize(address,uint256,address,uint256,uint256,string)",
-            address(this),
-            _getMaxInt(),
-            tokenAddress,
-            keyPrice,
-            maxNumberOfKeys,
-            lockName
-        );
+        // bytes memory data = abi.encodeWithSignature(
+        //     "initialize(address,uint256,address,uint256,uint256,string)",
+        //     address(this),
+        //     _getMaxInt(),
+        //     tokenAddress,
+        //     keyPrice,
+        //     maxNumberOfKeys,
+        //     lockName
+        // );
 
-        address newlocladd = IUnlock(_unlockAddr).createUpgradeableLock(data);
-        IPublicLock lock = IPublicLock(newlocladd);
+        address newlocladd = IOutwaveUnlock(_unlockAddr).createLock(0, tokenAddress,
+            keyPrice, maxNumberOfKeys, lockName, 0);
+  
+        IOutwavePublicLock lock = IOutwavePublicLock(newlocladd);
         lock.setOwner(msg.sender);
-        lock.setEventHooks(address(this), address(0), address(0), address(this));
+        lock.setEventHooks(address(this), address(0), address(0), address(this), address(0));
         lock.setMaxKeysPerAddress(maxKeysPerAddress);
         return newlocladd;
     }
@@ -163,7 +165,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Lock[] memory userLocks = eventLocksGetAll(eventId);
         for (uint256 i = 0; i < userLocks.length; i++) {
             if (userLocks[i].exists) {
-                IPublicLock lock = IPublicLock(userLocks[i].lockAddress);
+                IOutwavePublicLock lock = IOutwavePublicLock(userLocks[i].lockAddress);
                 _eventLockDeregister(
                     msg.sender,
                     eventId,
@@ -186,7 +188,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address lockAddress
     ) public override onlyLockOwner(lockAddress)
     {
-        IPublicLock lock = IPublicLock(lockAddress);
+        IOutwavePublicLock lock = IOutwavePublicLock(lockAddress);
         _eventLockDeregister(msg.sender, eventId, lockAddress);
         lock.setMaxNumberOfKeys(lock.totalSupply());
     }
@@ -201,7 +203,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 amount
     ) public override onlyLockOwner(lockAddress)
     {
-        IPublicLock lock = IPublicLock(lockAddress);
+        IOutwavePublicLock lock = IOutwavePublicLock(lockAddress);
         address tokenadd = lock.tokenAddress();
         lock.withdraw(tokenadd, amount);
         if (tokenadd != address(0)) {
@@ -231,7 +233,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
             expirationTimestamps[i] = _getMaxInt();
         }
         address[] memory addressArray = new address[](recipients.length);
-        IPublicLock(lockAddress).grantKeys(
+        IOutwavePublicLock(lockAddress).grantKeys(
             recipients,
             expirationTimestamps,
             addressArray
@@ -252,7 +254,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 maxNumberOfKeys,
         uint256 maxKeysPerAddress
     ) public override onlyLockOwner(lockAddress) {
-        IPublicLock lock = IPublicLock(lockAddress);
+        IOutwavePublicLock lock = IOutwavePublicLock(lockAddress);
         lock.updateLockName(lockName);
         lock.updateKeyPricing(keyPrice, lock.tokenAddress());
         lock.setMaxNumberOfKeys(maxNumberOfKeys);
@@ -269,7 +271,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         address lockAddress,
         string calldata lockSymbol
     ) public override onlyLockOwner(lockAddress) {
-        IPublicLock(lockAddress).updateLockSymbol(lockSymbol);
+        IOutwavePublicLock(lockAddress).updateLockSymbol(lockSymbol);
     }
 
       /**
@@ -298,7 +300,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         for (uint256 index = 0; index < userLocks.length; index++) {
             _eventLockDeregister(msg.sender,eventId,userLocks[index].lockAddress);
             eventTransfert.eventLockRegister(msg.sender, eventId, userLocks[index].lockAddress, userLocks[index].lockId);
-            IPublicLock lock = IPublicLock(userLocks[index].lockAddress);
+            IOutwavePublicLock lock = IOutwavePublicLock(userLocks[index].lockAddress);
             lock.addLockManager(newEventApiAddress);
             lock.renounceLockManager();
                 // todo: shuold we emit?

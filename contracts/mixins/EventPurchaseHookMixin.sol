@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.8.7;
+
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-
-import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV10.sol";
+import "../interfaces/IOutwavePublicLock.sol";
 import "../ILockKeyPurchaseHookV7.sol";
-
 import "./EventCoreMixin.sol";
 import "hardhat/console.sol";
 
@@ -12,11 +12,9 @@ import "hardhat/console.sol";
     Provides core functionalties for managing as owner
     - Modify params
     - Payments and withdraw
-
 */
 contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
    
-
     /**
      * @notice Used to determine the purchase price before issueing a transaction.
      * This allows the hook to offer a discount on purchases.
@@ -35,7 +33,7 @@ contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
         address referrer,
         bytes calldata data
     ) external view override returns (uint minKeyPrice) {
-        uint price =  IPublicLockV10(msg.sender).keyPrice();
+        uint price =  IOutwavePublicLock(msg.sender).keyPrice();
         return price;
     }
 
@@ -65,7 +63,7 @@ contract EventPurchaseHookMixin is EventCoreMixin, ILockKeyPurchaseHookV7 {
     function onKeyPurchased(
         uint pricePaid
     ) external override {
-        IPublicLockV10 lock = IPublicLockV10(msg.sender);
+        IOutwavePublicLock lock = IOutwavePublicLock(msg.sender);
         uint fee = pricePaid - ((98 * pricePaid) / 100);
         address tokenadd = lock.tokenAddress();
         lock.withdraw(tokenadd, fee);
