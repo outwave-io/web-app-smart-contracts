@@ -81,7 +81,7 @@ module.exports = {
     gasPrice: 5,
   },
   solidity: {
-    compilers: [{ version: '0.8.7', settings }],
+    compilers: [{ version: '0.8.17', settings }],
   },
   mocha: {
     timeout: 2000000,
