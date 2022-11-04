@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-// based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/PublicLock/PublicLockV11.sol
+// based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/PublicLock/PublicLockV9.sol
 
 pragma solidity ^0.8.17;
 
@@ -8,189 +8,542 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165StorageUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol";
-import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
-// File contracts/mixins/MixinDisable.sol
 
 /**
- * The ability to disable locks has been removed on v10 to decrease contract code size.
- * Disabling locks can be achieved by setting `setMaxNumberOfKeys` to `totalSupply`
- * and expire all existing keys.
- * @dev the variables are kept to prevent conflicts in storage layout during upgrades
+* @title The OutwavePublicLock Interface
  */
-contract MixinDisable {
-  bool isAlive;
-  uint256[1000] private __safe_upgrade_gap;
-}
+interface IOutwavePublicLock
+{
 
+// See indentationissue description here:
+// https://github.com/duaraghav8/Ethlint/issues/268
+// solium-disable indentation
 
-// File contracts/mixins/MixinErrors.sol
+  /// Functions
+  function initialize(
+    address _lockCreator,
+    uint _expirationDuration,
+    address _tokenAddress,
+    uint _keyPrice,
+    uint _maxNumberOfKeys,
+    string calldata _lockName
+  ) external;
 
-/**
- * @title List of all error messages 
- * (replace string errors message to save on contract size)
- */
-contract MixinErrors {
+  // roles
+  function DEFAULT_ADMIN_ROLE() external pure returns (bytes32 role);
+  function KEY_GRANTER_ROLE() external pure returns (bytes32 role);
+  function LOCK_MANAGER_ROLE() external pure returns (bytes32 role);
+
+  /**
+  * @notice The version number of the current implementation on this network.
+  * @return The current version number.
+  */
+  function publicLockVersion() external pure returns (uint16);
+
+  /**
+  * @notice Used to disable lock before migrating keys and/or destroying contract.
+  * @dev Throws if called by other than a lock manager.
+  * @dev Throws if lock contract has already been disabled.
+  */
+  function disableLock() external;
+
+  /**
+   * @dev Called by a lock manager or beneficiary to withdraw all funds from the lock and send them to the `beneficiary`.
+   * @dev Throws if called by other than a lock manager or beneficiary
+   * @param _tokenAddress specifies the token address to withdraw or 0 for ETH. This is usually
+   * the same as `tokenAddress` in MixinFunds.
+   * @param _amount specifies the max amount to withdraw, which may be reduced when
+   * considering the available balance. Set to 0 or MAX_UINT to withdraw everything.
+   *  -- however be wary of draining funds as it breaks the `cancelAndRefund` and `expireAndRefundFor`
+   * use cases.
+   */
+  function withdraw(
+    address _tokenAddress,
+    uint _amount
+  ) external;
+
+  /**
+   * @notice An ERC-20 style approval, allowing the spender to transfer funds directly from this lock.
+   * @param _spender address that can spend tokens belonging to the lock
+   * @param _amount amount of tokens that can be spent by the spender
+   */
+  function approveBeneficiary(
+    address _spender,
+    uint _amount
+  ) external
+    returns (bool);
+
+  /**
+   * A function which lets a Lock manager of the lock to change the price for future purchases.
+   * @dev Throws if called by other than a Lock manager
+   * @dev Throws if lock has been disabled
+   * @dev Throws if _tokenAddress is not a valid token
+   * @param _keyPrice The new price to set for keys
+   * @param _tokenAddress The address of the erc20 token to use for pricing the keys,
+   * or 0 to use ETH
+   */
+  function updateKeyPricing( uint _keyPrice, address _tokenAddress ) external;
+
+  /**
+   * A function to change the default duration of each key in the lock
+   * @notice keys previously bought are unaffected by this change (i.e.
+   * existing keys timestamps are not recalculated/updated)
+   * @param _newExpirationDuration the new amount of time for each key purchased 
+   * or zero (0) for a non-expiring key
+   */
+  function setExpirationDuration(uint _newExpirationDuration) external;
+
+  /**
+   * A function which lets a Lock manager update the beneficiary account,
+   * which receives funds on withdrawal.
+   * @dev Throws if called by other than a Lock manager or beneficiary
+   * @dev Throws if _beneficiary is address(0)
+   * @param _beneficiary The new address to set as the beneficiary
+   */
+  function updateBeneficiary( address _beneficiary ) external;
+
+  /**
+   * Checks if the user has a non-expired key.
+   * @param _user The address of the key owner
+   */
+  function getHasValidKey(
+    address _user
+  ) external view returns (bool);
+
+  /**
+   * @notice Find the tokenId for a given user
+   * @return The tokenId of the NFT, else returns 0
+   * @param _account The address of the key owner
+  */
+  function getTokenIdFor(
+    address _account
+  ) external view returns (uint);
+
+  /**
+  * @dev Returns the key's ExpirationTimestamp field for a given owner.
+  * @param _keyOwner address of the user for whom we search the key
+  * @dev Returns 0 if the owner has never owned a key for this lock
+  */
+  function keyExpirationTimestampFor(
+    address _keyOwner
+  ) external view returns (uint timestamp);
   
-  // generic
-  error OUT_OF_RANGE();
-  error NULL_VALUE();
-  error INVALID_ADDRESS();
-  error INVALID_TOKEN();
-  error INVALID_LENGTH();
-  error UNAUTHORIZED();
+  /**
+   * Public function which returns the total number of unique owners (both expired
+   * and valid).  This may be larger than totalSupply.
+   */
+  function numberOfOwners() external view returns (uint);
 
-  // erc 721
-  error NON_COMPLIANT_ERC721_RECEIVER();
+  /**
+   * Allows a Lock manager to assign a descriptive name for this Lock.
+   * @param _lockName The new name for the lock
+   * @dev Throws if called by other than a Lock manager
+   */
+  function updateLockName(
+    string calldata _lockName
+  ) external;
 
-  // roles
-  error ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
-  error ONLY_KEY_MANAGER_OR_APPROVED();
-  error UNAUTHORIZED_KEY_MANAGER_UPDATE();
-  error ONLY_LOCK_MANAGER_OR_BENEFICIARY();
-  error ONLY_LOCK_MANAGER();
+  /**
+   * Allows a Lock manager to assign a Symbol for this Lock.
+   * @param _lockSymbol The new Symbol for the lock
+   * @dev Throws if called by other than a Lock manager
+   */
+  function updateLockSymbol(
+    string calldata _lockSymbol
+  ) external;
 
-  // single key status
-  error KEY_NOT_VALID();
-  error NO_SUCH_KEY();
+  /**
+    * @dev Gets the token symbol
+    * @return string representing the token symbol
+    */
+  function symbol()
+    external view
+    returns(string memory);
 
-  // single key operations
-  error CANT_EXTEND_NON_EXPIRING_KEY();
-  error NOT_ENOUGH_TIME();
-  error NOT_ENOUGH_FUNDS();
+    /**
+   * Allows a Lock manager to update the baseTokenURI for this Lock.
+   * @dev Throws if called by other than a Lock manager
+   * @param _baseTokenURI String representing the base of the URI for this lock.
+   */
+  function setBaseTokenURI(
+    string calldata _baseTokenURI
+  ) external;
 
-  // migration & data schema
-  error SCHEMA_VERSION_NOT_CORRECT();
-  error MIGRATION_REQUIRED();
+  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
+   * @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
+   *  3986. The URI may point to a JSON file that conforms to the "ERC721
+   *  Metadata JSON Schema".
+   * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md
+   * @param _tokenId The tokenID we're inquiring about
+   * @return String representing the URI for the requested token
+   */
+  function tokenURI(
+    uint256 _tokenId
+  ) external view returns(string memory);
 
-  // lock status/settings
-  error OWNER_CANT_BE_ADDRESS_ZERO();
-  error MAX_KEYS_REACHED();
-  error KEY_TRANSFERS_DISABLED();
-  error CANT_BE_SMALLER_THAN_SUPPLY();
+  /**
+   * Allows a Lock manager to add or remove an event hook
+   * @param _onKeyPurchaseHook Hook called when the `purchase` function is called
+   * @param _onKeyCancelHook Hook called when the internal `_cancelAndRefund` function is called
+   */
+  function setEventHooks(
+    address _onKeyPurchaseHook,
+    address _onKeyCancelHook,
+    address _onValidKeyHook,
+    address _onTokenURIHook
+  ) external;
 
-  // transfers and approvals
-  error TRANSFER_TO_SELF();
-  error CANNOT_APPROVE_SELF();
+  /**
+   * Allows a Lock manager to give a collection of users a key with no charge.
+   * Each key may be assigned a different expiration date.
+   * @dev Throws if called by other than a Lock manager
+   * @param _recipients An array of receiving addresses
+   * @param _expirationTimestamps An array of expiration Timestamps for the keys being granted
+   */
+  function grantKeys(
+    address[] calldata _recipients,
+    uint[] calldata _expirationTimestamps,
+    address[] calldata _keyManagers
+  ) external;
 
-  // keys management 
-  error LOCK_SOLD_OUT();
+  /**
+  * @dev Purchase function
+  * @param _value the number of tokens to pay for this purchase >= the current keyPrice - any applicable discount
+  * (_value is ignored when using ETH)
+  * @param _recipient address of the recipient of the purchased key
+  * @param _referrer address of the user making the referral
+  * @param _keyManager optional address to grant managing rights to a specific address on creation
+  * @param _data arbitrary data populated by the front-end which initiated the sale
+  * @dev Throws if lock is disabled. Throws if lock is sold-out. Throws if _recipient == address(0).
+  * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if a Lock manager increases the
+  * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
+  * than keyPrice is approved for spending).
+  */
+  function purchase(
+    uint256 _value,
+    address _recipient,
+    address _referrer,
+    address _keyManager,
+    bytes calldata _data
+  ) external payable;
 
-  // purchase
-  error INSUFFICIENT_ERC20_VALUE();
-  error INSUFFICIENT_VALUE();
+  /**
+  * @param _gasRefundValue price in wei or token in smallest price unit
+  * @dev Set the value to be refunded to the sender on purchase
+  */
+  function setGasRefundValue(uint256 _gasRefundValue) external;
+  
+  /**
+  * _gasRefundValue price in wei or token in smallest price unit
+  * @dev Returns the value/rpice to be refunded to the sender on purchase
+  */
+  function gasRefundValue() external view returns (uint256 _gasRefundValue);
 
-  // renewals
-  error NON_RENEWABLE_LOCK();
-  error LOCK_HAS_CHANGED();
-  error NOT_READY_FOR_RENEWAL();
+  /**
+   * @notice returns the minimum price paid for a purchase with these params.
+   * @dev this considers any discount from Unlock or the OnKeyPurchase hook.
+   */
+  function purchasePriceFor(
+    address _recipient,
+    address _referrer,
+    bytes calldata _data
+  ) external view
+    returns (uint);
 
-  // gas refund
-  error GAS_REFUND_FAILED();
+  /**
+   * Allow a Lock manager to change the transfer fee.
+   * @dev Throws if called by other than a Lock manager
+   * @param _transferFeeBasisPoints The new transfer fee in basis-points(bps).
+   * Ex: 200 bps = 2%
+   */
+  function updateTransferFee(
+    uint _transferFeeBasisPoints
+  ) external;
 
-  // hooks
-  // NB: `hookIndex` designed the index of hook address in the params of `setEventHooks`
-  error INVALID_HOOK(uint8 hookIndex);
+  /**
+   * Determines how much of a fee a key owner would need to pay in order to
+   * transfer the key to another account.  This is pro-rated so the fee goes down
+   * overtime.
+   * @dev Throws if _keyOwner does not have a valid key
+   * @param _keyOwner The owner of the key check the transfer fee for.
+   * @param _time The amount of time to calculate the fee for.
+   * @return The transfer fee in seconds.
+   */
+  function getTransferFee(
+    address _keyOwner,
+    uint _time
+  ) external view returns (uint);
 
+  /**
+   * @dev Invoked by a Lock manager to expire the user's key and perform a refund and cancellation of the key
+   * @param _keyOwner The key owner to whom we wish to send a refund to
+   * @param amount The amount to refund the key-owner
+   * @dev Throws if called by other than a Lock manager
+   * @dev Throws if _keyOwner does not have a valid key
+   */
+  function expireAndRefundFor(
+    address _keyOwner,
+    uint amount
+  ) external;
+
+   /**
+   * @dev allows the key manager to expire a given tokenId
+   * and send a refund to the keyOwner based on the amount of time remaining.
+   * @param _tokenId The id of the key to cancel.
+   */
+  function cancelAndRefund(uint _tokenId) external;
+
+  /**
+   * Allow a Lock manager to change the refund penalty.
+   * @dev Throws if called by other than a Lock manager
+   * @param _freeTrialLength The new duration of free trials for this lock
+   * @param _refundPenaltyBasisPoints The new refund penaly in basis-points(bps)
+   */
+  function updateRefundPenalty(
+    uint _freeTrialLength,
+    uint _refundPenaltyBasisPoints
+  ) external;
+
+  /**
+   * @dev Determines how much of a refund a key owner would receive if they issued
+   * @param _keyOwner The key owner to get the refund value for.
+   * a cancelAndRefund block.timestamp.
+   * Note that due to the time required to mine a tx, the actual refund amount will be lower
+   * than what the user reads from this call.
+   */
+  function getCancelAndRefundValueFor(
+    address _keyOwner
+  ) external view returns (uint refund);
+
+  function addKeyGranter(address account) external;
+
+  function addLockManager(address account) external;
+
+  function isKeyGranter(address account) external view returns (bool);
+
+  function isLockManager(address account) external view returns (bool);
+
+  function onKeyPurchaseHook() external view returns(address);
+
+  function onKeyCancelHook() external view returns(address);
+  
+  function onValidKeyHook() external view returns(bool);
+
+  function onTokenURIHook() external view returns(string memory);
+
+  function revokeKeyGranter(address _granter) external;
+
+  function renounceLockManager() external;
+
+  /**
+   * @dev Change the maximum number of keys the lock can edit
+   * @param _maxNumberOfKeys uint the maximum number of keys
+   */
+  function setMaxNumberOfKeys (uint _maxNumberOfKeys) external;
+
+  ///===================================================================
+  /// Auto-generated getter functions from public state variables
+
+  function beneficiary() external view returns (address );
+
+  function expirationDuration() external view returns (uint256 );
+
+  function freeTrialLength() external view returns (uint256 );
+
+  function isAlive() external view returns (bool );
+
+  function keyPrice() external view returns (uint256 );
+
+  function maxNumberOfKeys() external view returns (uint256 );
+
+  function refundPenaltyBasisPoints() external view returns (uint256 );
+
+  function tokenAddress() external view returns (address );
+
+  function transferFeeBasisPoints() external view returns (uint256 );
+
+  function unlockProtocol() external view returns (address );
+
+  function keyManagerOf(uint) external view returns (address );
+
+  ///===================================================================
+
+  /**
+  * @notice Allows the key owner to safely share their key (parent key) by
+  * transferring a portion of the remaining time to a new key (child key).
+  * @dev Throws if key is not valid.
+  * @dev Throws if `_to` is the zero address
+  * @param _to The recipient of the shared key
+  * @param _tokenId the key to share
+  * @param _timeShared The amount of time shared
+  * checks if `_to` is a smart contract (code size > 0). If so, it calls
+  * `onERC721Received` on `_to` and throws if the return value is not
+  * `bytes4(keccak256('onERC721Received(address,address,uint,bytes)'))`.
+  * @dev Emit Transfer event
+  */
+  function shareKey(
+    address _to,
+    uint _tokenId,
+    uint _timeShared
+  ) external;
+
+  /**
+  * @notice Update transfer and cancel rights for a given key
+  * @param _tokenId The id of the key to assign rights for
+  * @param _keyManager The address to assign the rights to for the given key
+  */
+  function setKeyManagerOf(
+    uint _tokenId,
+    address _keyManager
+  ) external;
+
+  /// @notice A descriptive name for a collection of NFTs in this contract
+  function name() external view returns (string memory _name);
+  ///===================================================================
+
+  /// From ERC165.sol
+  function supportsInterface(bytes4 interfaceId) external view returns (bool);
+  ///===================================================================
+
+  /// From ERC-721
+  /**
+     * @dev Returns the number of NFTs in `owner`'s account.
+     */
+    function balanceOf(address _owner) external view returns (uint256 balance);
+
+    /**
+     * @dev Returns the owner of the NFT specified by `tokenId`.
+     */
+    function ownerOf(uint256 tokenId) external view returns (address _owner);
+
+    /**
+     * @dev Transfers a specific NFT (`tokenId`) from one account (`from`) to
+     * another (`to`).
+     *
+     * Requirements:
+     * - `from`, `to` cannot be zero.
+     * - `tokenId` must be owned by `from`.
+     * - If the caller is not `from`, it must be have been allowed to move this
+     * NFT by either {approve} or {setApprovalForAll}.
+     */
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    
+    /**
+     * @dev Transfers a specific NFT (`tokenId`) from one account (`from`) to
+     * another (`to`).
+     *
+     * Requirements:
+     * - If the caller is not `from`, it must be approved to move this NFT by
+     * either {approve} or {setApprovalForAll}.
+     */
+    function transferFrom(address from, address to, uint256 tokenId) external;
+    function approve(address to, uint256 tokenId) external;
+
+    /**
+    * @notice Get the approved address for a single NFT
+    * @dev Throws if `_tokenId` is not a valid NFT.
+    * @param _tokenId The NFT to find the approved address for
+    * @return operator The approved address for this NFT, or the zero address if there is none
+    */
+    function getApproved(uint256 _tokenId) external view returns (address operator);
+
+    function setApprovalForAll(address operator, bool _approved) external;
+    function isApprovedForAll(address _owner, address operator) external view returns (bool);
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
+
+    function totalSupply() external view returns (uint256);
+    function tokenOfOwnerByIndex(address _owner, uint256 index) external view returns (uint256 tokenId);
+
+    function tokenByIndex(uint256 index) external view returns (uint256);
+
+    /**
+    * Innherited from Open Zeppelin AccessControl.sol
+     */
+    function getRoleAdmin(bytes32 role) external view returns (bytes32);
+    function grantRole(bytes32 role, address account) external;
+    function revokeRole(bytes32 role, address account) external;
+    function renounceRole(bytes32 role, address account) external;
+    function hasRole(bytes32 role, address account) external view returns (bool);
+
+    /**
+     * @notice An ERC-20 style transfer.
+     * @param _value sends a token with _value * expirationDuration (the amount of time remaining on a standard purchase).
+     * @dev The typical use case would be to call this with _value 1, which is on par with calling `transferFrom`. If the user
+     * has more than `expirationDuration` time remaining this may use the `shareKey` function to send some but not all of the token.
+     */
+    function transfer(
+      address _to,
+      uint _value
+    ) external
+      returns (bool success);
 }
 
 
-// File contracts/mixins/MixinRoles.sol
+/**
+ * @title An implementation of the money related functions.
+ * @author HardlyDifficult (unlock-protocol.com)
+ */
+contract MixinFunds
+{
+  using AddressUpgradeable for address payable;
+  using SafeERC20Upgradeable for IERC20Upgradeable;
 
-// This contract mostly follows the pattern established by openzeppelin in
-// openzeppelin/contracts-ethereum-package/contracts/access/roles
+  /**
+   * The token-type that this Lock is priced in.  If 0, then use ETH, else this is
+   * a ERC20 token address.
+   */
+  address public tokenAddress;
 
-
-contract MixinRoles is AccessControlUpgradeable, MixinErrors {
-
-  // roles
-  bytes32 public constant LOCK_MANAGER_ROLE = keccak256("LOCK_MANAGER");
-  bytes32 public constant KEY_GRANTER_ROLE = keccak256("KEY_GRANTER");
-
-  // events
-  event LockManagerAdded(address indexed account);
-  event LockManagerRemoved(address indexed account);
-  event KeyGranterAdded(address indexed account);
-  event KeyGranterRemoved(address indexed account);
-
-  // initializer
-  function _initializeMixinRoles(address sender) internal {
-
-    // for admin mamangers to add other lock admins
-    _setRoleAdmin(LOCK_MANAGER_ROLE, LOCK_MANAGER_ROLE);
-
-    // for lock managers to add/remove key granters
-    _setRoleAdmin(KEY_GRANTER_ROLE, LOCK_MANAGER_ROLE);
-
-    if (!isLockManager(sender)) {
-      _setupRole(LOCK_MANAGER_ROLE, sender);  
-    }
-    if (!isKeyGranter(sender)) {
-      _setupRole(KEY_GRANTER_ROLE, sender);
-    }
-
-  }
-
-  // modifiers
-  function _onlyLockManager() 
-  internal 
-  view
+  function _initializeMixinFunds(
+    address _tokenAddress
+  ) internal
   {
-    if(!hasRole(LOCK_MANAGER_ROLE, msg.sender)) {
-      revert ONLY_LOCK_MANAGER();
+    tokenAddress = _tokenAddress;
+    require(
+      _tokenAddress == address(0) || IERC20Upgradeable(_tokenAddress).totalSupply() > 0,
+      'INVALID_TOKEN'
+    );
+  }
+
+  /**
+   * Transfers funds from the contract to the account provided.
+   *
+   * Security: be wary of re-entrancy when calling this function.
+   */
+  function _transfer(
+    address _tokenAddress,
+    address payable _to,
+    uint _amount
+  ) internal
+  {
+    if(_amount > 0) {
+      if(_tokenAddress == address(0)) {
+        // https://diligence.consensys.net/blog/2019/09/stop-using-soliditys-transfer-now/
+        _to.sendValue(_amount);
+      } else {
+        IERC20Upgradeable token = IERC20Upgradeable(_tokenAddress);
+        token.safeTransfer(_to, _amount);
+      }
     }
-  }
-
-  // lock manager functions
-  function isLockManager(address account) public view returns (bool) {
-    return hasRole(LOCK_MANAGER_ROLE, account);
-  }
-
-  function addLockManager(address account) public {
-    _onlyLockManager();
-    grantRole(LOCK_MANAGER_ROLE, account);
-    emit LockManagerAdded(account);
-  }
-
-  function renounceLockManager() public {
-    renounceRole(LOCK_MANAGER_ROLE, msg.sender);
-    emit LockManagerRemoved(msg.sender);
-  }
-
-
-  // key granter functions
-  function isKeyGranter(address account) public view returns (bool) {
-    return hasRole(KEY_GRANTER_ROLE, account);
-  }
-
-  function addKeyGranter(address account) public {
-    _onlyLockManager();
-    grantRole(KEY_GRANTER_ROLE, account);
-    emit KeyGranterAdded(account);
-  }
-
-  function revokeKeyGranter(address _granter) public {
-    _onlyLockManager();
-    revokeRole(KEY_GRANTER_ROLE, _granter);
-    emit KeyGranterRemoved(_granter);
   }
 
   uint256[1000] private __safe_upgrade_gap;
 }
 
 
-// File contracts/interfaces/IOutwaveUnlock.sol
-
 /**
- * @title The Unlock Interface
+ * @title The OutwaveUnlock Interface
 **/
-
 interface IOutwaveUnlock
 {
   // Use initialize instead of a constructor to support proxies(for upgradeability via zos).
@@ -245,17 +598,6 @@ interface IOutwaveUnlock
   function createUpgradeableLock(
     bytes memory data
   ) external returns(address);
-
-  /**
-   * Create an upgradeable lock using a specific PublicLock version
-   * @param data bytes containing the call to initialize the lock template
-   * (refer to createUpgradeableLock for more details)
-   * @param _lockVersion the version of the lock to use
-  */
-  function createUpgradeableLockAtVersion(
-    bytes memory data,
-    uint16 _lockVersion
-  ) external returns (address);
 
   /**
   * @notice Upgrade a lock to a specific version
@@ -410,13 +752,6 @@ interface IOutwaveUnlock
   // The approx amount of gas required to purchase a key
   function estimatedGasForPurchase() external view returns(uint);
 
-  /**
-   * Helper to get the network mining basefee as introduced in EIP-1559
-   * @dev this helper can be wrapped in try/catch statement to avoid 
-   * revert in networks where EIP-1559 is not implemented
-   */
-  function networkBaseFee() external view returns (uint);
-
   // The version number of the current Unlock implementation on this network
   function unlockVersion() external pure returns(uint16);
 
@@ -460,255 +795,6 @@ interface IOutwaveUnlock
 }
 
 
-// File @openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol@v4.6.0
-
-// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
-
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-interface IERC20Upgradeable {
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    /**
-     * @dev Returns the amount of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the amount of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves `amount` tokens from the caller's account to `to`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address to, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `from` to `to` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
-}
-
-
-// File @openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol@v4.6.0
-
-// OpenZeppelin Contracts v4.4.1 (token/ERC20/utils/SafeERC20.sol)
-
-/**
- * @title SafeERC20
- * @dev Wrappers around ERC20 operations that throw on failure (when the token
- * contract returns false). Tokens that return no value (and instead revert or
- * throw on failure) are also supported, non-reverting calls are assumed to be
- * successful.
- * To use this library you can add a `using SafeERC20 for IERC20;` statement to your contract,
- * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
- */
-library SafeERC20Upgradeable {
-    using AddressUpgradeable for address;
-
-    function safeTransfer(
-        IERC20Upgradeable token,
-        address to,
-        uint256 value
-    ) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
-    }
-
-    function safeTransferFrom(
-        IERC20Upgradeable token,
-        address from,
-        address to,
-        uint256 value
-    ) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
-    }
-
-    /**
-     * @dev Deprecated. This function has issues similar to the ones found in
-     * {IERC20-approve}, and its usage is discouraged.
-     *
-     * Whenever possible, use {safeIncreaseAllowance} and
-     * {safeDecreaseAllowance} instead.
-     */
-    function safeApprove(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
-        // safeApprove should only be called when setting an initial allowance,
-        // or when resetting it to zero. To increase and decrease it, use
-        // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
-        require(
-            (value == 0) || (token.allowance(address(this), spender) == 0),
-            "SafeERC20: approve from non-zero to non-zero allowance"
-        );
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
-    }
-
-    function safeIncreaseAllowance(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender) + value;
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
-    }
-
-    function safeDecreaseAllowance(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
-        unchecked {
-            uint256 oldAllowance = token.allowance(address(this), spender);
-            require(oldAllowance >= value, "SafeERC20: decreased allowance below zero");
-            uint256 newAllowance = oldAllowance - value;
-            _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
-        }
-    }
-
-    /**
-     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement
-     * on the return value: the return value is optional (but if data is returned, it must not be false).
-     * @param token The token targeted by the call.
-     * @param data The call data (encoded using abi.encode or one of its variants).
-     */
-    function _callOptionalReturn(IERC20Upgradeable token, bytes memory data) private {
-        // We need to perform a low level call here, to bypass Solidity's return data size checking mechanism, since
-        // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
-        // the target address contains contract code and also asserts for success in the low-level call.
-
-        bytes memory returndata = address(token).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) {
-            // Return data is optional
-            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
-        }
-    }
-}
-
-
-// File contracts/mixins/MixinFunds.sol
-
-
-/**
- * @title An implementation of the money related functions.
- * @author HardlyDifficult (unlock-protocol.com)
- */
-contract MixinFunds is MixinErrors
-{
-  using AddressUpgradeable for address payable;
-  using SafeERC20Upgradeable for IERC20Upgradeable;
-
-  /**
-   * The token-type that this Lock is priced in.  If 0, then use ETH, else this is
-   * a ERC20 token address.
-   */
-  address public tokenAddress;
-
-  function _initializeMixinFunds(
-    address _tokenAddress
-  ) internal
-  {
-    _isValidToken(_tokenAddress);
-    tokenAddress = _tokenAddress;
-  }
-
-  function _isValidToken(
-    address _tokenAddress
-  ) 
-  internal 
-  view
-  {
-    if(
-      _tokenAddress != address(0) 
-      && 
-      IERC20Upgradeable(_tokenAddress).totalSupply() < 0
-    ) {
-      revert INVALID_TOKEN();
-    }
-  }
-
-  /**
-   * Transfers funds from the contract to the account provided.
-   *
-   * Security: be wary of re-entrancy when calling this function.
-   */
-  function _transfer(
-    address _tokenAddress,
-    address payable _to,
-    uint _amount
-  ) internal
-  {
-    if(_amount > 0) {
-      if(_tokenAddress == address(0)) {
-        // https://diligence.consensys.net/blog/2019/09/stop-using-soliditys-transfer-now/
-        _to.sendValue(_amount);
-      } else {
-        IERC20Upgradeable token = IERC20Upgradeable(_tokenAddress);
-        token.safeTransfer(_to, _amount);
-      }
-    }
-  }
-
-  uint256[1000] private __safe_upgrade_gap;
-}
-
-
-// File contracts/interfaces/hooks/ILockKeyCancelHook.sol
-
 /**
  * @notice Functions to be implemented by a keyCancelHook.
  * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
@@ -729,8 +815,6 @@ interface ILockKeyCancelHook
   ) external;
 }
 
-
-// File contracts/interfaces/hooks/ILockKeyPurchaseHook.sol
 
 /**
  * @notice Functions to be implemented by a keyPurchaseHook.
@@ -781,8 +865,6 @@ interface ILockKeyPurchaseHook
 }
 
 
-// File contracts/interfaces/hooks/ILockValidKeyHook.sol
-
 /**
  * @notice Functions to be implemented by a hasValidKey Hook.
  * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
@@ -807,8 +889,6 @@ interface ILockValidKeyHook
   returns (bool);
 }
 
-
-// File contracts/interfaces/hooks/ILockTokenURIHook.sol
 
 /**
  * @notice Functions to be implemented by a tokenURIHook.
@@ -836,34 +916,126 @@ interface ILockTokenURIHook
 }
 
 
-// File contracts/interfaces/hooks/ILockKeyTransferHook.sol
+// This contract mostly follows the pattern established by openzeppelin in
+// openzeppelin/contracts-ethereum-package/contracts/access/roles
+
+contract MixinRoles is AccessControlUpgradeable {
+
+  // roles
+  bytes32 public constant LOCK_MANAGER_ROLE = keccak256("LOCK_MANAGER");
+  bytes32 public constant KEY_GRANTER_ROLE = keccak256("KEY_GRANTER");
+
+  // events
+  event LockManagerAdded(address indexed account);
+  event LockManagerRemoved(address indexed account);
+  event KeyGranterAdded(address indexed account);
+  event KeyGranterRemoved(address indexed account);
+
+  // initializer
+  function _initializeMixinRoles(address sender) internal {
+
+    // for admin mamangers to add other lock admins
+    _setRoleAdmin(LOCK_MANAGER_ROLE, LOCK_MANAGER_ROLE);
+
+    // for lock managers to add/remove key granters
+    _setRoleAdmin(KEY_GRANTER_ROLE, LOCK_MANAGER_ROLE);
+
+    if (!isLockManager(sender)) {
+      _setupRole(LOCK_MANAGER_ROLE, sender);  
+    }
+    if (!isKeyGranter(sender)) {
+      _setupRole(KEY_GRANTER_ROLE, sender);
+    }
+  }
+
+  // modifiers
+  modifier onlyLockManager() {
+    require( hasRole(LOCK_MANAGER_ROLE, msg.sender), 'MixinRoles: caller does not have the LockManager role');
+    _;
+  }
+
+  modifier onlyKeyGranterOrManager() {
+    require(isKeyGranter(msg.sender) || isLockManager(msg.sender), 'MixinRoles: caller does not have the KeyGranter or LockManager role');
+    _;
+  }
+
+
+  // lock manager functions
+  function isLockManager(address account) public view returns (bool) {
+    return hasRole(LOCK_MANAGER_ROLE, account);
+  }
+
+  function addLockManager(address account) public onlyLockManager {
+    grantRole(LOCK_MANAGER_ROLE, account);
+    emit LockManagerAdded(account);
+  }
+
+  function renounceLockManager() public {
+    renounceRole(LOCK_MANAGER_ROLE, msg.sender);
+    emit LockManagerRemoved(msg.sender);
+  }
+
+
+  // key granter functions
+  function isKeyGranter(address account) public view returns (bool) {
+    return hasRole(KEY_GRANTER_ROLE, account);
+  }
+
+  function addKeyGranter(address account) public onlyLockManager {
+    grantRole(KEY_GRANTER_ROLE, account);
+    emit KeyGranterAdded(account);
+  }
+
+  function revokeKeyGranter(address _granter) public onlyLockManager {
+    revokeRole(KEY_GRANTER_ROLE, _granter);
+    emit KeyGranterRemoved(_granter);
+  }
+
+  uint256[1000] private __safe_upgrade_gap;
+}
+
 
 /**
- * @notice Functions to be implemented by a hasValidKey Hook.
- * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
+ * @title Mixin allowing the Lock owner to disable a Lock (preventing new purchases)
+ * and then destroy it.
+ * @author HardlyDifficult
+ * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
+ * separates logically groupings of code to ease readability.
  */
-interface ILockKeyTransferHook
+contract MixinDisable is
+  MixinRoles,
+  MixinFunds
 {
+  // Used to disable payable functions when deprecating an old lock
+  bool public isAlive;
+
+  event Disable();
+
+  function _initializeMixinDisable(
+  ) internal
+  {
+    isAlive = true;
+  }
+
+  // Only allow usage when contract is Alive
+  modifier onlyIfAlive() {
+    require(isAlive, 'LOCK_DEPRECATED');
+    _;
+  }
 
   /**
-   * @notice If the lock owner has registered an implementer then this hook
-   * is called every time balanceOf is called
-   * @param lockAddress the address of the current lock
-   * @param tokenId the Id of the transferred key 
-   * @param operator who initiated the transfer
-   * @param from the previous owner of transferred key 
-   * @param from the previous owner of transferred key 
-   * @param to the new owner of the key
-   * @param expirationTimestamp the key expiration timestamp (after transfer)
+  * @dev Used to disable lock before migrating keys and/or destroying contract
    */
-  function onKeyTransfer(
-    address lockAddress,
-    uint tokenId,
-    address operator,
-    address from,
-    address to,
-    uint expirationTimestamp
-  ) external;
+  function disableLock()
+    external
+    onlyLockManager
+    onlyIfAlive
+  {
+    emit Disable();
+    isAlive = false;
+  }
+  
+  uint256[1000] private __safe_upgrade_gap;
 }
 
 
@@ -933,38 +1105,26 @@ contract MixinLockCore is
   // The denominator component for values specified in basis points.
   uint internal constant BASIS_POINTS_DEN = 10000;
 
-  // lock hooks
   ILockKeyPurchaseHook public onKeyPurchaseHook;
   ILockKeyCancelHook public onKeyCancelHook;
   ILockValidKeyHook public onValidKeyHook;
   ILockTokenURIHook public onTokenURIHook;
 
-  // use to check data version (added to v10)
-  uint public schemaVersion;
-
-  // keep track of how many key a single address can use (added to v10)
-  uint internal _maxKeysPerAddress;
-
-  // one more hook (added to v11)
-  ILockKeyTransferHook public onKeyTransferHook;
-
-  // modifier to check if data has been upgraded
-  function _lockIsUpToDate() internal view {
-    if(schemaVersion != publicLockVersion()) {
-      revert MIGRATION_REQUIRED();
-    }
+  // Ensure that the Lock has not sold all of its keys.
+  modifier notSoldOut() {
+    require(maxNumberOfKeys > _totalSupply, 'LOCK_SOLD_OUT');
+    _;
   }
 
-  // modifier
-  function _onlyLockManagerOrBeneficiary() 
-  internal 
-  view
+  modifier onlyLockManagerOrBeneficiary()
   {
-    if(!isLockManager(msg.sender) && msg.sender != beneficiary) {
-      revert ONLY_LOCK_MANAGER_OR_BENEFICIARY();
-    }
+    require(
+      isLockManager(msg.sender) || msg.sender == beneficiary,
+      'ONLY_LOCK_MANAGER_OR_BENEFICIARY'
+    );
+    _;
   }
-  
+
   function _initializeMixinLockCore(
     address payable _beneficiary,
     uint _expirationDuration,
@@ -972,17 +1132,12 @@ contract MixinLockCore is
     uint _maxNumberOfKeys
   ) internal
   {
+    require(_expirationDuration <= 100 * 365 * 24 * 60 * 60, 'MAX_EXPIRATION_100_YEARS');
     unlockProtocol = IOutwaveUnlock(msg.sender); // Make sure we link back to Unlock's smart contract.
     beneficiary = _beneficiary;
-    expirationDuration = _expirationDuration;
+    expirationDuration = _expirationDuration == 0 ? type(uint).max : _expirationDuration;
     keyPrice = _keyPrice;
     maxNumberOfKeys = _maxNumberOfKeys;
-
-    // update only when initialized
-    schemaVersion = publicLockVersion();
-
-    // only a single key per address is allowed by default
-    _maxKeysPerAddress = 1;
   }
 
   // The version number of the current implementation on this network
@@ -990,7 +1145,7 @@ contract MixinLockCore is
   ) public pure
     returns (uint16)
   {
-    return 11;
+    return 9;
   }
 
   /**
@@ -999,13 +1154,17 @@ contract MixinLockCore is
    * the same as `tokenAddress` in MixinFunds.
    * @param _amount specifies the max amount to withdraw, which may be reduced when
    * considering the available balance. Set to 0 or MAX_UINT to withdraw everything.
+   *
+   * TODO: consider allowing anybody to trigger this as long as it goes to owner anyway?
+   *  -- however be wary of draining funds as it breaks the `cancelAndRefund` and `expireAndRefundFor`
+   * use cases.
    */
   function withdraw(
     address _tokenAddress,
     uint _amount
   ) external
+    onlyLockManagerOrBeneficiary
   {
-    _onlyLockManagerOrBeneficiary();
 
     // get balance
     uint balance;
@@ -1018,9 +1177,7 @@ contract MixinLockCore is
     uint amount;
     if(_amount == 0 || _amount > balance)
     {
-      if(balance <= 0) {
-        revert NOT_ENOUGH_FUNDS();
-      }
+      require(balance > 0, 'NOT_ENOUGH_FUNDS');
       amount = balance;
     }
     else
@@ -1043,11 +1200,15 @@ contract MixinLockCore is
     address _tokenAddress
   )
     external
+    onlyLockManager
+    onlyIfAlive
   {
-    _onlyLockManager();
-    _isValidToken(_tokenAddress);
     uint oldKeyPrice = keyPrice;
     address oldTokenAddress = tokenAddress;
+    require(
+      _tokenAddress == address(0) || IERC20Upgradeable(_tokenAddress).totalSupply() > 0,
+      'INVALID_TOKEN'
+    );
     keyPrice = _keyPrice;
     tokenAddress = _tokenAddress;
     emit PricingChanged(oldKeyPrice, keyPrice, oldTokenAddress, tokenAddress);
@@ -1059,11 +1220,10 @@ contract MixinLockCore is
    */
   function updateBeneficiary(
     address payable _beneficiary
-  ) external {
-    _onlyLockManagerOrBeneficiary();
-    if(_beneficiary == address(0)) {
-      revert INVALID_ADDRESS();
-    }
+  ) external
+    onlyLockManagerOrBeneficiary()
+  {
+    require(_beneficiary != address(0), 'INVALID_ADDRESS');
     beneficiary = _beneficiary;
   }
 
@@ -1074,23 +1234,18 @@ contract MixinLockCore is
     address _onKeyPurchaseHook,
     address _onKeyCancelHook,
     address _onValidKeyHook,
-    address _onTokenURIHook,
-    address _onKeyTransferHook
+    address _onTokenURIHook
   ) external
+    onlyLockManager()
   {
-    _onlyLockManager();
-
-    if(_onKeyPurchaseHook != address(0) && !_onKeyPurchaseHook.isContract()) { revert INVALID_HOOK(0); }
-    if(_onKeyCancelHook != address(0) && !_onKeyCancelHook.isContract()) { revert INVALID_HOOK(1); }
-    if(_onValidKeyHook != address(0) && !_onValidKeyHook.isContract()) { revert INVALID_HOOK(2); }
-    if(_onTokenURIHook != address(0) && !_onTokenURIHook.isContract()) { revert INVALID_HOOK(3); }
-    if(_onKeyTransferHook != address(0) && !_onKeyTransferHook.isContract()) { revert INVALID_HOOK(4); }
-    
+    require(_onKeyPurchaseHook == address(0) || _onKeyPurchaseHook.isContract(), 'INVALID_ON_KEY_SOLD_HOOK');
+    require(_onKeyCancelHook == address(0) || _onKeyCancelHook.isContract(), 'INVALID_ON_KEY_CANCEL_HOOK');
+    require(_onValidKeyHook == address(0) || _onValidKeyHook.isContract(), 'INVALID_ON_VALID_KEY_HOOK');
+    require(_onTokenURIHook == address(0) || _onTokenURIHook.isContract(), 'INVALID_ON_TOKEN_URI_HOOK');
     onKeyPurchaseHook = ILockKeyPurchaseHook(_onKeyPurchaseHook);
     onKeyCancelHook = ILockKeyCancelHook(_onKeyCancelHook);
     onTokenURIHook = ILockTokenURIHook(_onTokenURIHook);
     onValidKeyHook = ILockValidKeyHook(_onValidKeyHook);
-    onKeyTransferHook = ILockKeyTransferHook(_onKeyTransferHook);
   }
 
   function totalSupply()
@@ -1109,20 +1264,15 @@ contract MixinLockCore is
     address _spender,
     uint _amount
   ) public
+    onlyLockManagerOrBeneficiary
     returns (bool)
   {
-    _onlyLockManagerOrBeneficiary();
     return IERC20Upgradeable(tokenAddress).approve(_spender, _amount);
   }
 
-
-  // decreased from 1000 to 998 when adding `schemaVersion` and `maxKeysPerAddress` in v10 
-  // decreased from 998 to 997 when adding `onKeyTransferHook` in v11
-  uint256[997] private __safe_upgrade_gap;
+  uint256[1000] private __safe_upgrade_gap;
 }
 
-
-// File contracts/mixins/MixinKeys.sol
 
 /**
  * @title Mixin for managing `Key` data, as well as the * Approval related functions needed to meet the ERC721
@@ -1132,7 +1282,6 @@ contract MixinLockCore is
  * separates logically groupings of code to ease readability.
  */
 contract MixinKeys is
-  MixinErrors,
   MixinLockCore
 {
   // The struct for a key
@@ -1151,24 +1300,18 @@ contract MixinKeys is
     bool _timeAdded
   );
 
-  // fire when a key is extended
-  event KeyExtended(
-    uint indexed tokenId,
-    uint newTimestamp
-  );
-
-  
   event KeyManagerChanged(uint indexed _tokenId, address indexed _newManager);
 
-  event KeysMigrated(
-    uint updatedRecordsCount
-  );
-
-  // Deprecated: don't use this anymore as we know enable multiple keys per owner.
+  // Keys
+  // Each owner can have at most exactly one key
+  // TODO: could we use public here? (this could be confusing though because it getter will
+  // return 0 values when missing a key)
   mapping (address => Key) internal keyByOwner;
 
   // Each tokenId can have at most exactly one owner at a time.
-  // Returns address(0) if the token does not exist
+  // Returns 0 if the token does not exist
+  // TODO: once we decouple tokenId from owner address (incl in js), then we can consider
+  // merging this with totalSupply into an array instead.
   mapping (uint => address) internal _ownerOf;
 
   // Keep track of the total number of unique owners for this lock (both expired and valid).
@@ -1180,383 +1323,93 @@ contract MixinKeys is
   // Each key can have at most 1 keyManager.
   mapping (uint => address) public keyManagerOf;
 
-  // Keeping track of approved transfers
+    // Keeping track of approved transfers
   // This is a mapping of addresses which have approved
   // the transfer of a key to another address where their key can be transferred
   // Note: the approver may actually NOT have a key... and there can only
   // be a single approved address
-  mapping (uint => address) internal approved;
+  mapping (uint => address) private approved;
 
-  // Keeping track of approved operators for a given Key manager.
+    // Keeping track of approved operators for a given Key manager.
   // This approves a given operator for all keys managed by the calling "keyManager"
   // The caller may not currently be the keyManager for ANY keys.
   // These approvals are never reset/revoked automatically, unlike "approved",
   // which is reset on transfer.
-  mapping (address => mapping (address => bool)) internal managerToOperatorApproved;
+  mapping (address => mapping (address => bool)) private managerToOperatorApproved;
 
-  // store all keys: tokenId => token
-  mapping(uint256 => Key) internal _keys;
-  
-  // store ownership: owner => array of tokens owned by that owner
-  mapping(address => mapping(uint256 => uint256)) private _ownedKeyIds;
-  
-  // store indexes: owner => list of tokenIds
-  mapping(uint256 => uint256) private _ownedKeysIndex;
-
-  // Mapping owner address to token count
-  mapping(address => uint256) private _balances;
-  
-  /** 
-   * Ensure that the caller is the keyManager of the key
-   * or that the caller has been approved
-   * for ownership of that key
-   * @dev This is a modifier
-   */ 
-  function _onlyKeyManagerOrApproved(
+  // Ensure that the caller is the keyManager of the key
+  // or that the caller has been approved
+  // for ownership of that key
+  modifier onlyKeyManagerOrApproved(
     uint _tokenId
   )
-  internal
-  view
   {
-    address realKeyOwner = keyManagerOf[_tokenId] == address(0) ? _ownerOf[_tokenId] : keyManagerOf[_tokenId];
-    if(
-      !_isKeyManager(_tokenId, msg.sender)
-      && approved[_tokenId] != msg.sender
-      && !isApprovedForAll(realKeyOwner, msg.sender)
-    ) {
-      revert ONLY_KEY_MANAGER_OR_APPROVED();
-    }
-  }
-
-  /**
-   * Check if a key is expired or not
-   * @dev This is a modifier
-   */
-  function _isValidKey(
-    uint _tokenId
-  ) 
-  internal
-  view
-  {
-    if(!isValidKey(_tokenId)) {
-      revert KEY_NOT_VALID();
-    }
-    
-  }
-
-  /**
-   * Check if a key actually exists
-   * @dev This is a modifier
-   */
-  function _isKey(
-    uint _tokenId
-  ) 
-  internal
-  view 
-  {
-    if(_keys[_tokenId].expirationTimestamp == 0) {
-      revert NO_SUCH_KEY();
-    }
-  }
-
-  /**
-   * Deactivate an existing key
-   * @param _tokenId the id of token to burn
-   * @notice the key will be expired and ownership records will be destroyed
-   */
-  function burn(uint _tokenId) public {
-    _isKey(_tokenId);
-    _onlyKeyManagerOrApproved(_tokenId);
-
-    emit Transfer(_ownerOf[_tokenId], address(0), _tokenId);
-
-    // delete ownership and expire key
-    _cancelKey(_tokenId);
-  }
-
-  /**
-    * Migrate data from the previous single owner => key mapping to 
-    * the new data structure w multiple tokens.
-    * No data migration needed for v10 > v11
-    */
-  function migrate(bytes calldata) virtual public {
-    schemaVersion = publicLockVersion();
-  }
-
-  /**
-   * Set the schema version to the latest
-   * @notice only lock manager call call this
-   */
-  function updateSchemaVersion() public {
-    _onlyLockManager();
-    schemaVersion = publicLockVersion();
-  }
-
-  /**
-    * Returns the id of a key for a specific owner at a specific index
-    * @notice Enumerate keys assigned to an owner
-    * @dev Throws if `_index` >= `balanceOf(_keyOwner)` or if
-    *  `_keyOwner` is the zero address, representing invalid keys.
-    * @param _keyOwner address of the owner
-    * @param _index position index in the array of all keys - less than `balanceOf(_keyOwner)`
-    * @return The token identifier for the `_index`th key assigned to `_keyOwner`,
-    *   (sort order not specified)
-    * NB: name kept to be ERC721 compatible
-    */
-  function tokenOfOwnerByIndex(
-    address _keyOwner,
-    uint256 _index
-  ) 
-    public 
-    view
-    returns (uint256)
-  {
-      if(_index >= totalKeys(_keyOwner)) {
-        revert OUT_OF_RANGE();
-      }
-      return _ownedKeyIds[_keyOwner][_index];
-  }
-
-  /**
-   * Create a new key with a new tokenId and store it 
-   * 
-   */
-  function _createNewKey(
-    address _recipient,
-    address _keyManager,
-    uint expirationTimestamp
-  ) 
-  internal 
-  returns (uint tokenId) {
-
-    if(_recipient == address(0)) { 
-        revert INVALID_ADDRESS();
-    }
-    
-    // We increment the tokenId counter
-    _totalSupply++;
-    tokenId = _totalSupply;
-
-    // create the key
-    _keys[tokenId] = Key(tokenId, expirationTimestamp);
-    
-    // increase total number of unique owners
-    if(totalKeys(_recipient) == 0 ) {
-      numberOfOwners++;
-    }
-
-    // store ownership
-    _createOwnershipRecord(tokenId, _recipient);
-
-    // set key manager
-    _setKeyManagerOf(tokenId, _keyManager);
-
-    // trigger event
-    emit Transfer(
-      address(0), // This is a creation.
-      _recipient,
-      tokenId
+    require(
+      _isKeyManager(_tokenId, msg.sender) ||
+      _isApproved(_tokenId, msg.sender) ||
+      isApprovedForAll(_ownerOf[_tokenId], msg.sender),
+      'ONLY_KEY_MANAGER_OR_APPROVED'
     );
+    _;
   }
 
-  function _extendKey(
-    uint _tokenId,
-    uint _duration
-  ) internal 
-    returns (
-      uint newTimestamp
-    )
-  {
-    uint expirationTimestamp = _keys[_tokenId].expirationTimestamp;
-
-    // prevent extending a valid non-expiring key
-    if(expirationTimestamp == type(uint).max){
-      revert CANT_EXTEND_NON_EXPIRING_KEY();
-    }
-    
-    // if non-expiring but not valid then extend
-    uint duration = _duration == 0 ? expirationDuration : _duration;
-    if(duration == type(uint).max) {
-      newTimestamp = type(uint).max;
-    } else {
-      if (expirationTimestamp > block.timestamp) {
-        // extends a valid key  
-        newTimestamp = expirationTimestamp + duration;
-      } else {
-        // renew an expired or cancelled key
-        newTimestamp = block.timestamp + duration;
-      }
-    }
-
-    _keys[_tokenId].expirationTimestamp = newTimestamp;
-
-    emit KeyExtended(_tokenId, newTimestamp);
-  } 
-
-  /**
-   * Record ownership info and udpate balance for new owner
-   * @param _tokenId the id of the token to cancel
-   * @param _recipient the address of the new owner
-   */
-  function _createOwnershipRecord(
-   uint _tokenId,
-   address _recipient
-  ) internal { 
-    uint length = balanceOf(_recipient);
-    
-    // make sure address does not have more keys than allowed
-    if(length >= _maxKeysPerAddress) {
-      revert MAX_KEYS_REACHED();
-    }
-
-    // record new owner
-    _ownedKeysIndex[_tokenId] = length;
-    _ownedKeyIds[_recipient][length] = _tokenId;
-
-    // update ownership mapping
-    _ownerOf[_tokenId] = _recipient;
-    _balances[_recipient] += 1;
-  }
-
-  /**
-   * Merge existing keys
-   * @param _tokenIdFrom the id of the token to substract time from
-   * @param _tokenIdTo the id of the destination token  to add time
-   * @param _amount the amount of time to transfer (in seconds)
-   */
-  function mergeKeys(
-    uint _tokenIdFrom, 
-    uint _tokenIdTo, 
-    uint _amount
-    ) public {
-
-    // checks
-    _isKey(_tokenIdFrom);
-    _isValidKey(_tokenIdFrom);
-    _onlyKeyManagerOrApproved(_tokenIdFrom);
-    _isKey(_tokenIdTo);
-    
-    // make sure there is enough time remaining
-    if(
-      _amount > keyExpirationTimestampFor(_tokenIdFrom) - block.timestamp
-    ) {
-      revert NOT_ENOUGH_TIME();
-    }
-
-    // deduct time from parent key
-    _timeMachine(_tokenIdFrom, _amount, false);
-
-    // add time to destination key
-    _timeMachine(_tokenIdTo, _amount, true);
-
-  }
-
-  /**
-   * Delete ownership info and udpate balance for previous owner
-   * @param _tokenId the id of the token to cancel
-   */
-  function _deleteOwnershipRecord(
-    uint _tokenId
-  ) internal {
-    // get owner
-    address previousOwner = _ownerOf[_tokenId];
-
-    // delete previous ownership
-    uint lastTokenIndex = balanceOf(previousOwner) - 1;
-    uint index = _ownedKeysIndex[_tokenId];
-
-    // When the token to delete is the last token, the swap operation is unnecessary
-    if (index != lastTokenIndex) {
-        uint256 lastTokenId = _ownedKeyIds[previousOwner][lastTokenIndex];
-        _ownedKeyIds[previousOwner][index] = lastTokenId; // Move the last token to the slot of the to-delete token
-        _ownedKeysIndex[lastTokenId] = index; // Update the moved token's index
-    }
-
-    // Deletes the contents at the last position of the array
-    delete _ownedKeyIds[previousOwner][lastTokenIndex];
-
-    // remove from owner count if thats the only key 
-    if(totalKeys(previousOwner) == 1 ) {
-      numberOfOwners--;
-    }
-    // update balance
-    _balances[previousOwner] -= 1;
-  }
-
-  /**
-   * Delete ownership info about a key and expire the key
-   * @param _tokenId the id of the token to cancel
-   * @notice this won't 'burn' the token, as it would still exist in the record
-   */
-  function _cancelKey(
-    uint _tokenId
-  ) internal {
-    
-    // Deletes the contents at the last position of the array
-    _deleteOwnershipRecord(_tokenId);
-
-    // expire the key
-    _keys[_tokenId].expirationTimestamp = block.timestamp;
-
-    // delete previous owner
-    _ownerOf[_tokenId] = address(0);
-  }
-
-  /**
-   * @return numberOfKeys The number of keys owned by `_keyOwner` (expired or not)
-   */
-  function totalKeys(
+  // Ensures that an owner owns or has owned a key in the past
+  modifier ownsOrHasOwnedKey(
     address _keyOwner
-  )
-    public
-    view
-    returns (uint)
-  {
-    if(_keyOwner == address(0)) { 
-      revert INVALID_ADDRESS();
-    }
+  ) {
+    require(
+      keyByOwner[_keyOwner].expirationTimestamp > 0, 'HAS_NEVER_OWNED_KEY'
+    );
+    _;
+  }
 
-    return _balances[_keyOwner];
+  // Ensures that an owner has a valid key
+  modifier hasValidKey(
+    address _user
+  ) {
+    require(
+      getHasValidKey(_user), 'KEY_NOT_VALID'
+    );
+    _;
+  }
+
+  // Ensures that a key has an owner
+  modifier isKey(
+    uint _tokenId
+  ) {
+    require(
+      _ownerOf[_tokenId] != address(0), 'NO_SUCH_KEY'
+    );
+    _;
+  }
+
+  // Ensure that the caller owns the key
+  modifier onlyKeyOwner(
+    uint _tokenId
+  ) {
+    require(
+      ownerOf(_tokenId) == msg.sender, 'ONLY_KEY_OWNER'
+    );
+    _;
   }
 
   /**
-   * In the specific case of a Lock, `balanceOf` returns only the tokens with a valid expiration timerange
-   * @return balance The number of valid keys owned by `_keyOwner`
+   * In the specific case of a Lock, each owner can own only at most 1 key.
+   * @return The number of NFTs owned by `_keyOwner`, either 0 or 1.
   */
   function balanceOf(
     address _keyOwner
   )
     public
     view
-    returns (uint balance)
+    returns (uint)
   {
-    uint length = totalKeys(_keyOwner);
-    for (uint i = 0; i < length; i++) {
-      if(isValidKey(tokenOfOwnerByIndex(_keyOwner, i))) {
-        balance++;
-      }
-    }
+    require(_keyOwner != address(0), 'INVALID_ADDRESS');
+    return getHasValidKey(_keyOwner) ? 1 : 0;
   }
 
   /**
-   * Check if a certain key is valid
-   * @param _tokenId the id of the key to check validity
-   * @notice this makes use of the onValidKeyHook if it is set
-   */
-  function isValidKey(
-    uint _tokenId
-  )
-    public
-    view
-    returns (bool)
-  { 
-    bool isValid = _keys[_tokenId].expirationTimestamp > block.timestamp;
-    return isValid;
-  }   
-
-  /**
-   * Checks if the user has at least one non-expired key.
-   * @param _keyOwner the 
+   * Checks if the user has a non-expired key.
    */
   function getHasValidKey(
     address _keyOwner
@@ -1565,45 +1418,48 @@ contract MixinKeys is
     view
     returns (bool isValid)
   { 
-    uint length = balanceOf(_keyOwner);
-    if(length > 0) {
-      for (uint i = 0; i < length; i++) {
-        if(isValidKey(tokenOfOwnerByIndex(_keyOwner, i))) {
-          return true; // stop looping at the first valid key
-        }
-      }
-    }
+    isValid = keyByOwner[_keyOwner].expirationTimestamp > block.timestamp;
 
     // use hook if it exists
     if(address(onValidKeyHook) != address(0)) {
       isValid = onValidKeyHook.hasValidKey(
         address(this),
         _keyOwner,
-        0, // no timestamp needed (we use tokenId)
+        keyByOwner[_keyOwner].expirationTimestamp,
         isValid
       );
-    }
-    return isValid;   
+    }    
   }
 
   /**
-    * Returns the key's ExpirationTimestamp field for a given token.
-    * @param _tokenId the tokenId of the key
-    * @dev Returns 0 if the owner has never owned a key for this lock
-    */
-  function keyExpirationTimestampFor(
-    uint _tokenId
+   * @notice Find the tokenId for a given user
+   * @return The tokenId of the NFT, else returns 0
+  */
+  function getTokenIdFor(
+    address _account
   ) public view
     returns (uint)
   {
-    return _keys[_tokenId].expirationTimestamp;
+    return keyByOwner[_account].tokenId;
   }
- 
-  /** 
-   *  Returns the owner of a given tokenId
-   * @param _tokenId the id of the token
-   * @return the address of the owner
-   */ 
+
+  /**
+  * @dev Returns the key's ExpirationTimestamp field for a given owner.
+  * @param _keyOwner address of the user for whom we search the key
+  * @dev Returns 0 if the owner has never owned a key for this lock
+  */
+  function keyExpirationTimestampFor(
+    address _keyOwner
+  ) public view
+    returns (uint)
+  {
+    return keyByOwner[_keyOwner].expirationTimestamp;
+  }
+
+  
+  
+
+  // Returns the owner of a given tokenId
   function ownerOf(
     uint _tokenId
   ) public view
@@ -1613,25 +1469,22 @@ contract MixinKeys is
   }
 
   /**
-   * @notice Public function for setting the manager for a given key
-   * @param _tokenId The id of the key to assign rights for
-   * @param _keyManager the address with the manager's rights for the given key.
-   * Setting _keyManager to address(0) means the keyOwner is also the keyManager
+  * @notice Public function for updating transfer and cancel rights for a given key
+  * @param _tokenId The id of the key to assign rights for
+  * @param _keyManager The address with the manager's rights for the given key.
+  * Setting _keyManager to address(0) means the keyOwner is also the keyManager
    */
   function setKeyManagerOf(
     uint _tokenId,
     address _keyManager
   ) public
+    isKey(_tokenId)
   {
-    _isKey(_tokenId);
-    if(
-      // is already key manager
-      !_isKeyManager(_tokenId, msg.sender) 
-      // is lock manager
-      && !isLockManager(msg.sender)
-    ) {
-      revert UNAUTHORIZED_KEY_MANAGER_UPDATE();
-    }
+    require(
+      _isKeyManager(_tokenId, msg.sender) ||
+      isLockManager(msg.sender),
+      'UNAUTHORIZED_KEY_MANAGER_UPDATE'
+    );
     _setKeyManagerOf(_tokenId, _keyManager);
   }
 
@@ -1657,11 +1510,10 @@ contract MixinKeys is
     uint _tokenId
   )
     public
+    onlyIfAlive
+    onlyKeyManagerOrApproved(_tokenId)
   {
-    _onlyKeyManagerOrApproved(_tokenId);
-    if(msg.sender == _approved) {
-      revert CANNOT_APPROVE_SELF();
-    }
+    require(msg.sender != _approved, 'APPROVE_SELF');
 
     approved[_tokenId] = _approved;
     emit Approval(_ownerOf[_tokenId], _approved, _tokenId);
@@ -1676,9 +1528,9 @@ contract MixinKeys is
   function getApproved(
     uint _tokenId
   ) public view
+    isKey(_tokenId)
     returns (address)
   {
-    _isKey(_tokenId);
     address approvedRecipient = approved[_tokenId];
     return approvedRecipient;
   }
@@ -1695,13 +1547,18 @@ contract MixinKeys is
   ) public view
     returns (bool)
   {
-    return managerToOperatorApproved[_owner][_operator];
+    uint tokenId = keyByOwner[_owner].tokenId;
+    address keyManager = keyManagerOf[tokenId];
+    if(keyManager == address(0)) {
+      return managerToOperatorApproved[_owner][_operator];
+    } else {
+      return managerToOperatorApproved[keyManager][_operator];
+    }
   }
 
   /**
-   * Returns true if _keyManager is explicitly set as key manager, or if the 
-   * address is the owner but no km is set.
-   * identified by _tokenId
+  * Returns true if _keyManager is the manager of the key
+  * identified by _tokenId
    */
   function _isKeyManager(
     uint _tokenId,
@@ -1709,15 +1566,8 @@ contract MixinKeys is
   ) internal view
     returns (bool)
   {
-    if(
-      // is explicitely a key manager
-      keyManagerOf[_tokenId] == _keyManager 
-      ||
-      (
-        // is owner and no key manager is set
-        ownerOf(_tokenId) == _keyManager)
-        && keyManagerOf[_tokenId] == address(0) 
-      ) {
+    if(keyManagerOf[_tokenId] == _keyManager ||
+      (keyManagerOf[_tokenId] == address(0) && ownerOf(_tokenId) == _keyManager)) {
       return true;
     } else {
       return false;
@@ -1725,38 +1575,102 @@ contract MixinKeys is
   }
 
   /**
-    * @notice Modify the expirationTimestamp of a key
-    * by a given amount.
-    * @param _tokenId The ID of the key to modify.
-    * @param _deltaT The amount of time in seconds by which
-    * to modify the keys expirationTimestamp
-    * @param _addTime Choose whether to increase or decrease
-    * expirationTimestamp (false == decrease, true == increase)
-    * @dev Throws if owner does not have a valid key.
-    */
+   * Assigns the key a new tokenId (from totalSupply) if it does not already have
+   * one assigned.
+   */
+  function _assignNewTokenId(
+    Key storage _key
+  ) internal
+  {
+    if (_key.tokenId == 0) {
+      // This is a brand new owner
+      // We increment the tokenId counter
+      _totalSupply++;
+      // we assign the incremented `_totalSupply` as the tokenId for the new key
+      _key.tokenId = _totalSupply;
+    }
+  }
+
+  /**
+   * Records the owner of a given tokenId
+   */
+  function _recordOwner(
+    address _keyOwner,
+    uint _tokenId
+  ) internal
+  {
+
+    // check expiration ts should be set to know if owner had previously registered a key 
+    Key memory key = keyByOwner[_keyOwner];
+    if(key.expirationTimestamp == 0 ) {
+      numberOfOwners++;
+    }
+
+    // We register the owner of the tokenID
+    _ownerOf[_tokenId] = _keyOwner;
+
+  }
+
+  /**
+  * @notice Modify the expirationTimestamp of a key
+  * by a given amount.
+  * @param _tokenId The ID of the key to modify.
+  * @param _deltaT The amount of time in seconds by which
+  * to modify the keys expirationTimestamp
+  * @param _addTime Choose whether to increase or decrease
+  * expirationTimestamp (false == decrease, true == increase)
+  * @dev Throws if owner does not have a valid key.
+  */
   function _timeMachine(
     uint _tokenId,
     uint256 _deltaT,
     bool _addTime
   ) internal
   {
-    _isKey(_tokenId);
-
-    uint formerTimestamp = _keys[_tokenId].expirationTimestamp;
-
+    address tokenOwner = ownerOf(_tokenId);
+    require(tokenOwner != address(0), 'NON_EXISTENT_KEY');
+    Key storage key = keyByOwner[tokenOwner];
+    uint formerTimestamp = key.expirationTimestamp;
+    bool validKey = getHasValidKey(tokenOwner);
     if(_addTime) {
-      if(formerTimestamp > block.timestamp) {
-        // append to valid key
-        _keys[_tokenId].expirationTimestamp = formerTimestamp + _deltaT;
+      if(validKey) {
+        key.expirationTimestamp = formerTimestamp + _deltaT;
       } else {
-        // add from now if key is expired
-        _keys[_tokenId].expirationTimestamp = block.timestamp + _deltaT;
+        key.expirationTimestamp = block.timestamp + _deltaT;
       }
     } else {
-        _keys[_tokenId].expirationTimestamp = formerTimestamp - _deltaT;
+      key.expirationTimestamp = formerTimestamp - _deltaT;
     }
-
     emit ExpirationChanged(_tokenId, _deltaT, _addTime);
+  }
+
+    /**
+   * @dev Sets or unsets the approval of a given operator
+   * An operator is allowed to transfer all tokens of the sender on their behalf
+   * @param _to operator address to set the approval
+   * @param _approved representing the status of the approval to be set
+   */
+  function setApprovalForAll(
+    address _to,
+    bool _approved
+  ) public
+    onlyIfAlive
+  {
+    require(_to != msg.sender, 'APPROVE_SELF');
+    managerToOperatorApproved[msg.sender][_to] = _approved;
+    emit ApprovalForAll(msg.sender, _to, _approved);
+  }
+
+    /**
+   * @dev Checks if the given user is approved to transfer the tokenId.
+   */
+  function _isApproved(
+    uint _tokenId,
+    address _user
+  ) internal view
+    returns (bool)
+  {
+    return approved[_tokenId] == _user;
   }
 
   /**
@@ -1773,62 +1687,34 @@ contract MixinKeys is
   }
 
   /**
-   * @notice Change the maximum number of keys the lock can edit
+   * @dev Change the maximum number of keys the lock can edit
    * @param _maxNumberOfKeys uint the maximum number of keys
-   * @dev Can't be smaller than the existing supply
    */
-  function setMaxNumberOfKeys (uint _maxNumberOfKeys) external {
-     _onlyLockManager();
-     if (_maxNumberOfKeys < _totalSupply) {
-       revert CANT_BE_SMALLER_THAN_SUPPLY();
-     }
+   function setMaxNumberOfKeys (uint _maxNumberOfKeys) external onlyLockManager {
+     require (_maxNumberOfKeys > _totalSupply, "maxNumberOfKeys is smaller than existing supply");
      maxNumberOfKeys = _maxNumberOfKeys;
-  }
+   }
 
-  /**
+   /**
    * A function to change the default duration of each key in the lock
    * @notice keys previously bought are unaffected by this change (i.e.
    * existing keys timestamps are not recalculated/updated)
    * @param _newExpirationDuration the new amount of time for each key purchased 
-   * or type(uint).max for a non-expiring key
+   * or zero (0) for a non-expiring key
    */
-  function setExpirationDuration(uint _newExpirationDuration) external {
-     _onlyLockManager();
+   function setExpirationDuration(uint _newExpirationDuration) external onlyLockManager {
      expirationDuration = _newExpirationDuration;
-  }
-  
-  /**
-   * Set the maximum number of keys a specific address can use
-   * @param _maxKeys the maximum amount of key a user can own
-   */
-  function setMaxKeysPerAddress(uint _maxKeys) external {
-     _onlyLockManager();
-     if(_maxKeys == 0) {
-       revert NULL_VALUE();
-     }
-     _maxKeysPerAddress = _maxKeys;
-  }
-
-  /**
-   * @return the maximum number of key allowed for a single address
-   */
-  function maxKeysPerAddress() external view returns (uint) {
-    return _maxKeysPerAddress;
-  }
-  
-  // decrease 1000 to 996 when adding new tokens/owners mappings in v10
-  uint256[996] private __safe_upgrade_gap;
+   }
+   
+   uint256[1000] private __safe_upgrade_gap;
 }
 
-
-// File contracts/mixins/MixinERC721Enumerable.sol
 
 /**
  * @title Implements the ERC-721 Enumerable extension.
  */
 contract MixinERC721Enumerable is
   ERC165StorageUpgradeable,
-  MixinErrors,
   MixinLockCore, // Implements totalSupply
   MixinKeys
 {
@@ -1854,10 +1740,25 @@ contract MixinERC721Enumerable is
   ) public view
     returns (uint256)
   {
-    if(_index >= _totalSupply) {
-      revert OUT_OF_RANGE();
-    }
+    require(_index < _totalSupply, 'OUT_OF_RANGE');
     return _index;
+  }
+
+  /// @notice Enumerate NFTs assigned to an owner
+  /// @dev Throws if `_index` >= `balanceOf(_keyOwner)` or if
+  ///  `_keyOwner` is the zero address, representing invalid NFTs.
+  /// @param _keyOwner An address where we are interested in NFTs owned by them
+  /// @param _index A counter less than `balanceOf(_keyOwner)`
+  /// @return The token identifier for the `_index`th NFT assigned to `_keyOwner`,
+  ///   (sort order not specified)
+  function tokenOfOwnerByIndex(
+    address _keyOwner,
+    uint256 _index
+  ) public view
+    returns (uint256)
+  {
+    require(_index < balanceOf(_keyOwner) && _keyOwner != address(0), 'ONLY_ONE_KEY_PER_OWNER');
+    return getTokenIdFor(_keyOwner);
   }
 
   function supportsInterface(bytes4 interfaceId) 
@@ -1877,8 +1778,6 @@ contract MixinERC721Enumerable is
 }
 
 
-// File contracts/mixins/MixinGrantKeys.sol
-
 /**
  * @title Mixin allowing the Lock owner to grant / gift keys to users.
  * @author HardlyDifficult
@@ -1886,7 +1785,6 @@ contract MixinERC721Enumerable is
  * separates logically groupings of code to ease readability.
  */
 contract MixinGrantKeys is
-  MixinErrors,
   MixinRoles,
   MixinKeys
 {
@@ -1898,46 +1796,43 @@ contract MixinGrantKeys is
     address[] calldata _recipients,
     uint[] calldata _expirationTimestamps,
     address[] calldata _keyManagers
-  ) external 
-    returns (uint[] memory)
+  ) external
+    onlyKeyGranterOrManager
   {
-    _lockIsUpToDate();
-    if(!isKeyGranter(msg.sender) && !isLockManager(msg.sender)) {
-      revert ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
-    }
-
-    uint[] memory tokenIds = new uint[](_recipients.length);
     for(uint i = 0; i < _recipients.length; i++) {
-      // an event is triggered
-      tokenIds[i] = _createNewKey(
-        _recipients[i],
-        _keyManagers[i],  
-        _expirationTimestamps[i]
-      ); 
+      address recipient = _recipients[i];
+      uint expirationTimestamp = _expirationTimestamps[i];
+      address keyManager = _keyManagers[i];
+
+      require(recipient != address(0), 'INVALID_ADDRESS');
+
+      Key storage toKey = keyByOwner[recipient];
+      require(expirationTimestamp > toKey.expirationTimestamp, 'ALREADY_OWNS_KEY');
+
+      uint idTo = toKey.tokenId;
+
+      if(idTo == 0) {
+        _assignNewTokenId(toKey);
+        idTo = toKey.tokenId;
+        _recordOwner(recipient, idTo);
+      }
+      // Set the key Manager
+      _setKeyManagerOf(idTo, keyManager);
+      emit KeyManagerChanged(idTo, keyManager);
+
+      toKey.expirationTimestamp = expirationTimestamp;
+      // trigger event
+      emit Transfer(
+        address(0), // This is a creation.
+        recipient,
+        idTo
+      );
     }
-    return tokenIds;
-  }
-  
-  /**
-   * Allows the Lock owner or key granter to extend an existing keys with no charge. This is the "renewal" equivalent of `grantKeys`.
-   * @param _tokenId The id of the token to extend
-   * @param _duration The duration in secondes to add ot the key
-   * @dev set `_duration` to 0 to use the default duration of the lock
-   */
-  function grantKeyExtension(uint _tokenId, uint _duration) external {
-    _lockIsUpToDate();
-    _isKey(_tokenId);
-    if(!isKeyGranter(msg.sender) && !isLockManager(msg.sender)) {
-      revert ONLY_LOCK_MANAGER_OR_KEY_GRANTER();
-    }
-    _extendKey(_tokenId, _duration);
   }
 
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
-// File contracts/UnlockUtils.sol
 
 // This contract provides some utility methods for use with the unlock protocol smart contracts.
 // Borrowed from:
@@ -2051,8 +1946,8 @@ contract MixinLockMetadata is
   function updateLockName(
     string calldata _lockName
   ) external
+    onlyLockManager
   {
-    _onlyLockManager();
     name = _lockName;
   }
 
@@ -2062,8 +1957,8 @@ contract MixinLockMetadata is
   function updateLockSymbol(
     string calldata _lockSymbol
   ) external
+    onlyLockManager
   {
-    _onlyLockManager();
     lockSymbol = _lockSymbol;
     emit NewLockSymbol(_lockSymbol);
   }
@@ -2089,8 +1984,8 @@ contract MixinLockMetadata is
   function setBaseTokenURI(
     string calldata _baseTokenURI
   ) external
+    onlyLockManager
   {
-    _onlyLockManager();
     baseTokenURI = _baseTokenURI;
   }
 
@@ -2122,11 +2017,13 @@ contract MixinLockMetadata is
 
     if(address(onTokenURIHook) != address(0))
     {
-      uint expirationTimestamp = keyExpirationTimestampFor(_tokenId);
+      address tokenOwner = ownerOf(_tokenId);
+      uint expirationTimestamp = keyExpirationTimestampFor(tokenOwner);
+
       return onTokenURIHook.tokenURI(
         address(this),
         msg.sender,
-        ownerOf(_tokenId),
+        tokenOwner,
         _tokenId,
         expirationTimestamp
         );
@@ -2165,8 +2062,6 @@ contract MixinLockMetadata is
 }
 
 
-// File contracts/mixins/MixinPurchase.sol
-
 /**
  * @title Mixin for the purchase-related functions.
  * @author HardlyDifficult
@@ -2174,36 +2069,25 @@ contract MixinLockMetadata is
  * separates logically groupings of code to ease readability.
  */
 contract MixinPurchase is
-  MixinErrors,
   MixinFunds,
   MixinDisable,
   MixinLockCore,
   MixinKeys
 {
+  event RenewKeyPurchase(address indexed owner, uint newExpiration);
+
   event GasRefunded(address indexed receiver, uint refundedAmount, address tokenAddress);
   
   event UnlockCallFailed(address indexed lockAddress, address unlockAddress);
 
   // default to 0 
-  uint256 internal _gasRefundValue;
-
-  // Keep track of ERC20 price when purchased
-  mapping(uint256 => uint256) internal _originalPrices;
-  
-  // Keep track of duration when purchased
-  mapping(uint256 => uint256) internal _originalDurations;
-  
-  // keep track of token pricing when purchased
-  mapping(uint256 => address) internal _originalTokens;
-
-  mapping(address => uint) public referrerFees;
+  uint256 private _gasRefundValue;
 
   /**
   * @dev Set the value/price to be refunded to the sender on purchase
   */
 
-  function setGasRefundValue(uint256 _refundValue) external {
-    _onlyLockManager();
+  function setGasRefundValue(uint256 _refundValue) external onlyLockManager {
     _gasRefundValue = _refundValue;
   }
   
@@ -2215,67 +2099,12 @@ contract MixinPurchase is
   }
 
   /**
-  * Set a specific percentage of the keyPrice to be sent to the referrer while purchasing, 
-  * extending or renewing a key. 
-  * @param _referrer the address of the referrer. If set to the 0x address, any referrer will receive the fee.
-  * @param _feeBasisPoint the percentage of the price to be used for this 
-  * specific referrer (in basis points)
-  * @dev To send a fixed percentage of the key price to all referrers, sett a percentage to `address(0)`
-  */
-  function setReferrerFee(address _referrer, uint _feeBasisPoint) public {
-    _onlyLockManager();
-    referrerFees[_referrer] = _feeBasisPoint;
-  }
-
-  /** 
-  @dev internal function to execute the payments to referrers if any is set
-  */
-  function _payReferrer (address _referrer) internal {
-    // get default value
-    uint basisPointsToPay = referrerFees[address(0)];
-
-    // get value for the referrer
-    if(referrerFees[_referrer] != 0) {
-      basisPointsToPay = referrerFees[_referrer];
-    }
-    
-    // pay the referrer if necessary
-    if (basisPointsToPay != 0) {
-      _transfer(
-        tokenAddress,
-        payable(_referrer), 
-        keyPrice * basisPointsToPay / BASIS_POINTS_DEN
-      );
-    }
-  }
-
-  /**
-  * @dev Helper to communicate with Unlock (record GNP and mint UDT tokens)
-  */
-  function _recordKeyPurchase (uint _keyPrice, address _referrer) internal  {
-    // make sure unlock is a contract, and we catch possible reverts
-      if (address(unlockProtocol).code.length > 0) {
-        // call Unlock contract to record GNP
-        // the function is capped by gas to prevent running out of gas
-        try unlockProtocol.recordKeyPurchase{gas: 300000}(_keyPrice, _referrer) 
-        {} 
-        catch {
-          // emit missing unlock
-          emit UnlockCallFailed(address(this), address(unlockProtocol));
-        }
-      } else {
-        // emit missing unlock
-        emit UnlockCallFailed(address(this), address(unlockProtocol));
-      }
-  }
-
-  /**
   * @dev Purchase function
-  * @param _values array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
-  * (_values is ignored when using ETH)
-  * @param _recipients array of addresses of the recipients of the purchased key
-  * @param _referrers array of addresses of the users making the referral
-  * @param _keyManagers optional array of addresses to grant managing rights to a specific address on creation
+  * @param _value the number of tokens to pay for this purchase >= the current keyPrice - any applicable discount
+  * (_value is ignored when using ETH)
+  * @param _recipient address of the recipient of the purchased key
+  * @param _referrer address of the user making the referral
+  * @param _keyManager optional address to grant managing rights to a specific address on creation
   * @param _data arbitrary data populated by the front-end which initiated the sale
   * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored 
   * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
@@ -2283,212 +2112,114 @@ contract MixinPurchase is
   * than keyPrice is approved for spending).
   */
   function purchase(
-    uint256[] memory _values,
-    address[] memory _recipients,
-    address[] memory _referrers,
-    address[] memory _keyManagers,
-    bytes[] calldata _data
+    uint256 _value,
+    address _recipient,
+    address _referrer,
+    address _keyManager,
+    bytes calldata _data
   ) external payable
-    returns (uint[] memory)
+    onlyIfAlive
+    notSoldOut
   {
-    _lockIsUpToDate();
-    if(_totalSupply +  _recipients.length > maxNumberOfKeys) {
-      revert LOCK_SOLD_OUT();
-    }
-    if(
-      (_recipients.length != _referrers.length)
-      ||
-      (_recipients.length != _keyManagers.length)
-      ) {
-      revert INVALID_LENGTH();
-    }
+    require(_recipient != address(0), 'INVALID_ADDRESS');
 
-    uint totalPriceToPay;
-    uint tokenId;
-    uint[] memory tokenIds = new uint[](_recipients.length);
+    // Assign the key
+    Key storage toKey = keyByOwner[_recipient];
+    uint idTo = toKey.tokenId;
+    uint newTimeStamp;
 
-    for (uint256 i = 0; i < _recipients.length; i++) {
-      // check recipient address
-      address _recipient = _recipients[i];
-
+    if (idTo == 0) {
+      // Assign a new tokenId (if a new owner or previously transferred)
+      _assignNewTokenId(toKey);
+      // refresh the cached value
+      idTo = toKey.tokenId;
+      _recordOwner(_recipient, idTo);
       // check for a non-expiring key
       if (expirationDuration == type(uint).max) {
-        // create a new key
-        tokenId = _createNewKey(
-          _recipient,
-          _keyManagers[i],
-          type(uint).max
-        );
+        newTimeStamp = type(uint).max;
       } else {
-        tokenId = _createNewKey(
-          _recipient,
-          _keyManagers[i],
-          block.timestamp + expirationDuration
-        );
+        newTimeStamp = block.timestamp + expirationDuration;
       }
+      toKey.expirationTimestamp = newTimeStamp;
 
-      // price
-      uint inMemoryKeyPrice = purchasePriceFor(_recipient, _referrers[i], _data[i]);
-      totalPriceToPay = totalPriceToPay + inMemoryKeyPrice;
+      // set key manager
+      _setKeyManagerOf(idTo, _keyManager);
 
-      // store values at purchase time
-      _originalPrices[tokenId] = inMemoryKeyPrice;
-      _originalDurations[tokenId] = expirationDuration;
-      _originalTokens[tokenId] = tokenAddress;
+      // trigger event
+      emit Transfer(
+        address(0), // This is a creation.
+        _recipient,
+        idTo
+      );
+    } else if (toKey.expirationTimestamp > block.timestamp) {
+      // prevent re-purchase of a valid non-expiring key
+      require(toKey.expirationTimestamp != type(uint).max, 'A valid non-expiring key can not be purchased twice');
 
-      // store tokenIds 
-      tokenIds[i] = tokenId;
-      
-      if(tokenAddress != address(0) && _values[i] < inMemoryKeyPrice) {
-        revert INSUFFICIENT_ERC20_VALUE();
+      // This is an existing owner trying to extend their key
+      newTimeStamp = toKey.expirationTimestamp + expirationDuration;
+      toKey.expirationTimestamp = newTimeStamp;
+
+      emit RenewKeyPurchase(_recipient, newTimeStamp);
+    } else {
+      // This is an existing owner trying to renew their expired or cancelled key
+      if(expirationDuration == type(uint).max) {
+        newTimeStamp = type(uint).max;
+      } else {
+        newTimeStamp = block.timestamp + expirationDuration;
       }
+      toKey.expirationTimestamp = newTimeStamp;
 
-      // store in unlock
-      _recordKeyPurchase(inMemoryKeyPrice, _referrers[i]);
+      _setKeyManagerOf(idTo, _keyManager);
 
-      // fire hook
-      uint pricePaid = tokenAddress == address(0) ? msg.value : _values[i];
-      if(address(onKeyPurchaseHook) != address(0)) {
-        onKeyPurchaseHook.onKeyPurchase(
-          msg.sender, 
-          _recipient, 
-          _referrers[i], 
-          _data[i], 
-          inMemoryKeyPrice, 
-          pricePaid
-        );
-      }
+      emit RenewKeyPurchase(_recipient, newTimeStamp);
     }
 
-    // transfer the ERC20 tokens
-    if(tokenAddress != address(0)) {
+    
+    uint inMemoryKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
+
+    // make sure unlock is a contract, and we catch possible reverts
+    if (address(unlockProtocol).code.length > 0) {
+      try unlockProtocol.recordKeyPurchase(inMemoryKeyPrice, _referrer) 
+      {} 
+      catch {
+        // emit missing unlock
+        emit UnlockCallFailed(address(this), address(unlockProtocol));
+      }
+    } else {
+      // emit missing unlock
+      emit UnlockCallFailed(address(this), address(unlockProtocol));
+    }
+
+    // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
+    uint pricePaid;
+    if(tokenAddress != address(0))
+    {
+      pricePaid = _value;
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-      token.transferFrom(msg.sender, address(this), totalPriceToPay);
-    } else if(msg.value < totalPriceToPay) {
-      // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
-      revert INSUFFICIENT_VALUE();
+      token.transferFrom(msg.sender, address(this), pricePaid);
+    }
+    else
+    {
+      pricePaid = msg.value;
+    }
+    require(pricePaid >= inMemoryKeyPrice, 'INSUFFICIENT_VALUE');
+
+    if(address(onKeyPurchaseHook) != address(0))
+    {
+      onKeyPurchaseHook.onKeyPurchase(msg.sender, _recipient, _referrer, _data, inMemoryKeyPrice, pricePaid);
     }
 
     // refund gas
-    _refundGas();
-
-    // send what is due to referrers
-    for (uint256 i = 0; i < _referrers.length; i++) { 
-      _payReferrer(_referrers[i]);
-    }
-
-    return tokenIds;
-  }
-
-  /**
-  * @dev Extend function
-  * @param _value the number of tokens to pay for this purchase >= the current keyPrice - any applicable discount
-  * (_value is ignored when using ETH)
-  * @param _tokenId id of the key to extend
-  * @param _referrer address of the user making the referral
-  * @param _data arbitrary data populated by the front-end which initiated the sale
-  * @dev Throws if lock is disabled or key does not exist for _recipient. Throws if _recipient == address(0).
-  */
-  function extend(
-    uint _value,
-    uint _tokenId,
-    address _referrer,
-    bytes calldata _data
-  ) 
-    public 
-    payable
-  {
-    _lockIsUpToDate();
-    _isKey(_tokenId);
-
-    // extend key duration
-    _extendKey(_tokenId, 0);
-
-    // transfer the tokens
-    uint inMemoryKeyPrice = purchasePriceFor(ownerOf(_tokenId), _referrer, _data);
-
-    // process in unlock
-    _recordKeyPurchase(inMemoryKeyPrice, _referrer);
-
-    if(tokenAddress != address(0)) {
-      if(_value < inMemoryKeyPrice) {
-        revert INSUFFICIENT_ERC20_VALUE();
+    if (_gasRefundValue != 0) {
+      if(tokenAddress != address(0)) {
+        IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
+        token.transferFrom(address(this), msg.sender, _gasRefundValue);
+      } else {
+        (bool success, ) = msg.sender.call{value: _gasRefundValue}("");
+        require(success, "Refund failed.");
       }
-      IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-      token.transferFrom(msg.sender, address(this), inMemoryKeyPrice);
-    } else if(msg.value < inMemoryKeyPrice) {
-      // We explicitly allow for greater amounts of ETH or tokens to allow 'donations'
-      revert INSUFFICIENT_VALUE();
+      emit GasRefunded(msg.sender, _gasRefundValue, tokenAddress);
     }
-
-    // if params have changed, then update them
-    if(_originalPrices[_tokenId] != inMemoryKeyPrice) {
-      _originalPrices[_tokenId] = inMemoryKeyPrice;
-    }
-    if(_originalDurations[_tokenId] != expirationDuration) {
-      _originalDurations[_tokenId] = expirationDuration;
-    }
-    if(_originalTokens[_tokenId] != tokenAddress) {
-      _originalTokens[_tokenId] = tokenAddress;
-    }
-
-    // refund gas (if applicable)
-    _refundGas();
-
-    // send what is due to referrer
-    _payReferrer(_referrer);
-  }
-
-  /**
-  * Renew a given token
-  * @notice only works for non-free, expiring, ERC20 locks
-  * @param _tokenId the ID fo the token to renew
-  * @param _referrer the address of the person to be granted UDT
-  */
-  function renewMembershipFor(
-    uint _tokenId,
-    address _referrer
-  ) public {
-    _lockIsUpToDate();
-    _isKey(_tokenId);
-
-    // check the lock
-    if(_originalDurations[_tokenId] == type(uint).max || tokenAddress == address(0)) {
-      revert NON_RENEWABLE_LOCK();
-    }
-
-    // make sure duration and pricing havent changed  
-    uint keyPrice = purchasePriceFor(ownerOf(_tokenId), _referrer, '');
-    if(
-      _originalPrices[_tokenId] != keyPrice
-      ||
-      _originalDurations[_tokenId] != expirationDuration
-      || 
-      _originalTokens[_tokenId] != tokenAddress
-    ) {
-      revert LOCK_HAS_CHANGED();
-    }
-
-    // make sure key is ready for renewal
-    if(isValidKey(_tokenId)) {
-      revert NOT_READY_FOR_RENEWAL();
-    }
-
-    // extend key duration
-    _extendKey(_tokenId, 0);
-
-    // store in unlock
-    _recordKeyPurchase(keyPrice, _referrer);
-
-    // transfer the tokens
-    IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-    token.transferFrom(ownerOf(_tokenId), address(this), keyPrice);
-
-    // refund gas if applicable
-    _refundGas();
-
-    // send what is due to referrer
-    _payReferrer(_referrer);
   }
 
   /**
@@ -2498,8 +2229,22 @@ contract MixinPurchase is
   function purchasePriceFor(
     address _recipient,
     address _referrer,
+    bytes calldata _data
+  ) external view
+    returns (uint minKeyPrice)
+  {
+    minKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
+  }
+
+  /**
+   * @notice returns the minimum price paid for a purchase with these params.
+   * @dev minKeyPrice considers any discount from Unlock or the OnKeyPurchase hook
+   */
+  function _purchasePriceFor(
+    address _recipient,
+    address _referrer,
     bytes memory _data
-  ) public view
+  ) internal view
     returns (uint minKeyPrice)
   {
     if(address(onKeyPurchaseHook) != address(0))
@@ -2510,42 +2255,18 @@ contract MixinPurchase is
     {
       minKeyPrice = keyPrice;
     }
+    return minKeyPrice;
   }
 
-  /**
-   * Refund the specified gas amount and emit an event
-   * @notice this does sth only if `_gasRefundValue` is non-null
-   */
-  function _refundGas() internal {
-    if (_gasRefundValue != 0) { 
-      if(tokenAddress != address(0)) {
-        IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-        // send tokens to refun gas
-        token.transfer(msg.sender, _gasRefundValue);
-      } else {
-        (bool success, ) = msg.sender.call{value: _gasRefundValue}("");
-        if(!success) {
-          revert GAS_REFUND_FAILED();
-        }
-      }
-      emit GasRefunded(msg.sender, _gasRefundValue, tokenAddress);
-    }
-  }
-
-  // decreased from 1000 to 997 when added mappings for initial purchases pricing and duration on v10 
-  // decreased from 997 to 996 when added the `referrerFees` mapping on v11
-  uint256[996] private __safe_upgrade_gap;
+  uint256[1000] private __safe_upgrade_gap;
 }
 
-
-// File contracts/mixins/MixinRefunds.sol
 
 contract MixinRefunds is
   MixinRoles,
   MixinFunds,
   MixinLockCore,
-  MixinKeys,
-  MixinPurchase
+  MixinKeys
 {
   // CancelAndRefund will return funds based on time remaining minus this penalty.
   // This is calculated as `proRatedRefund * refundPenaltyBasisPoints / BASIS_POINTS_DEN`.
@@ -2572,19 +2293,17 @@ contract MixinRefunds is
   }
 
   /**
-   * @dev Invoked by the lock owner to destroy the user's key and perform a refund and cancellation
+   * @dev Invoked by the lock owner to destroy the user's ket and perform a refund and cancellation
    * of the key
-   * @param _tokenId The id of the key to expire
-   * @param _amount The amount to refund
    */
   function expireAndRefundFor(
-    uint _tokenId,
-    uint _amount
-  ) external {
-    _isKey(_tokenId);
-    _isValidKey(_tokenId);
-    _onlyLockManager();
-    _cancelAndRefund(_tokenId, _amount);
+    address payable _keyOwner,
+    uint amount
+  ) external
+    onlyLockManager
+    hasValidKey(_keyOwner)
+  {
+    _cancelAndRefund(_keyOwner, amount);
   }
 
   /**
@@ -2593,12 +2312,12 @@ contract MixinRefunds is
    */
   function cancelAndRefund(uint _tokenId)
     external
+    onlyKeyManagerOrApproved(_tokenId)
   {
-    _isKey(_tokenId);
-    _isValidKey(_tokenId);
-    _onlyKeyManagerOrApproved(_tokenId);
-    uint refund = getCancelAndRefundValue(_tokenId);
-    _cancelAndRefund(_tokenId, refund);
+    address payable keyOwner = payable(ownerOf(_tokenId));
+    uint refund = _getCancelAndRefundValue(keyOwner);
+
+    _cancelAndRefund(keyOwner, refund);
   }
 
   /**
@@ -2607,8 +2326,9 @@ contract MixinRefunds is
   function updateRefundPenalty(
     uint _freeTrialLength,
     uint _refundPenaltyBasisPoints
-  ) external {
-    _onlyLockManager();
+  ) external
+    onlyLockManager
+  {
     emit RefundPenaltyChanged(
       _freeTrialLength,
       _refundPenaltyBasisPoints
@@ -2619,59 +2339,68 @@ contract MixinRefunds is
   }
 
   /**
+   * @dev Determines how much of a refund a key owner would receive if they issued
+   * a cancelAndRefund block.timestamp.
+   * Note that due to the time required to mine a tx, the actual refund amount will be lower
+   * than what the user reads from this call.
+   */
+  function getCancelAndRefundValueFor(
+    address _keyOwner
+  )
+    external view
+    returns (uint refund)
+  {
+    return _getCancelAndRefundValue(_keyOwner);
+  }
+
+  /**
    * @dev cancels the key for the given keyOwner and sends the refund to the msg.sender.
-   * @notice this deletes ownership info and expire the key, but doesnt 'burn' it
    */
   function _cancelAndRefund(
-    uint _tokenId,
+    address payable _keyOwner,
     uint refund
   ) internal
   {
-    address payable keyOwner = payable(ownerOf(_tokenId));
-    
-    // delete ownership info and expire the key
-    _cancelKey(_tokenId);
-    
-    // emit event
-    emit CancelKey(_tokenId, keyOwner, msg.sender, refund);
-    
+    Key storage key = keyByOwner[_keyOwner];
+
+    emit CancelKey(key.tokenId, _keyOwner, msg.sender, refund);
+    // expirationTimestamp is a proxy for hasKey, setting this to `block.timestamp` instead
+    // of 0 so that we can still differentiate hasKey from hasValidKey.
+    key.expirationTimestamp = block.timestamp;
+
     if (refund > 0) {
-      _transfer(tokenAddress, keyOwner, refund);
+      // Security: doing this last to avoid re-entrancy concerns
+      _transfer(tokenAddress, _keyOwner, refund);
     }
 
-    // make future reccuring transactions impossible
-    _originalDurations[_tokenId] = 0;
-    _originalPrices[_tokenId] = 0;
-    
     // inform the hook if there is one registered
     if(address(onKeyCancelHook) != address(0))
     {
-      onKeyCancelHook.onKeyCancel(msg.sender, keyOwner, refund);
+      onKeyCancelHook.onKeyCancel(msg.sender, _keyOwner, refund);
     }
   }
 
   /**
-   * @dev Determines how much of a refund a key would be worth if a cancelAndRefund
-   * is issued now.
-   * @param _tokenId the key to check the refund value for.
-   * @notice due to the time required to mine a tx, the actual refund amount will be lower
-   * than what the user reads from this call.
+   * @dev Determines how much of a refund a key owner would receive if they issued
+   * a cancelAndRefund now.
+   * @param _keyOwner The owner of the key check the refund value for.
    */
-  function getCancelAndRefundValue(
-    uint _tokenId
+  function _getCancelAndRefundValue(
+    address _keyOwner
   )
-    public view
+    private view
+    hasValidKey(_keyOwner)
     returns (uint refund)
   {
-    _isValidKey(_tokenId);
+    Key storage key = keyByOwner[_keyOwner];
 
     // return entire purchased price if key is non-expiring
     if(expirationDuration == type(uint).max) {
       return keyPrice;
     }
 
-    // substract free trial value
-    uint timeRemaining = keyExpirationTimestampFor(_tokenId) - block.timestamp;
+    // Math: safeSub is not required since `hasValidKey` confirms timeRemaining is positive
+    uint timeRemaining = key.expirationTimestamp - block.timestamp;
     if(timeRemaining + freeTrialLength >= expirationDuration) {
       refund = keyPrice;
     } else {
@@ -2694,8 +2423,6 @@ contract MixinRefunds is
 }
 
 
-// File contracts/mixins/MixinTransfer.sol
-
 /**
  * @title Mixin for the transfer-related functions needed to meet the ERC721
  * standard.
@@ -2704,12 +2431,10 @@ contract MixinRefunds is
  */
 
 contract MixinTransfer is
-  MixinErrors,
   MixinRoles,
   MixinFunds,
   MixinLockCore,
-  MixinKeys,
-  MixinPurchase
+  MixinKeys
 {
   using AddressUpgradeable for address;
 
@@ -2726,38 +2451,34 @@ contract MixinTransfer is
   uint public transferFeeBasisPoints;
 
   /**
-  * @notice Allows the key owner to safely transfer a portion of the remaining time 
-  * from their key to a new key
-  * @param _tokenIdFrom the key to share
-  * @param _to The recipient of the shared time
+  * @notice Allows the key owner to safely share their key (parent key) by
+  * transferring a portion of the remaining time to a new key (child key).
+  * @param _to The recipient of the shared key
+  * @param _tokenId the key to share
   * @param _timeShared The amount of time shared
   */
   function shareKey(
     address _to,
-    uint _tokenIdFrom,
+    uint _tokenId,
     uint _timeShared
   ) public
+    onlyIfAlive
+    onlyKeyManagerOrApproved(_tokenId)
   {
-    _lockIsUpToDate();
-    if(maxNumberOfKeys <= _totalSupply) {
-      revert LOCK_SOLD_OUT();
-    }
-    _onlyKeyManagerOrApproved(_tokenIdFrom);
-    _isValidKey(_tokenIdFrom);
-    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
-      revert KEY_TRANSFERS_DISABLED();
-    }
+    require(transferFeeBasisPoints < BASIS_POINTS_DEN, 'KEY_TRANSFERS_DISABLED');
+    require(_to != address(0), 'INVALID_ADDRESS');
+    address keyOwner = _ownerOf[_tokenId];
+    require(getHasValidKey(keyOwner), 'KEY_NOT_VALID');
+    require(keyOwner != _to, 'TRANSFER_TO_SELF');
 
-    address keyOwner = _ownerOf[_tokenIdFrom];
-
-    // store time to be added
+    Key storage fromKey = keyByOwner[keyOwner];
+    Key storage toKey = keyByOwner[_to];
+    uint idTo = toKey.tokenId;
     uint time;
-
     // get the remaining time for the origin key
-    uint timeRemaining = keyExpirationTimestampFor(_tokenIdFrom) - block.timestamp;
-
+    uint timeRemaining = fromKey.expirationTimestamp - block.timestamp;
     // get the transfer fee based on amount of time wanted share
-    uint fee = getTransferFee(_tokenIdFrom, _timeShared);
+    uint fee = getTransferFee(keyOwner, _timeShared);
     uint timePlusFee = _timeShared + fee;
 
     // ensure that we don't try to share too much
@@ -2765,160 +2486,93 @@ contract MixinTransfer is
       // now we can safely set the time
       time = _timeShared;
       // deduct time from parent key, including transfer fee
-      _timeMachine(_tokenIdFrom, timePlusFee, false);
+      _timeMachine(_tokenId, timePlusFee, false);
     } else {
       // we have to recalculate the fee here
-      fee = getTransferFee(_tokenIdFrom, timeRemaining);
+      fee = getTransferFee(keyOwner, timeRemaining);
       time = timeRemaining - fee;
-      _keys[_tokenIdFrom].expirationTimestamp = block.timestamp; // Effectively expiring the key
-      emit ExpireKey(_tokenIdFrom);
+      fromKey.expirationTimestamp = block.timestamp; // Effectively expiring the key
+      emit ExpireKey(_tokenId);
     }
 
-    // create new key
-    uint tokenIdTo = _createNewKey(
-      _to,
-      address(0),
-      block.timestamp + time
-    );
-    
+    if (idTo == 0) {
+      _assignNewTokenId(toKey);
+      idTo = toKey.tokenId;
+      _recordOwner(_to, idTo);
+      emit Transfer(
+        address(0), // This is a creation or time-sharing
+        _to,
+        idTo
+      );
+    } else if (toKey.expirationTimestamp <= block.timestamp) {
+      // reset the key Manager for expired keys
+      _setKeyManagerOf(idTo, address(0));
+    }
+
+    // add time to new key
+    _timeMachine(idTo, time, true);
     // trigger event
     emit Transfer(
       keyOwner,
       _to,
-      tokenIdTo
+      idTo
     );
 
-    if(!_checkOnERC721Received(keyOwner, _to, tokenIdTo, '')) {
-      revert NON_COMPLIANT_ERC721_RECEIVER();
-    }
+    require(_checkOnERC721Received(keyOwner, _to, idTo, ''), 'NON_COMPLIANT_ERC721_RECEIVER');
   }
 
-  /** 
-  * An ERC721-like function to transfer a token from one account to another. 
-  * @param _from the owner of token to transfer
-  * @param _recipient the address that will receive the token
-  * @param _tokenId the id of the token
-  * @dev Requirements: if the caller is not `from`, it must be approved to move this token by
-  * either {approve} or {setApprovalForAll}. 
-  * The key manager will be reset to address zero after the transfer
-  */
   function transferFrom(
     address _from,
     address _recipient,
     uint _tokenId
   )
     public
+    onlyIfAlive
+    hasValidKey(_from)
+    onlyKeyManagerOrApproved(_tokenId)
   {
-    _isValidKey(_tokenId);
-    _onlyKeyManagerOrApproved(_tokenId);
-    
-    // reset key manager to address zero
-    keyManagerOf[_tokenId] = address(0);
+    require(ownerOf(_tokenId) == _from, 'TRANSFER_FROM: NOT_KEY_OWNER');
+    require(transferFeeBasisPoints < BASIS_POINTS_DEN, 'KEY_TRANSFERS_DISABLED');
+    require(_recipient != address(0), 'INVALID_ADDRESS');
+    require(_from != _recipient, 'TRANSFER_TO_SELF');
+    uint fee = getTransferFee(_from, 0);
 
-    _transferFrom(_from, _recipient, _tokenId);
-  }
+    Key storage fromKey = keyByOwner[_from];
+    Key storage toKey = keyByOwner[_recipient];
 
-  /** 
-  * Lending a key allows you to transfer the token while retaining the 
-  * ownerships right by setting yourself as a key manager first. 
-  * @param _from the owner of token to transfer
-  * @param _recipient the address that will receive the token
-  * @param _tokenId the id of the token
-  * @notice This function can only called by 1) the key owner when no key manager is set or 2) the key manager.
-  * After calling the function, the `_recipient` will be the new owner, and the sender of the tx
-  * will become the key manager.
-  */
-  function lendKey(
-    address _from,
-    address _recipient,
-    uint _tokenId
-  )
-    public
-  {
-    // make sure caller is either owner or key manager 
-    if(!_isKeyManager(_tokenId, msg.sender)) {
-      revert UNAUTHORIZED();
-    }
-    
-    // transfer key ownership to lender
-    _transferFrom(_from, _recipient, _tokenId);
-
-    // set key owner as key manager
-    keyManagerOf[_tokenId] = msg.sender;
-  }
-
-  /** 
-  * Unlend is called when you have lent a key and want to claim its full ownership back. 
-  * @param _recipient the address that will receive the token ownership
-  * @param _tokenId the id of the token
-  * @dev Only the key manager of the token can call this function
-  */
-  function unlendKey(
-    address _recipient,
-    uint _tokenId
-  ) public {
-    _isValidKey(_tokenId);
-
-    if(msg.sender != keyManagerOf[_tokenId]) {
-      revert UNAUTHORIZED();
-    }
-    _transferFrom(ownerOf(_tokenId), _recipient, _tokenId);
-  }
-
-  /**
-   * This functions contains the logic to transfer a token
-   * from an account to another
-   */
-  function _transferFrom(
-    address _from,
-    address _recipient,
-    uint _tokenId
-  ) private {
-
-    _isValidKey(_tokenId);
-
-    // incorrect _from field
-    if (ownerOf(_tokenId) != _from) {
-      revert UNAUTHORIZED();
-    }
-
-    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
-      revert KEY_TRANSFERS_DISABLED();
-    }
-    if(_recipient == address(0)) {
-      revert INVALID_ADDRESS();
-    }
-    if(_from == _recipient) {
-      revert TRANSFER_TO_SELF();
-    }
-
-
+    uint previousExpiration = toKey.expirationTimestamp;
     // subtract the fee from the senders key before the transfer
-    _timeMachine(_tokenId, getTransferFee(_tokenId, 0), false);  
+    _timeMachine(_tokenId, fee, false);
 
-    // transfer a token
-    Key storage key = _keys[_tokenId];
-
-    // update expiration
-    key.expirationTimestamp = keyExpirationTimestampFor(_tokenId);
-
-    // increase total number of unique owners
-    if(balanceOf(_recipient) == 0 ) {
-      numberOfOwners++;
+    if (toKey.tokenId == 0) {
+      toKey.tokenId = _tokenId;
+      _recordOwner(_recipient, _tokenId);
+      // Clear any previous approvals
+      _clearApproval(_tokenId);
     }
 
-    // delete token from previous owner
-    _deleteOwnershipRecord(_tokenId);
-    
-    // record new owner
-    _createOwnershipRecord(_tokenId, _recipient);
+    if (previousExpiration <= block.timestamp) {
+      // The recipient did not have a key, or had a key but it expired. The new expiration is the sender's key expiration
+      // An expired key is no longer a valid key, so the new tokenID is the sender's tokenID
+      toKey.expirationTimestamp = fromKey.expirationTimestamp;
+      toKey.tokenId = _tokenId;
 
-    // clear any previous approvals
-    _clearApproval(_tokenId);
+      // Reset the key Manager to the key owner
+      _setKeyManagerOf(_tokenId, address(0));
 
-    // make future reccuring transactions impossible
-    _originalDurations[_tokenId] = 0;
-    _originalPrices[_tokenId] = 0;
+      _recordOwner(_recipient, _tokenId);
+    } else {
+      require(expirationDuration != type(uint).max, 'Recipient already owns a non-expiring key');
+      // The recipient has a non expired key. We just add them the corresponding remaining time
+      // SafeSub is not required since the if confirms `previousExpiration - block.timestamp` cannot underflow
+      toKey.expirationTimestamp = fromKey.expirationTimestamp + previousExpiration - block.timestamp;
+    }
+
+    // Effectively expiring the key for the previous owner
+    fromKey.expirationTimestamp = block.timestamp;
+
+    // Set the tokenID to 0 for the previous owner to avoid duplicates
+    fromKey.tokenId = 0;
 
     // trigger event
     emit Transfer(
@@ -2926,37 +2580,33 @@ contract MixinTransfer is
       _recipient,
       _tokenId
     );
-
-    // fire hook if it exists
-    if(address(onKeyTransferHook) != address(0)) {
-      onKeyTransferHook.onKeyTransfer(
-        address(this),
-        _tokenId,
-        msg.sender, // operator
-        _from,
-        _recipient,
-        key.expirationTimestamp
-      );
-    }
   }
 
   /**
    * @notice An ERC-20 style transfer.
-   * @param _tokenId the Id of the token to send
-   * @param _to the destination address
-   * @param _valueBasisPoint a percentage (expressed as basis points) of the time to be transferred
-   * @return success bool success/failure of the transfer
+   * @param _value sends a token with _value * expirationDuration (the amount of time remaining on a standard purchase).
+   * @dev The typical use case would be to call this with _value 1, which is on par with calling `transferFrom`. If the user
+   * has more than `expirationDuration` time remaining this may use the `shareKey` function to send some but not all of the token.
    */
   function transfer(
-    uint _tokenId,
     address _to,
-    uint _valueBasisPoint
+    uint _value
   ) public
     returns (bool success)
   {
-    _isValidKey(_tokenId);
-    uint timeShared = ( keyExpirationTimestampFor(_tokenId) - block.timestamp ) * _valueBasisPoint / BASIS_POINTS_DEN;
-    shareKey( _to, _tokenId, timeShared);
+    uint maxTimeToSend = _value * expirationDuration;
+    Key storage fromKey = keyByOwner[msg.sender];
+    uint timeRemaining = fromKey.expirationTimestamp - block.timestamp;
+    if(maxTimeToSend < timeRemaining)
+    {
+      shareKey(_to, fromKey.tokenId, maxTimeToSend);
+    }
+    else
+    {
+      transferFrom(msg.sender, _to, fromKey.tokenId);
+    }
+
+    // Errors will cause a revert
     return true;
   }
 
@@ -2976,28 +2626,6 @@ contract MixinTransfer is
     public
   {
     safeTransferFrom(_from, _to, _tokenId, '');
-  }
-
-   /**
-   * @dev Sets or unsets the approval of a given operator
-   * An operator is allowed to transfer all tokens of the sender on their behalf
-   * @param _to operator address to set the approval
-   * @param _approved representing the status of the approval to be set
-   * @notice disabled when transfers are disabled
-   */
-  function setApprovalForAll(
-    address _to,
-    bool _approved
-  ) public
-  {
-    if(_to == msg.sender) {
-      revert CANNOT_APPROVE_SELF();
-    }
-    if(transferFeeBasisPoints >= BASIS_POINTS_DEN) {
-      revert KEY_TRANSFERS_DISABLED();
-    }
-    managerToOperatorApproved[msg.sender][_to] = _approved;
-    emit ApprovalForAll(msg.sender, _to, _approved);
   }
 
   /**
@@ -3020,9 +2648,8 @@ contract MixinTransfer is
     public
   {
     transferFrom(_from, _to, _tokenId);
-    if(!_checkOnERC721Received(_from, _to, _tokenId, _data)) {
-      revert NON_COMPLIANT_ERC721_RECEIVER();
-    }
+    require(_checkOnERC721Received(_from, _to, _tokenId, _data), 'NON_COMPLIANT_ERC721_RECEIVER');
+
   }
 
   /**
@@ -3030,8 +2657,10 @@ contract MixinTransfer is
    */
   function updateTransferFee(
     uint _transferFeeBasisPoints
-  ) external {
-    _onlyLockManager();
+  )
+    external
+    onlyLockManager
+  {
     emit TransferFeeChanged(
       _transferFeeBasisPoints
     );
@@ -3039,33 +2668,33 @@ contract MixinTransfer is
   }
 
   /**
-   * Determines how much of a fee would need to be paid in order to
-   * transfer to another account.  This is pro-rated so the fee goes 
-   * down overtime.
-   * @dev Throws if _tokenId is not have a valid key
-   * @param _tokenId The id of the key check the transfer fee for.
-   * @param _time The amount of time to calculate the fee for.
-   * @return The transfer fee in seconds.
+   * Determines how much of a fee a key owner would need to pay in order to
+   * transfer the key to another account.  This is pro-rated so the fee goes down
+   * overtime.
+   * @param _keyOwner The owner of the key check the transfer fee for.
    */
   function getTransferFee(
-    uint _tokenId,
+    address _keyOwner,
     uint _time
   )
     public view
     returns (uint)
   {
-    _isKey(_tokenId);
-    uint expirationTimestamp = keyExpirationTimestampFor(_tokenId);
-    if(expirationTimestamp < block.timestamp) {
+    if(! getHasValidKey(_keyOwner)) {
       return 0;
     } else {
+      Key storage key = keyByOwner[_keyOwner];
       uint timeToTransfer;
+      uint fee;
+      // Math: safeSub is not required since `hasValidKey` confirms timeToTransfer is positive
+      // this is for standard key transfers
       if(_time == 0) {
-        timeToTransfer = expirationTimestamp - block.timestamp;
+        timeToTransfer = key.expirationTimestamp - block.timestamp;
       } else {
         timeToTransfer = _time;
       }
-      return timeToTransfer * transferFeeBasisPoints / BASIS_POINTS_DEN;
+      fee = timeToTransfer * transferFeeBasisPoints / BASIS_POINTS_DEN;
+      return fee;
     }
   }
 
@@ -3099,62 +2728,6 @@ contract MixinTransfer is
 }
 
 
-// File contracts/mixins/MixinConvenienceOwnable.sol
-
-/**
- * @title Mixin to add support for `ownable()`
- * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
- * separates logically groupings of code to ease readability.
- */
-contract MixinConvenienceOwnable is MixinErrors, MixinLockCore {
-
-  // used for `owner()`convenience helper
-  address private _convenienceOwner;
-
-  // events
-  event OwnershipTransferred(address previousOwner, address newOwner);
-
-  function _initializeMixinConvenienceOwnable(address _sender) internal {
-    _convenienceOwner = _sender;
-  }
-
-  /** `owner()` is provided as an helper to mimick the `Ownable` contract ABI.
-    * The `Ownable` logic is used by many 3rd party services to determine
-    * contract ownership - e.g. who is allowed to edit metadata on Opensea.
-    * 
-    * @notice This logic is NOT used internally by the Unlock Protocol and is made 
-    * available only as a convenience helper.
-   */
-  function owner() public view returns (address) {
-    return _convenienceOwner;
-  }
-
-  /** Setter for the `owner` convenience helper (see `owner()` docstring for more).
-    * @notice This logic is NOT used internally by the Unlock Protocol ans is made 
-    * available only as a convenience helper.
-    * @param account address returned by the `owner()` helper
-   */ 
-  function setOwner(address account) public {
-    _onlyLockManager();
-    if(account == address(0)) {
-      revert OWNER_CANT_BE_ADDRESS_ZERO(); 
-    }
-    address _previousOwner = _convenienceOwner;
-    _convenienceOwner = account;
-    emit OwnershipTransferred(_previousOwner, account);
-  }
-
-  function isOwner(address account) public view returns (bool) {
-    return _convenienceOwner == account;
-  }
-
-  uint256[1000] private __safe_upgrade_gap;
-
-}
-
-
-// File contracts/PublicLock.sol
-
 /**
  * @title The Lock contract
  * @author Julien Genestoux (unlock-protocol.com)
@@ -3175,8 +2748,7 @@ contract OutwavePublicLock is
   MixinGrantKeys,
   MixinPurchase,
   MixinTransfer,
-  MixinRefunds,
-  MixinConvenienceOwnable
+  MixinRefunds
 {
   function initialize(
     address payable _lockCreator,
@@ -3189,12 +2761,12 @@ contract OutwavePublicLock is
     initializer()
   {
     MixinFunds._initializeMixinFunds(_tokenAddress);
+    MixinDisable._initializeMixinDisable();
     MixinLockCore._initializeMixinLockCore(_lockCreator, _expirationDuration, _keyPrice, _maxNumberOfKeys);
     MixinLockMetadata._initializeMixinLockMetadata(_lockName);
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
     MixinRoles._initializeMixinRoles(_lockCreator);
-    MixinConvenienceOwnable._initializeMixinConvenienceOwnable(_lockCreator);
     // registering the interface for erc721 with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x80ac58cd);
