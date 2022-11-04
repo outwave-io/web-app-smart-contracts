@@ -6,7 +6,6 @@ pragma solidity ^0.8.17;
 
 import "./interfaces/IOutwaveUnlock.sol";
 
-// File @openzeppelin/upgrades/contracts/Initializable.sol@v2.8.0
 
 /**
  * @title Initializable
@@ -69,8 +68,6 @@ contract Initializable {
 }
 
 
-// File @openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol@v2.5.0
-
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -97,8 +94,6 @@ contract Context is Initializable {
     }
 }
 
-
-// File @openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol@v2.5.0
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -177,8 +172,6 @@ contract Ownable is Initializable, Context {
 }
 
 
-// File hardlydifficult-ethereum-contracts/contracts/proxies/Clone2Factory.sol@v0.11.1
-
 // From https://github.com/optionality/clone-factory/blob/master/contracts/CloneFactory.sol
 // Updated to support Solidity 5, switch to `create2` and revert on fail
 library Clone2Factory
@@ -249,13 +242,9 @@ library Clone2Factory
 }
 
 
-// File contracts/interfaces/IPublicLock.sol
-
 /**
 * @title The PublicLock Interface
  */
-
-
 abstract contract IOutwavePublicLock
 {
 
@@ -762,8 +751,6 @@ abstract contract IOutwavePublicLock
 }
 
 
-// File @openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol@v2.5.0
-
 /**
  * @dev Collection of functions related to the address type
  */
@@ -833,8 +820,6 @@ library Address {
     }
 }
 
-
-// File @openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol@v2.5.0
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -992,8 +977,6 @@ library SafeMath {
 }
 
 
-// File contracts/interfaces/IMintableERC20.sol
-
 interface IMintableERC20
 {
   function mint(address account, uint256 amount) external returns (bool);
@@ -1002,8 +985,6 @@ interface IMintableERC20
   function balanceOf(address account) external returns (uint256);
 }
 
-
-// File contracts/OutwaveUnlock.sol
 
 /**
  * @title The OutwaveUnlock contract
@@ -1030,15 +1011,6 @@ interface IMintableERC20
  *  a. Keeping track of deployed locks
  *  b. Keeping track of GNP
  */
-
-
-
-
-
-
-
-
-
 /// @dev Must list the direct base contracts in the order from “most base-like” to “most derived”.
 /// https://solidity.readthedocs.io/en/latest/contracts.html#multiple-inheritance-and-linearization
 contract OutwaveUnlock is
@@ -1141,6 +1113,7 @@ contract OutwaveUnlock is
   * @param _salt an identifier for the Lock, which is unique for the user.
   * This may be implemented as a sequence ID or with RNG. It's used with `create2`
   * to know the lock's address before the transaction is mined.
+  * @return the address of the new lock
   */
   function createLock(
     uint _expirationDuration,
@@ -1149,7 +1122,7 @@ contract OutwaveUnlock is
     uint _maxNumberOfKeys,
     string memory _lockName,
     bytes12 _salt
-  ) public
+  ) public returns(address)
   {
     require(publicLockAddress != address(0), 'MISSING_LOCK_TEMPLATE');
 
@@ -1182,6 +1155,8 @@ contract OutwaveUnlock is
 
     // trigger event
     emit NewLock(msg.sender, newLock);
+
+    return address(newLock);
   }
 
   /**
