@@ -865,6 +865,18 @@ contract MixinKeys is
   // which is reset on transfer.
   mapping (address => mapping (address => bool)) private managerToOperatorApproved;
 
+  // store all keys: tokenId => token
+  mapping(uint256 => Key) internal keys;
+
+  // store ownership: owner => array of tokens owned by that owner
+  mapping(address => mapping(uint256 => uint256)) private ownedKeyIds;
+  
+  // store indexes: owner => list of tokenIds
+  mapping(uint256 => uint256) private ownedKeysIndex;
+
+  // Mapping owner address to token count
+  mapping(address => uint256) private balances;
+
   // Ensure that the caller is the keyManager of the key
   // or that the caller has been approved
   // for ownership of that key
@@ -919,6 +931,86 @@ contract MixinKeys is
       ownerOf(_tokenId) == msg.sender, 'ONLY_KEY_OWNER'
     );
     _;
+  }
+
+  /**
+   * Delete ownership info and udpate balance for previous owner
+   * @param _tokenId the id of the token to cancel
+   */
+  function deleteOwnershipRecord(
+    uint _tokenId
+  ) internal {
+    // get owner
+    address previousOwner = _ownerOf[_tokenId];
+
+    // delete previous ownership
+    uint lastTokenIndex = balanceOf(previousOwner) - 1;
+    uint index = ownedKeysIndex[_tokenId];
+
+    // When the token to delete is the last token, the swap operation is unnecessary
+    if (index != lastTokenIndex) {
+        uint256 lastTokenId = ownedKeyIds[previousOwner][lastTokenIndex];
+        ownedKeyIds[previousOwner][index] = lastTokenId; // Move the last token to the slot of the to-delete token
+        ownedKeysIndex[lastTokenId] = index; // Update the moved token's index
+    }
+
+    // Deletes the contents at the last position of the array
+    delete ownedKeyIds[previousOwner][lastTokenIndex];
+
+    // remove from owner count if thats the only key 
+    if(balanceOf(previousOwner) == 1 ) {
+      numberOfOwners--;
+    }
+    // update balance
+    balances[previousOwner] -= 1;
+  }  
+
+  /**
+   * Delete ownership info about a key and expire the key
+   * @param _tokenId the id of the token to cancel
+   * @notice this won't 'burn' the token, as it would still exist in the record
+   */
+  function cancelKey(
+    uint _tokenId
+  ) internal {
+    
+    // Deletes the contents at the last position of the array
+    deleteOwnershipRecord(_tokenId);
+
+    // expire the key
+    keys[_tokenId].expirationTimestamp = block.timestamp;
+
+    // delete previous owner
+    _ownerOf[_tokenId] = address(0);
+  }
+
+  /**
+   * Check if a key actually exists
+   * @dev This is a modifier
+   */
+  function _isKey(
+    uint _tokenId
+  ) 
+  internal
+  view 
+  {
+    require(
+      keys[_tokenId].expirationTimestamp != 0, 'NO_SUCH_KEY'
+    );
+  }  
+
+   /**
+   * Deactivate an existing key
+   * @param _tokenId the id of token to burn
+   * @notice the key will be expired and ownership records will be destroyed
+   */
+  function burn(uint _tokenId) public onlyKeyManagerOrApproved(_tokenId) {
+    _isKey(_tokenId);
+
+    emit Transfer(_ownerOf[_tokenId], address(0), _tokenId);
+
+    // delete ownership and expire key
+    cancelKey(_tokenId);
   }
 
   /**
@@ -983,9 +1075,6 @@ contract MixinKeys is
   {
     return keyByOwner[_keyOwner].expirationTimestamp;
   }
-
-  
-  
 
   // Returns the owner of a given tokenId
   function ownerOf(
