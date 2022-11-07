@@ -638,6 +638,8 @@ contract MixinLockCore is
   ILockValidKeyHook public onValidKeyHook;
   ILockTokenURIHook public onTokenURIHook;
 
+  uint internal _maxKeysPerAddress;
+
   // Ensure that the Lock has not sold all of its keys.
   modifier notSoldOut() {
     require(maxNumberOfKeys > _totalSupply, 'LOCK_SOLD_OUT');
@@ -666,6 +668,9 @@ contract MixinLockCore is
     expirationDuration = _expirationDuration == 0 ? type(uint).max : _expirationDuration;
     keyPrice = _keyPrice;
     maxNumberOfKeys = _maxNumberOfKeys;
+
+    // only a single key per address is allowed by default
+    _maxKeysPerAddress = 1;    
   }
 
   // The version number of the current implementation on this network
@@ -1322,8 +1327,24 @@ contract MixinKeys is
    function setExpirationDuration(uint _newExpirationDuration) external onlyLockManager {
      expirationDuration = _newExpirationDuration;
    }
+
+  /**
+   * Set the maximum number of keys a specific address can use
+   * @param _maxKeys the maximum amount of key a user can own
+   */
+  function setMaxKeysPerAddress(uint _maxKeys) external onlyLockManager {
+     require(_maxKeys != 0, 'NULL_VALUE');
+     _maxKeysPerAddress = _maxKeys;
+  }
+
+  /**
+   * @return the maximum number of key allowed for a single address
+   */
+  function maxKeysPerAddress() external view returns (uint) {
+    return _maxKeysPerAddress;
+  }
    
-   uint256[1000] private __safe_upgrade_gap;
+  uint256[1000] private __safe_upgrade_gap;
 }
 
 

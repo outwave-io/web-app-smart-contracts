@@ -52,7 +52,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
   
         IOutwavePublicLock lock = IOutwavePublicLock(newlocladd);
         lock.setOwner(msg.sender);
-        lock.setEventHooks(address(this), address(0), address(0), address(this), address(0));
+        lock.setEventHooks(address(this), address(0), address(0), address(this));
         lock.setMaxKeysPerAddress(maxKeysPerAddress);
         return newlocladd;
     }
