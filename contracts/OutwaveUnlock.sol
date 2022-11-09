@@ -1070,6 +1070,9 @@ contract OutwaveUnlock is
   // Blockchain ID the network id on which this version of OutwaveUnlock is operating
   uint public chainId;
 
+  // Fee percentage, applied to NTFs sell price, earned by Outwave 
+  uint8 private _lockFeePercent;
+
   // Events
   event NewLock(
     address indexed lockOwner,
@@ -1283,5 +1286,28 @@ contract OutwaveUnlock is
     returns (string memory)
   {
     return globalTokenSymbol;
+  }
+
+  /**
+   * This function will set the percentage earned by Outwave for each NFT sold,
+   * computed on its price.
+   */  
+  function setLockFee(uint8 percent)
+    external
+    onlyOwner
+  {
+    _lockFeePercent = percent;
+  }
+
+  /**
+   * This function will return the percentage earned by Outwave for each NFT sold,
+   * computed on its price.
+   */  
+  function getLockFee()
+    external
+    view
+    returns (uint8)
+  {
+    return _lockFeePercent;      
   }
 }

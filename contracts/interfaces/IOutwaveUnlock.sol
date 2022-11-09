@@ -175,4 +175,16 @@ interface IOutwaveUnlock
 //    * Can only be called by the current owner.
 //    */
 //   function transferOwnership(address newOwner) external;
+
+  /**
+   * This function will set the percentage earned by Outwave for each NFT sold,
+   * computed on its price.
+   */  
+  function setLockFee(uint8 percent) external;
+
+    /**
+   * This function will return the percentage earned by Outwave for each NFT sold,
+   * computed on its price.
+   */  
+  function getLockFee() external view returns (uint8);
 }
