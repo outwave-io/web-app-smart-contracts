@@ -283,6 +283,9 @@ interface IOutwaveUnlock
   // The version number of the current Unlock implementation on this network
   function unlockVersion() external pure returns(uint16);
 
+  // The Outwave earned percentage computed on NTFs sell
+  function lockFeePercent() external view returns(uint8);
+
   /**
    * @notice allows the owner to set the oracle address to use for value conversions
    * setting the _oracleAddress to address(0) removes support for the token
@@ -1721,6 +1724,13 @@ contract MixinPurchase is
   // default to 0 
   uint256 private _gasRefundValue;
 
+  uint8 private _lockFeePercent;
+
+  function _initializeMixinPurchase(uint8 lockFeePerc) internal
+  {
+    _lockFeePercent = lockFeePerc;
+  }
+
   /**
   * @dev Set the value/price to be refunded to the sender on purchase
   */
@@ -1895,6 +1905,13 @@ contract MixinPurchase is
     }
     return minKeyPrice;
   }
+
+  // The Outwave earned percentage computed on NTFs sell
+  function lockFeePercent()
+    external view returns(uint8)
+  {
+    return _lockFeePercent;
+  }  
 
   uint256[1000] private __safe_upgrade_gap;
 }
@@ -2445,7 +2462,8 @@ contract OutwavePublicLock is
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string calldata _lockName
+    string calldata _lockName,
+    uint8 _lockFeePerc
   ) public
     initializer()
   {
@@ -2456,6 +2474,7 @@ contract OutwavePublicLock is
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
     MixinRoles._initializeMixinRoles(_lockCreator);
+    MixinPurchase._initializeMixinPurchase(_lockFeePerc);
     // registering the interface for erc721 with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x80ac58cd);

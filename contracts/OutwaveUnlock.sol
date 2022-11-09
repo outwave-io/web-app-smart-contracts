@@ -260,7 +260,8 @@ abstract contract IOutwavePublicLock
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string calldata _lockName
+    string calldata _lockName,
+    uint8 _lockPercentKey
   ) virtual external;
 
 //   /**
@@ -1124,7 +1125,8 @@ contract OutwaveUnlock is
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string memory _lockName,
-    bytes12 _salt
+    bytes12 _salt,
+    uint8 _lockFeePerc
   ) public returns(address)
   {
     require(publicLockAddress != address(0), 'MISSING_LOCK_TEMPLATE');
@@ -1148,7 +1150,8 @@ contract OutwaveUnlock is
       _tokenAddress,
       _keyPrice,
       _maxNumberOfKeys,
-      _lockName
+      _lockName,
+      _lockFeePerc
     );
 
     // Assign the new Lock
@@ -1244,7 +1247,7 @@ contract OutwaveUnlock is
     // First claim the template so that no-one else could
     // this will revert if the template was already initialized.
     IOutwavePublicLock(_publicLockAddress).initialize(
-      address(this), 0, address(0), 0, 0, ''
+      address(this), 0, address(0), 0, 0, '', 0
     );
     IOutwavePublicLock(_publicLockAddress).renounceLockManager();
 

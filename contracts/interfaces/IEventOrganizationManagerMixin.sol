@@ -26,7 +26,8 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
         uint256 keyprice,
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
-        bytes32 lockId
+        bytes32 lockId,
+        uint8 lockFeePercent
     ) external returns (address);
 
     /**
@@ -40,6 +41,7 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
         @param lockId id created from the outwave app to allow reconciliations,
         this is only emitted with events and not persisted in the contract
+        @param lockFeePercent the fee that will be charged to the purchaser of the lock
     */
     function addLockToEvent(
         bytes32 eventId, //todo: review this
@@ -48,7 +50,8 @@ interface IEventOrganizationManagerMixin is IEventSendEvents {
         uint256 keyprice,
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
-        bytes32 lockId
+        bytes32 lockId,
+        uint8 lockFeePercent
     ) external returns (address);
 
 

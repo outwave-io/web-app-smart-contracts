@@ -30,7 +30,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 keyPrice,
         uint256 maxNumberOfKeys,
         uint256 maxKeysPerAddress,
-        string memory lockName
+        string memory lockName,
+        uint8 lockFeePercent
     )
         private
         // bytes12 // _salt
@@ -48,7 +49,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         // );
 
         address newlocladd = IOutwaveUnlock(_unlockAddr).createLock(0, tokenAddress,
-            keyPrice, maxNumberOfKeys, lockName, 0);
+            keyPrice, maxNumberOfKeys, lockName, 0, lockFeePercent);
   
         IOutwavePublicLock lock = IOutwavePublicLock(newlocladd);
         lock.setOwner(msg.sender);
@@ -68,9 +69,10 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 keyprice,
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
-        bytes32 lockId
+        bytes32 lockId,
+        uint8 lockFeePercent
     ) private lockAreEnabled returns (address) {
-        address result = _createLock(tokenAddress, keyprice, numberOfKey, maxKeysPerAddress, name);
+        address result = _createLock(tokenAddress, keyprice, numberOfKey, maxKeysPerAddress, name, lockFeePercent);
         _eventLockRegister(msg.sender, eventId, result, lockId);
         return result;
     }
@@ -96,7 +98,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 keyprice,
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
-        bytes32 lockId
+        bytes32 lockId,
+        uint8 lockFeePercent
     )
         public override
         lockAreEnabled
@@ -111,7 +114,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
             keyprice,
             numberOfKey,
             maxKeysPerAddress,
-            lockId
+            lockId,
+            lockFeePercent
         );
         emit EventCreated(msg.sender, eventId);
         return result;
@@ -134,7 +138,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 keyprice,
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
-        bytes32 lockId
+        bytes32 lockId,
+        uint8 lockFeePercent
     )
         public override
         onlyEventOwner(eventId)
@@ -150,7 +155,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
                 keyprice,
                 numberOfKey,
                 maxKeysPerAddress,
-                lockId
+                lockId,
+                lockFeePercent
             );
     }
 
