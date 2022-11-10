@@ -1756,6 +1756,23 @@ contract MixinPurchase is
   }
 
   /**
+   * @dev Computes and transfers Outwave fee
+   */
+  function _payFee(uint pricePaid)
+    private
+  {
+    uint feePaid = _lockFeePercent.div(pricePaid).mul(100);
+    if (tokenAddress != address(0)) {
+      IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
+      bool success = token.transferFrom(msg.sender, _outwavePaymentAddress, feePaid);
+      require(success, 'Fee payment failed.');
+    } else {
+      _outwavePaymentAddress.transfer(feePaid);
+    }
+    emit OutwaveFeeTransfered(msg.sender, feePaid);
+  }
+
+  /**
   * @dev Purchase function
   * @param _value the number of tokens to pay for this purchase >= the current keyPrice - any applicable discount
   * (_value is ignored when using ETH)
@@ -1852,12 +1869,14 @@ contract MixinPurchase is
     if(tokenAddress != address(0))
     {
       pricePaid = _value;
+      _payFee(pricePaid);
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
       token.transferFrom(msg.sender, address(this), pricePaid);
     }
     else
     {
       pricePaid = msg.value;
+      _payFee(pricePaid);
     }
     require(pricePaid >= inMemoryKeyPrice, 'INSUFFICIENT_VALUE');
 
@@ -1865,17 +1884,6 @@ contract MixinPurchase is
     {
       onKeyPurchaseHook.onKeyPurchase(msg.sender, _recipient, _referrer, _data, inMemoryKeyPrice, pricePaid);
     }
-
-    // Compute and transfer Outwave fee
-    uint feePaid = _lockFeePercent.div(pricePaid).mul(100);
-    if (tokenAddress != address(0)) {
-      IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
-      bool success = token.transferFrom(msg.sender, _outwavePaymentAddress, feePaid);
-      require(success, 'Fee payment failed.');
-    } else {
-      _outwavePaymentAddress.transfer(feePaid);
-    }
-    emit OutwaveFeeTransfered(msg.sender, feePaid);
 
     // refund gas
     if (_gasRefundValue != 0) {
