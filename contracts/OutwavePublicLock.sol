@@ -15,6 +15,7 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IOutwavePublicLock.sol";
 
 /**
@@ -1715,11 +1716,16 @@ contract MixinPurchase is
   MixinLockCore,
   MixinKeys
 {
+  using SafeMath for uint;
+  using SafeMath for uint8;
+
   event RenewKeyPurchase(address indexed owner, uint newExpiration);
 
   event GasRefunded(address indexed receiver, uint refundedAmount, address tokenAddress);
   
   event UnlockCallFailed(address indexed lockAddress, address unlockAddress);
+
+  event OutwaveFeeTransfered(address fromAddress, uint amount);
 
   // default to 0 
   uint256 private _gasRefundValue;
@@ -1859,6 +1865,17 @@ contract MixinPurchase is
     {
       onKeyPurchaseHook.onKeyPurchase(msg.sender, _recipient, _referrer, _data, inMemoryKeyPrice, pricePaid);
     }
+
+    // Compute and transfer Outwave fee
+    uint feePaid = _lockFeePercent.div(pricePaid).mul(100);
+    if (tokenAddress != address(0)) {
+      IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
+      bool success = token.transferFrom(msg.sender, _outwavePaymentAddress, feePaid);
+      require(success, 'Fee payment failed.');
+    } else {
+      _outwavePaymentAddress.transfer(feePaid);
+    }
+    emit OutwaveFeeTransfered(msg.sender, feePaid);
 
     // refund gas
     if (_gasRefundValue != 0) {
