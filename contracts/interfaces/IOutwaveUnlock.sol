@@ -28,6 +28,7 @@ interface IOutwaveUnlock
     uint _maxNumberOfKeys,
     string calldata _lockName,
     bytes12 _salt,
+    address payable _outwavePaymentAddress,
     uint8 _lockFeePerc
   ) external returns(address);
 

@@ -261,7 +261,8 @@ abstract contract IOutwavePublicLock
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
-    uint8 _lockPercentKey
+    address payable _outwavePaymentAddress,
+    uint8 _lockPercent
   ) virtual external;
 
 //   /**
@@ -1126,6 +1127,7 @@ contract OutwaveUnlock is
     uint _maxNumberOfKeys,
     string memory _lockName,
     bytes12 _salt,
+    address payable _outwavePaymentAddress,
     uint8 _lockFeePerc
   ) public returns(address)
   {
@@ -1151,6 +1153,7 @@ contract OutwaveUnlock is
       _keyPrice,
       _maxNumberOfKeys,
       _lockName,
+      _outwavePaymentAddress,
       _lockFeePerc
     );
 
@@ -1247,7 +1250,7 @@ contract OutwaveUnlock is
     // First claim the template so that no-one else could
     // this will revert if the template was already initialized.
     IOutwavePublicLock(_publicLockAddress).initialize(
-      address(this), 0, address(0), 0, 0, '', 0
+      address(this), 0, address(0), 0, 0, '', payable(address(0)), 0
     );
     IOutwavePublicLock(_publicLockAddress).renounceLockManager();
 

@@ -1724,10 +1724,13 @@ contract MixinPurchase is
   // default to 0 
   uint256 private _gasRefundValue;
 
+  address payable _outwavePaymentAddress;
+
   uint8 private _lockFeePercent;
 
-  function _initializeMixinPurchase(uint8 lockFeePerc) internal
+  function _initializeMixinPurchase(address payable outwavePaymentAddr, uint8 lockFeePerc) internal
   {
+    _outwavePaymentAddress = outwavePaymentAddr;
     _lockFeePercent = lockFeePerc;
   }
 
@@ -1911,7 +1914,14 @@ contract MixinPurchase is
     external view returns(uint8)
   {
     return _lockFeePercent;
-  }  
+  }
+
+  //  The Outwave payment address
+  function outwavePaymentAddress()
+    external view returns(address payable)
+  {
+    return _outwavePaymentAddress;
+  }
 
   uint256[1000] private __safe_upgrade_gap;
 }
@@ -2463,6 +2473,7 @@ contract OutwavePublicLock is
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
+    address payable _outwavePaymentAddress,
     uint8 _lockFeePerc
   ) public
     initializer()
@@ -2474,7 +2485,7 @@ contract OutwavePublicLock is
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
     MixinRoles._initializeMixinRoles(_lockCreator);
-    MixinPurchase._initializeMixinPurchase(_lockFeePerc);
+    MixinPurchase._initializeMixinPurchase(_outwavePaymentAddress, _lockFeePerc);
     // registering the interface for erc721 with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x80ac58cd);

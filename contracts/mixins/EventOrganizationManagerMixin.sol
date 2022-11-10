@@ -31,6 +31,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 maxNumberOfKeys,
         uint256 maxKeysPerAddress,
         string memory lockName,
+        address payable outwavePaymentAddress,
         uint8 lockFeePercent
     )
         private
@@ -38,24 +39,14 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         lockAreEnabled
         returns (address)
     {
-        // bytes memory data = abi.encodeWithSignature(
-        //     "initialize(address,uint256,address,uint256,uint256,string)",
-        //     address(this),
-        //     _getMaxInt(),
-        //     tokenAddress,
-        //     keyPrice,
-        //     maxNumberOfKeys,
-        //     lockName
-        // );
-
-        address newlocladd = IOutwaveUnlock(_unlockAddr).createLock(0, tokenAddress,
-            keyPrice, maxNumberOfKeys, lockName, 0, lockFeePercent);
+        address newlocAddr = IOutwaveUnlock(_unlockAddr).createLock(0, tokenAddress,
+            keyPrice, maxNumberOfKeys, lockName, 0, outwavePaymentAddress, lockFeePercent);
   
-        IOutwavePublicLock lock = IOutwavePublicLock(newlocladd);
+        IOutwavePublicLock lock = IOutwavePublicLock(newlocAddr);
         lock.setOwner(msg.sender);
         lock.setEventHooks(address(this), address(0), address(0), address(this));
         lock.setMaxKeysPerAddress(maxKeysPerAddress);
-        return newlocladd;
+        return newlocAddr;
     }
 
     /**
@@ -70,9 +61,10 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
         bytes32 lockId,
+        address payable outwavePaymentAddress,
         uint8 lockFeePercent
     ) private lockAreEnabled returns (address) {
-        address result = _createLock(tokenAddress, keyprice, numberOfKey, maxKeysPerAddress, name, lockFeePercent);
+        address result = _createLock(tokenAddress, keyprice, numberOfKey, maxKeysPerAddress, name, outwavePaymentAddress, lockFeePercent);
         _eventLockRegister(msg.sender, eventId, result, lockId);
         return result;
     }
@@ -90,6 +82,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         @param maxKeysPerAddress the max number of NFT that can be purchased
         @param lockId id created from the outwave app to allow reconciliations,
         this is only emitted with events and not persisted in the contract        
+        @param outwavePaymentAddress the Outwave payment address
+        @param lockFeePercent the fee that will be charged to the purchaser of the lock
      */
     function eventCreate(
         bytes32 eventId, //todo: review this
@@ -99,6 +93,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
         bytes32 lockId,
+        address payable outwavePaymentAddress,
         uint8 lockFeePercent
     )
         public override
@@ -115,6 +110,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
             numberOfKey,
             maxKeysPerAddress,
             lockId,
+            outwavePaymentAddress,
             lockFeePercent
         );
         emit EventCreated(msg.sender, eventId);
@@ -130,6 +126,8 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         Allowed ERC20 are defined from the owner of the contract by setting erc20PaymentTokenAdd in OEMixinManage.
         @param keyprice the price of each NFT (public lock key). this can be updated later
         @param numberOfKey the max number of NFT that can be generated. this can be updated later
+        @param outwavePaymentAddress the Outwave payment address
+        @param lockFeePercent the fee that will be charged to the purchaser of the lock
      */
     function addLockToEvent(
         bytes32 eventId, //todo: review this
@@ -139,6 +137,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
         uint256 numberOfKey,
         uint256 maxKeysPerAddress,
         bytes32 lockId,
+        address payable outwavePaymentAddress,
         uint8 lockFeePercent
     )
         public override
@@ -156,6 +155,7 @@ contract EventOrganizationManagerMixin is EventTransferableMixin, IEventOrganiza
                 numberOfKey,
                 maxKeysPerAddress,
                 lockId,
+                outwavePaymentAddress,
                 lockFeePercent
             );
     }

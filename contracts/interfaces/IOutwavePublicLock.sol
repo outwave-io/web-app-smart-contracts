@@ -19,7 +19,9 @@ interface IOutwavePublicLock
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string calldata _lockName
+    string calldata _lockName,
+    address payable _outwavePaymentAddress,
+    uint8 _lockFeePerc    
   ) external;
 
   // roles
@@ -380,6 +382,8 @@ interface IOutwavePublicLock
   function keyManagerOf(uint) external view returns (address );
   
   function lockFeePercent() external view returns(uint8 );
+
+  function outwavePaymentAddress() external view returns(address payable );
 
   ///===================================================================
 
