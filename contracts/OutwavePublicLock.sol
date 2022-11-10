@@ -1880,10 +1880,10 @@ contract MixinPurchase is
     }
     require(pricePaid >= inMemoryKeyPrice, 'INSUFFICIENT_VALUE');
 
-    if(address(onKeyPurchaseHook) != address(0))
-    {
-      onKeyPurchaseHook.onKeyPurchase(msg.sender, _recipient, _referrer, _data, inMemoryKeyPrice, pricePaid);
-    }
+    // if(address(onKeyPurchaseHook) != address(0))
+    // {
+    //   onKeyPurchaseHook.onKeyPurchase(msg.sender, _recipient, _referrer, _data, inMemoryKeyPrice, pricePaid);
+    // }
 
     // refund gas
     if (_gasRefundValue != 0) {
