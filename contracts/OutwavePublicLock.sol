@@ -1725,7 +1725,7 @@ contract MixinPurchase is
   
   event UnlockCallFailed(address indexed lockAddress, address unlockAddress);
 
-  event OutwaveFeeTransfered(address fromAddress, uint amount);
+  event OutwavePaymentTransfered(address fromAddress, uint amount);
 
   // default to 0 
   uint256 private _gasRefundValue;
@@ -1769,7 +1769,7 @@ contract MixinPurchase is
     } else {
       _outwavePaymentAddress.transfer(feePaid);
     }
-    emit OutwaveFeeTransfered(msg.sender, feePaid);
+    emit OutwavePaymentTransfered(msg.sender, feePaid);
   }
 
   /**
