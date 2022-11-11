@@ -328,76 +328,6 @@ interface IOutwaveUnlock
 
 
 /**
- * @notice Functions to be implemented by a keyCancelHook.
- * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
- */
-interface ILockKeyCancelHook
-{
-  /**
-   * @notice If the lock owner has registered an implementer
-   * then this hook is called with every key cancel.
-   * @param operator the msg.sender issuing the cancel
-   * @param to the account which had the key canceled
-   * @param refund the amount sent to the `to` account (ETH or a ERC-20 token)
-   */
-  function onKeyCancel(
-    address operator,
-    address to,
-    uint256 refund
-  ) external;
-}
-
-
-/**
- * @notice Functions to be implemented by a keyPurchaseHook.
- * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
- */
-interface ILockKeyPurchaseHook
-{
-  /**
-   * @notice Used to determine the purchase price before issueing a transaction.
-   * This allows the hook to offer a discount on purchases.
-   * This may revert to prevent a purchase.
-   * @param from the msg.sender making the purchase
-   * @param recipient the account which will be granted a key
-   * @param referrer the account which referred this key sale
-   * @param data arbitrary data populated by the front-end which initiated the sale
-   * @return minKeyPrice the minimum value/price required to purchase a key with these settings
-   * @dev the lock's address is the `msg.sender` when this function is called via
-   * the lock's `purchasePriceFor` function
-   */
-  function keyPurchasePrice(
-    address from,
-    address recipient,
-    address referrer,
-    bytes calldata data
-  ) external view
-    returns (uint minKeyPrice);
-
-  /**
-   * @notice If the lock owner has registered an implementer then this hook
-   * is called with every key sold.
-   * @param from the msg.sender making the purchase
-   * @param recipient the account which will be granted a key
-   * @param referrer the account which referred this key sale
-   * @param data arbitrary data populated by the front-end which initiated the sale
-   * @param minKeyPrice the price including any discount granted from calling this
-   * hook's `keyPurchasePrice` function
-   * @param pricePaid the value/pricePaid included with the purchase transaction
-   * @dev the lock's address is the `msg.sender` when this function is called
-   */
-  function onKeyPurchase(
-    address from,
-    address recipient,
-    address referrer,
-    bytes calldata data,
-    uint minKeyPrice,
-    uint pricePaid
-  ) external;
-}
-
-
-/**
  * @notice Functions to be implemented by a hasValidKey Hook.
  * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
  */
@@ -637,8 +567,8 @@ contract MixinLockCore is
   // The denominator component for values specified in basis points.
   uint internal constant BASIS_POINTS_DEN = 10000;
 
-  ILockKeyPurchaseHook public onKeyPurchaseHook;
-  ILockKeyCancelHook public onKeyCancelHook;
+//   ILockKeyPurchaseHook public onKeyPurchaseHook;
+//   ILockKeyCancelHook public onKeyCancelHook;
   ILockValidKeyHook public onValidKeyHook;
   ILockTokenURIHook public onTokenURIHook;
 
@@ -768,19 +698,19 @@ contract MixinLockCore is
    * @notice Allows a lock manager to add or remove an event hook
    */
   function setEventHooks(
-    address _onKeyPurchaseHook,
-    address _onKeyCancelHook,
+    // address _onKeyPurchaseHook,
+    // address _onKeyCancelHook,
     address _onValidKeyHook,
     address _onTokenURIHook
   ) external
     onlyLockManager()
   {
-    require(_onKeyPurchaseHook == address(0) || _onKeyPurchaseHook.isContract(), 'INVALID_ON_KEY_SOLD_HOOK');
-    require(_onKeyCancelHook == address(0) || _onKeyCancelHook.isContract(), 'INVALID_ON_KEY_CANCEL_HOOK');
+    // require(_onKeyPurchaseHook == address(0) || _onKeyPurchaseHook.isContract(), 'INVALID_ON_KEY_SOLD_HOOK');
+    // require(_onKeyCancelHook == address(0) || _onKeyCancelHook.isContract(), 'INVALID_ON_KEY_CANCEL_HOOK');
     require(_onValidKeyHook == address(0) || _onValidKeyHook.isContract(), 'INVALID_ON_VALID_KEY_HOOK');
     require(_onTokenURIHook == address(0) || _onTokenURIHook.isContract(), 'INVALID_ON_TOKEN_URI_HOOK');
-    onKeyPurchaseHook = ILockKeyPurchaseHook(_onKeyPurchaseHook);
-    onKeyCancelHook = ILockKeyCancelHook(_onKeyCancelHook);
+    // onKeyPurchaseHook = ILockKeyPurchaseHook(_onKeyPurchaseHook);
+    // onKeyCancelHook = ILockKeyCancelHook(_onKeyCancelHook);
     onTokenURIHook = ILockTokenURIHook(_onTokenURIHook);
     onValidKeyHook = ILockValidKeyHook(_onValidKeyHook);
   }
@@ -2063,11 +1993,11 @@ contract MixinRefunds is
       _transfer(tokenAddress, _keyOwner, refund);
     }
 
-    // inform the hook if there is one registered
-    if(address(onKeyCancelHook) != address(0))
-    {
-      onKeyCancelHook.onKeyCancel(msg.sender, _keyOwner, refund);
-    }
+    // // inform the hook if there is one registered
+    // if(address(onKeyCancelHook) != address(0))
+    // {
+    //   onKeyCancelHook.onKeyCancel(msg.sender, _keyOwner, refund);
+    // }
   }
 
   /**

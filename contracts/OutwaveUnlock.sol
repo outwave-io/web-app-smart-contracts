@@ -447,15 +447,15 @@ abstract contract IOutwavePublicLock
     uint256 _tokenId
   ) virtual external view returns(string memory);
 
-  /**
-   * Allows a Lock manager to add or remove an event hook
-   * @param _onKeyPurchaseHook Hook called when the `purchase` function is called
-   * @param _onKeyCancelHook Hook called when the internal `_cancelAndRefund` function is called
-   */
-  function setEventHooks(
-    address _onKeyPurchaseHook,
-    address _onKeyCancelHook
-  ) virtual external;
+//   /**
+//    * Allows a Lock manager to add or remove an event hook
+//    * @param _onKeyPurchaseHook Hook called when the `purchase` function is called
+//    * @param _onKeyCancelHook Hook called when the internal `_cancelAndRefund` function is called
+//    */
+//   function setEventHooks(
+//     address _onKeyPurchaseHook,
+//     address _onKeyCancelHook
+//   ) virtual external;
 
   /**
    * Allows a Lock manager to give a collection of users a key with no charge.
