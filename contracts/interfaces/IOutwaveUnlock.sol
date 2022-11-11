@@ -1,5 +1,4 @@
 // based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/Unlock/IUnlockV9.sol
-
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.17;
@@ -27,6 +26,7 @@ interface IOutwaveUnlock
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
+    string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
     uint8 _lockFeePerc

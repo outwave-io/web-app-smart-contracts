@@ -1,5 +1,6 @@
 // based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/PublicLock/PublicLockV9.sol
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
@@ -16,6 +17,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/IOutwavePublicLock.sol";
 
 /**
@@ -327,57 +329,6 @@ interface IOutwaveUnlock
 }
 
 
-/**
- * @notice Functions to be implemented by a hasValidKey Hook.
- * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
- */
-interface ILockValidKeyHook
-{
-
-  /**
-   * @notice If the lock owner has registered an implementer then this hook
-   * is called every time balanceOf is called
-   * @param lockAddress the address of the current lock
-   * @param keyOwner the potential owner of the key for which we are retrieving the `balanceof`
-   * @param expirationTimestamp the key expiration timestamp
-   */
-  function hasValidKey(
-    address lockAddress,
-    address keyOwner,
-    uint256 expirationTimestamp,
-    bool isValidKey
-  ) 
-  external view
-  returns (bool);
-}
-
-
-/**
- * @notice Functions to be implemented by a tokenURIHook.
- * @dev Lock hooks are configured by calling `setEventHooks` on the lock.
- */
-interface ILockTokenURIHook
-{
-  /**
-   * @notice If the lock owner has registered an implementer
-   * then this hook is called every time `tokenURI()` is called
-   * @param lockAddress the address of the lock
-   * @param operator the msg.sender issuing the call
-   * @param owner the owner of the key for which we are retrieving the `tokenUri`
-   * @param keyId the id (tokenId) of the key (if applicable)
-   * @param expirationTimestamp the key expiration timestamp
-   * @return the tokenURI
-   */
-  function tokenURI(
-    address lockAddress,
-    address operator,
-    address owner,
-    uint256 keyId,
-    uint expirationTimestamp
-  ) external view returns(string memory);
-}
-
-
 // This contract mostly follows the pattern established by openzeppelin in
 // openzeppelin/contracts-ethereum-package/contracts/access/roles
 
@@ -567,11 +518,6 @@ contract MixinLockCore is
   // The denominator component for values specified in basis points.
   uint internal constant BASIS_POINTS_DEN = 10000;
 
-//   ILockKeyPurchaseHook public onKeyPurchaseHook;
-//   ILockKeyCancelHook public onKeyCancelHook;
-  ILockValidKeyHook public onValidKeyHook;
-  ILockTokenURIHook public onTokenURIHook;
-
   uint internal _maxKeysPerAddress;
 
   // Ensure that the Lock has not sold all of its keys.
@@ -692,27 +638,6 @@ contract MixinLockCore is
   {
     require(_beneficiary != address(0), 'INVALID_ADDRESS');
     beneficiary = _beneficiary;
-  }
-
-  /**
-   * @notice Allows a lock manager to add or remove an event hook
-   */
-  function setEventHooks(
-    // address _onKeyPurchaseHook,
-    // address _onKeyCancelHook,
-    address _onValidKeyHook,
-    address _onTokenURIHook
-  ) external
-    onlyLockManager()
-  {
-    // require(_onKeyPurchaseHook == address(0) || _onKeyPurchaseHook.isContract(), 'INVALID_ON_KEY_SOLD_HOOK');
-    // require(_onKeyCancelHook == address(0) || _onKeyCancelHook.isContract(), 'INVALID_ON_KEY_CANCEL_HOOK');
-    require(_onValidKeyHook == address(0) || _onValidKeyHook.isContract(), 'INVALID_ON_VALID_KEY_HOOK');
-    require(_onTokenURIHook == address(0) || _onTokenURIHook.isContract(), 'INVALID_ON_TOKEN_URI_HOOK');
-    // onKeyPurchaseHook = ILockKeyPurchaseHook(_onKeyPurchaseHook);
-    // onKeyCancelHook = ILockKeyCancelHook(_onKeyCancelHook);
-    onTokenURIHook = ILockTokenURIHook(_onTokenURIHook);
-    onValidKeyHook = ILockValidKeyHook(_onValidKeyHook);
   }
 
   function totalSupply()
@@ -979,15 +904,15 @@ contract MixinKeys is
   { 
     isValid = keyByOwner[_keyOwner].expirationTimestamp > block.timestamp;
 
-    // use hook if it exists
-    if(address(onValidKeyHook) != address(0)) {
-      isValid = onValidKeyHook.hasValidKey(
-        address(this),
-        _keyOwner,
-        keyByOwner[_keyOwner].expirationTimestamp,
-        isValid
-      );
-    }    
+    // // use hook if it exists
+    // if(address(onValidKeyHook) != address(0)) {
+    //   isValid = onValidKeyHook.hasValidKey(
+    //     address(this),
+    //     _keyOwner,
+    //     keyByOwner[_keyOwner].expirationTimestamp,
+    //     isValid
+    //   );
+    // }  
   }
 
   /**
@@ -1480,6 +1405,7 @@ library UnlockUtils {
  */
 contract MixinLockMetadata is
   ERC165StorageUpgradeable,
+  OwnableUpgradeable,
   MixinRoles,
   MixinLockCore,
   MixinKeys
@@ -1494,19 +1420,24 @@ contract MixinLockMetadata is
   /// An abbreviated name for NFTs in this contract. Defaults to "KEY" but is settable by lock owner
   string private lockSymbol;
 
-  // the base Token URI for this Lock. If not set by lock owner, the global URI stored in Unlock is used.
-  string private baseTokenURI;
+  // // the base Token URI for this Lock. If not set by lock owner, the global URI stored in Unlock is used.
+  // string private baseTokenURI;
+
+  // the Token URI for this Lock. Set in intialize function
+  string private lockTokenURI;
 
   event NewLockSymbol(
     string symbol
   );
 
   function _initializeMixinLockMetadata(
-    string calldata _lockName
+    string calldata _lockName,
+    string calldata _lockTokenURI
   ) internal
   {
     ERC165StorageUpgradeable.__ERC165Storage_init();
     name = _lockName;
+    lockTokenURI = _lockTokenURI;
     // registering the optional erc721 metadata interface with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x5b5e139f);
@@ -1550,24 +1481,34 @@ contract MixinLockMetadata is
     }
   }
 
+//   /**
+//    * Allows the Lock owner to update the baseTokenURI for this Lock.
+//    */
+//   function setBaseTokenURI(
+//     string calldata _baseTokenURI
+//   ) external
+//     onlyLockManager
+//   {
+//     baseTokenURI = _baseTokenURI;
+//   }
+
   /**
-   * Allows the Lock owner to update the baseTokenURI for this Lock.
-   */
-  function setBaseTokenURI(
-    string calldata _baseTokenURI
+    * Allows a Lock owner to update the tokenURI for this Lock
+    * @dev Throws if called by other than a Lock owner
+    * @param _tokenURI String representing of the URI for this lock
+  */
+  function setTokenURI(
+    string calldata _tokenURI
   ) external
-    onlyLockManager
+    onlyOwner
   {
-    baseTokenURI = _baseTokenURI;
+    lockTokenURI = _tokenURI;
   }
 
-  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
-   * @param _tokenId The iD of the token  for which we want to retrieve the URI.
-   * If 0 is passed here, we just return the appropriate baseTokenURI.
-   * If a custom URI has been set we don't return the lock address.
-   * It may be included in the custom baseTokenURI if needed.
+  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset
+   * @param _tokenId The iD of the token. Ignored in our actual implementation
    * @dev  URIs are defined in RFC 3986. The URI may point to a JSON file
-   * that conforms to the "ERC721 Metadata JSON Schema".
+   * that conforms to the "ERC721 Metadata JSON Schema":
    * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md
    */
   function tokenURI(
@@ -1576,45 +1517,7 @@ contract MixinLockMetadata is
     view
     returns(string memory)
   {
-    string memory URI;
-    string memory tokenId;
-    string memory lockAddress = address(this).address2Str();
-    string memory seperator;
-
-    if(_tokenId != 0) {
-      tokenId = _tokenId.uint2Str();
-    } else {
-      tokenId = '';
-    }
-
-    if(address(onTokenURIHook) != address(0))
-    {
-      address tokenOwner = ownerOf(_tokenId);
-      uint expirationTimestamp = keyExpirationTimestampFor(tokenOwner);
-
-      return onTokenURIHook.tokenURI(
-        address(this),
-        msg.sender,
-        tokenOwner,
-        _tokenId,
-        expirationTimestamp
-        );
-    }
-
-    if(bytes(baseTokenURI).length == 0) {
-      URI = unlockProtocol.globalBaseTokenURI();
-      seperator = '/';
-    } else {
-      URI = baseTokenURI;
-      seperator = '';
-      lockAddress = '';
-    }
-
-    return URI.strConcat(
-        lockAddress,
-        seperator,
-        tokenId
-      );
+    return lockTokenURI;
   }
 
   function supportsInterface(bytes4 interfaceId) 
@@ -2348,54 +2251,54 @@ contract MixinTransfer is
 }
 
 
-/**
- * @title Mixin to add support for `ownable()`
- * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
- * separates logically groupings of code to ease readability.
- */
-contract MixinConvenienceOwnable is MixinLockCore {
+// /**
+//  * @title Mixin to add support for `ownable()`
+//  * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
+//  * separates logically groupings of code to ease readability.
+//  */
+// contract MixinConvenienceOwnable is MixinLockCore {
 
-  // used for `owner()`convenience helper
-  address private _convenienceOwner;
+//   // used for `owner()`convenience helper
+//   address private _convenienceOwner;
 
-  // events
-  event OwnershipTransferred(address previousOwner, address newOwner);
+//   // events
+//   event OwnershipTransferred(address previousOwner, address newOwner);
 
-  function _initializeMixinConvenienceOwnable(address _sender) internal {
-    _convenienceOwner = _sender;
-  }
+//   function _initializeMixinConvenienceOwnable(address _sender) internal {
+//     _convenienceOwner = _sender;
+//   }
 
-  /** `owner()` is provided as an helper to mimick the `Ownable` contract ABI.
-    * The `Ownable` logic is used by many 3rd party services to determine
-    * contract ownership - e.g. who is allowed to edit metadata on Opensea.
-    * 
-    * @notice This logic is NOT used internally by the Unlock Protocol and is made 
-    * available only as a convenience helper.
-   */
-  function owner() public view returns (address) {
-    return _convenienceOwner;
-  }
+//   /** `owner()` is provided as an helper to mimick the `Ownable` contract ABI.
+//     * The `Ownable` logic is used by many 3rd party services to determine
+//     * contract ownership - e.g. who is allowed to edit metadata on Opensea.
+//     * 
+//     * @notice This logic is NOT used internally by the Unlock Protocol and is made 
+//     * available only as a convenience helper.
+//    */
+//   function owner() public view returns (address) {
+//     return _convenienceOwner;
+//   }
 
-  /** Setter for the `owner` convenience helper (see `owner()` docstring for more).
-    * @notice This logic is NOT used internally by the Unlock Protocol ans is made 
-    * available only as a convenience helper.
-    * @param account address returned by the `owner()` helper
-   */ 
-  function setOwner(address account) public onlyLockManager {
-    // _onlyLockManager();
-    require(account != address(0), 'OWNER_CANT_BE_ADDRESS_ZERO');
-    address _previousOwner = _convenienceOwner;
-    _convenienceOwner = account;
-    emit OwnershipTransferred(_previousOwner, account);
-  }
+//   /** Setter for the `owner` convenience helper (see `owner()` docstring for more).
+//     * @notice This logic is NOT used internally by the Unlock Protocol ans is made 
+//     * available only as a convenience helper.
+//     * @param account address returned by the `owner()` helper
+//    */ 
+//   function setOwner(address account) public onlyLockManager {
+//     // _onlyLockManager();
+//     require(account != address(0), 'OWNER_CANT_BE_ADDRESS_ZERO');
+//     address _previousOwner = _convenienceOwner;
+//     _convenienceOwner = account;
+//     emit OwnershipTransferred(_previousOwner, account);
+//   }
 
-  function isOwner(address account) public view returns (bool) {
-    return _convenienceOwner == account;
-  }
+//   function isOwner(address account) public view returns (bool) {
+//     return _convenienceOwner == account;
+//   }
 
-  uint256[1000] private __safe_upgrade_gap;
+//   uint256[1000] private __safe_upgrade_gap;
 
-}
+// }
 
 
 /**
@@ -2418,8 +2321,8 @@ contract OutwavePublicLock is
   MixinGrantKeys,
   MixinPurchase,
   MixinTransfer,
-  MixinRefunds,
-  MixinConvenienceOwnable
+  MixinRefunds
+  // MixinConvenienceOwnable
 {
   function initialize(
     address payable _lockCreator,
@@ -2428,6 +2331,7 @@ contract OutwavePublicLock is
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
+    string calldata _lockTokenURI,
     address payable _outwavePaymentAddress,
     uint8 _lockFeePerc
   ) public
@@ -2436,7 +2340,7 @@ contract OutwavePublicLock is
     MixinFunds._initializeMixinFunds(_tokenAddress);
     MixinDisable._initializeMixinDisable();
     MixinLockCore._initializeMixinLockCore(_lockCreator, _expirationDuration, _keyPrice, _maxNumberOfKeys);
-    MixinLockMetadata._initializeMixinLockMetadata(_lockName);
+    MixinLockMetadata._initializeMixinLockMetadata(_lockName, _lockTokenURI);
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
     MixinRoles._initializeMixinRoles(_lockCreator);

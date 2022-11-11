@@ -1,5 +1,6 @@
 // based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/PublicLock/IPublicLockV9.sol
 // SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.17 <0.9.0;
 
 /**
@@ -20,6 +21,7 @@ interface IOutwavePublicLock
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
+    string calldata _lockTokenURI,
     address payable _outwavePaymentAddress,
     uint8 _lockFeePerc    
   ) external;
@@ -155,13 +157,22 @@ interface IOutwavePublicLock
     external view
     returns(string memory);
 
-    /**
-   * Allows a Lock manager to update the baseTokenURI for this Lock.
-   * @dev Throws if called by other than a Lock manager
-   * @param _baseTokenURI String representing the base of the URI for this lock.
-   */
-  function setBaseTokenURI(
-    string calldata _baseTokenURI
+//   /**
+//    * Allows a Lock manager to update the baseTokenURI for this Lock.
+//    * @dev Throws if called by other than a Lock manager
+//    * @param _baseTokenURI String representing the base of the URI for this lock.
+//    */
+//   function setBaseTokenURI(
+//     string calldata _baseTokenURI
+//   ) external;
+
+  /**
+    * Allows a Lock owner to update the tokenURI for this Lock
+    * @dev Throws if called by other than a Lock owner
+    * @param _tokenURI String representing of the URI for this lock
+  */
+  function setTokenURI(
+    string calldata _tokenURI
   ) external;
 
   /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
@@ -175,20 +186,6 @@ interface IOutwavePublicLock
   function tokenURI(
     uint256 _tokenId
   ) external view returns(string memory);
-
-  /**
-   * Allows a Lock manager to add or remove an event hook
-   * /param _onKeyPurchaseHook Hook called when the `purchase` function is called
-   * /param _onKeyCancelHook Hook called when the internal `_cancelAndRefund` function is called
-   * @param _onValidKeyHook Hook called to determine if the contract should overide the status for a given address
-   * @param _onTokenURIHook Hook called to generate a data URI used for NFT metadata
-   */
-  function setEventHooks(
-    // address _onKeyPurchaseHook,
-    // address _onKeyCancelHook,
-    address _onValidKeyHook,
-    address _onTokenURIHook
-  ) external;
 
   /**
    * Allows a Lock manager to give a collection of users a key with no charge.

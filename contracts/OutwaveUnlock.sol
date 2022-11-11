@@ -1,5 +1,4 @@
 // based on: https://github.com/unlock-protocol/unlock/blob/master/packages/contracts/src/contracts/Unlock/UnlockV9.sol
-
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.17;
@@ -261,6 +260,7 @@ abstract contract IOutwavePublicLock
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
+    string calldata _lockTokenURI,
     address payable _outwavePaymentAddress,
     uint8 _lockPercent
   ) virtual external;
@@ -1125,7 +1125,8 @@ contract OutwaveUnlock is
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string memory _lockName,
+    string calldata _lockName,
+    string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
     uint8 _lockFeePerc
@@ -1153,6 +1154,7 @@ contract OutwaveUnlock is
       _keyPrice,
       _maxNumberOfKeys,
       _lockName,
+      _lockTokenURI,
       _outwavePaymentAddress,
       _lockFeePerc
     );
@@ -1250,7 +1252,7 @@ contract OutwaveUnlock is
     // First claim the template so that no-one else could
     // this will revert if the template was already initialized.
     IOutwavePublicLock(_publicLockAddress).initialize(
-      address(this), 0, address(0), 0, 0, '', payable(address(0)), 0
+      address(this), 0, address(0), 0, 0, '', '', payable(address(0)), 0
     );
     IOutwavePublicLock(_publicLockAddress).renounceLockManager();
 
