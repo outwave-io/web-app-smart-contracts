@@ -1779,7 +1779,7 @@ contract MixinPurchase is
   * @param _recipient address of the recipient of the purchased key
   * @param _referrer address of the user making the referral
   * @param _keyManager optional address to grant managing rights to a specific address on creation
-  * @param _data arbitrary data populated by the front-end which initiated the sale
+  * /param _data arbitrary data populated by the front-end which initiated the sale
   * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored 
   * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
   * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
@@ -1789,8 +1789,8 @@ contract MixinPurchase is
     uint256 _value,
     address _recipient,
     address _referrer,
-    address _keyManager,
-    bytes calldata _data
+    address _keyManager
+    // bytes calldata _data
   ) external payable
     onlyIfAlive
     notSoldOut
@@ -1848,8 +1848,8 @@ contract MixinPurchase is
       emit RenewKeyPurchase(_recipient, newTimeStamp);
     }
 
-    
-    uint inMemoryKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
+    // uint inMemoryKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
+    uint inMemoryKeyPrice = keyPrice;
 
     // make sure unlock is a contract, and we catch possible reverts
     if (address(unlockProtocol).code.length > 0) {
@@ -1898,41 +1898,41 @@ contract MixinPurchase is
     }
   }
 
-  /**
-   * @notice returns the minimum price paid for a purchase with these params.
-   * @dev minKeyPrice considers any discount from Unlock or the OnKeyPurchase hook
-   */
-  function purchasePriceFor(
-    address _recipient,
-    address _referrer,
-    bytes calldata _data
-  ) external view
-    returns (uint minKeyPrice)
-  {
-    minKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
-  }
+//   /**
+//    * @notice returns the minimum price paid for a purchase with these params.
+//    * @dev minKeyPrice considers any discount from Unlock or the OnKeyPurchase hook
+//    */
+//   function purchasePriceFor(
+//     address _recipient,
+//     address _referrer,
+//     bytes calldata _data
+//   ) external view
+//     returns (uint minKeyPrice)
+//   {
+//     minKeyPrice = _purchasePriceFor(_recipient, _referrer, _data);
+//   }
 
-  /**
-   * @notice returns the minimum price paid for a purchase with these params.
-   * @dev minKeyPrice considers any discount from Unlock or the OnKeyPurchase hook
-   */
-  function _purchasePriceFor(
-    address _recipient,
-    address _referrer,
-    bytes memory _data
-  ) internal view
-    returns (uint minKeyPrice)
-  {
-    if(address(onKeyPurchaseHook) != address(0))
-    {
-      minKeyPrice = onKeyPurchaseHook.keyPurchasePrice(msg.sender, _recipient, _referrer, _data);
-    }
-    else
-    {
-      minKeyPrice = keyPrice;
-    }
-    return minKeyPrice;
-  }
+//   /**
+//    * @notice returns the minimum price paid for a purchase with these params.
+//    * @dev minKeyPrice considers any discount from Unlock or the OnKeyPurchase hook
+//    */
+//   function _purchasePriceFor(
+//     address _recipient,
+//     address _referrer,
+//     bytes memory _data
+//   ) internal view
+//     returns (uint minKeyPrice)
+//   {
+//     if(address(onKeyPurchaseHook) != address(0))
+//     {
+//       minKeyPrice = onKeyPurchaseHook.keyPurchasePrice(msg.sender, _recipient, _referrer, _data);
+//     }
+//     else
+//     {
+//       minKeyPrice = keyPrice;
+//     }
+//     return minKeyPrice;
+//   }
 
   // The Outwave earned percentage computed on NTFs sell
   function lockFeePercent()

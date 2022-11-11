@@ -210,7 +210,7 @@ interface IOutwavePublicLock
   * @param _recipient address of the recipient of the purchased key
   * @param _referrer address of the user making the referral
   * @param _keyManager optional address to grant managing rights to a specific address on creation
-  * @param _data arbitrary data populated by the front-end which initiated the sale
+  * /param _data arbitrary data populated by the front-end which initiated the sale
   * @dev Throws if lock is disabled. Throws if lock is sold-out. Throws if _recipient == address(0).
   * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if a Lock manager increases the
   * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
@@ -220,8 +220,8 @@ interface IOutwavePublicLock
     uint256 _value,
     address _recipient,
     address _referrer,
-    address _keyManager,
-    bytes calldata _data
+    address _keyManager
+    // bytes calldata _data
   ) external payable;
 
   /**
@@ -243,16 +243,16 @@ interface IOutwavePublicLock
   */
   function gasRefundValue() external view returns (uint256 _gasRefundValue);
 
-  /**
-   * @notice returns the minimum price paid for a purchase with these params.
-   * @dev this considers any discount from Unlock or the OnKeyPurchase hook.
-   */
-  function purchasePriceFor(
-    address _recipient,
-    address _referrer,
-    bytes calldata _data
-  ) external view
-    returns (uint);
+//   /**
+//    * @notice returns the minimum price paid for a purchase with these params.
+//    * @dev this considers any discount from Unlock or the OnKeyPurchase hook.
+//    */
+//   function purchasePriceFor(
+//     address _recipient,
+//     address _referrer,
+//     bytes calldata _data
+//   ) external view
+//     returns (uint);
 
   /**
    * Allow a Lock manager to change the transfer fee.

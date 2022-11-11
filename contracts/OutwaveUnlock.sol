@@ -489,16 +489,16 @@ abstract contract IOutwavePublicLock
     bytes calldata _data
   ) virtual external payable;
 
-  /**
-   * @notice returns the minimum price paid for a purchase with these params.
-   * @dev this considers any discount from OutwaveUnlock or the OnKeyPurchase hook.
-   */
-  function purchasePriceFor(
-    address _recipient,
-    address _referrer,
-    bytes calldata _data
-  ) virtual external view
-    returns (uint);
+//   /**
+//    * @notice returns the minimum price paid for a purchase with these params.
+//    * @dev this considers any discount from OutwaveUnlock or the OnKeyPurchase hook.
+//    */
+//   function purchasePriceFor(
+//     address _recipient,
+//     address _referrer,
+//     bytes calldata _data
+//   ) virtual external view
+//     returns (uint);
 
   /**
    * Allow a Lock manager to change the transfer fee.
