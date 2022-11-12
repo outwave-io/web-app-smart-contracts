@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity >=0.5.17 <0.9.0;
 
-//https://docs.unlock-protocol.com/unlock/developers/smart-contracts/lock-api#getters
-interface IEventLock {
+/*
+ * @title ILock
+ * @dev  Slimmed down version of IOutwavePublicLock
+ */
+interface ILock {
     function name() external view returns (string memory _name);
 
     function numberOfOwners() external view returns (uint);
@@ -43,11 +47,10 @@ interface IEventLock {
 
     function approve(address to, uint256 tokenId) external;
 
-    function purchase(uint256[] calldata _values,
-        address[] calldata _recipients,
-        address[] calldata _referrers,
-        address[] calldata _keyManagers,
-        bytes[] calldata _data
-    ) external payable;
-  
+  function purchase(
+    uint256 _value,
+    address _recipient,
+    address _referrer,
+    address _keyManager
+  ) external payable;
 }
