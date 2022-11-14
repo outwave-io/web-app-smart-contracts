@@ -651,9 +651,7 @@ contract OutwaveUnlock is
   );
 
   // Use initialize instead of a constructor to support proxies (for upgradeability via zos).
-  function initialize(
-    address _unlockOwner
-  )
+  function initialize()
     public
     override(IOutwaveUnlock)
     initializer()

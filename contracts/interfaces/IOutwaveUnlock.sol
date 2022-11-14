@@ -10,7 +10,7 @@ pragma solidity ^0.8.17;
 interface IOutwaveUnlock
 {
   // Use initialize instead of a constructor to support proxies(for upgradeability via zos).
-  function initialize(address _unlockOwner) external;
+  function initialize() external;
 
   /**
   * @dev Create lock
