@@ -4,6 +4,22 @@
 pragma solidity >=0.5.17 <0.9.0;
 
 /**
+* @title The OutwavePublicLock Interface intialization parameters
+ */
+struct PublicLockInitParams
+{
+    address payable lockCreator;
+    uint expirationDuration;
+    address tokenAddress;
+    uint keyPrice;
+    uint maxNumberOfKeys;
+    string lockName;
+    string lockTokenURI;
+    address payable outwavePaymentAddress;
+    uint8 lockFeePercent;   
+}
+
+/**
 * @title The OutwavePublicLock Interface
  */
 interface IOutwavePublicLock
@@ -15,15 +31,7 @@ interface IOutwavePublicLock
 
   /// Functions
   function initialize(
-    address _lockCreator,
-    uint _expirationDuration,
-    address _tokenAddress,
-    uint _keyPrice,
-    uint _maxNumberOfKeys,
-    string calldata _lockName,
-    string calldata _lockTokenURI,
-    address payable _outwavePaymentAddress,
-    uint8 _lockFeePerc    
+    PublicLockInitParams calldata _params    
   ) external;
 
   // roles

@@ -10,6 +10,21 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./libraries/Clone2Factory.sol";
 import "./interfaces/IOutwaveUnlock.sol";
 
+/**
+* @title The OutwavePublicLock Interface intialization parameters
+ */
+struct PublicLockInitParams
+{
+    address payable lockCreator;
+    uint expirationDuration;
+    address tokenAddress;
+    uint keyPrice;
+    uint maxNumberOfKeys;
+    string lockName;
+    string lockTokenURI;
+    address payable outwavePaymentAddress;
+    uint8 lockFeePercent;   
+}
 
 /**
 * @title The PublicLock Interface
@@ -24,15 +39,7 @@ abstract contract IOutwavePublicLock
   /// Functions
 
   function initialize(
-    address _lockCreator,
-    uint _expirationDuration,
-    address _tokenAddress,
-    uint _keyPrice,
-    uint _maxNumberOfKeys,
-    string calldata _lockName,
-    string calldata _lockTokenURI,
-    address payable _outwavePaymentAddress,
-    uint8 _lockPercent
+    PublicLockInitParams calldata _params
   ) virtual external;
 
 //   /**
@@ -689,17 +696,18 @@ contract OutwaveUnlock is
       salt := mload(pointer)
     }
     address payable newLock = payable(publicLockAddress.createClone2(salt));
-    IOutwavePublicLock(newLock).initialize(
-      msg.sender,
-      _expirationDuration,
-      _tokenAddress,
-      _keyPrice,
-      _maxNumberOfKeys,
-      _lockName,
-      _lockTokenURI,
-      _outwavePaymentAddress,
-      _lockFeePerc
-    );
+    PublicLockInitParams memory _params;
+    _params.lockCreator = payable(msg.sender);
+    _params.expirationDuration = _expirationDuration;
+    _params.tokenAddress = _tokenAddress;
+    _params.keyPrice = _keyPrice;
+    _params.maxNumberOfKeys = _maxNumberOfKeys;
+    _params.lockName = _lockName;
+    _params.lockTokenURI = _lockTokenURI;
+    _params.outwavePaymentAddress = _outwavePaymentAddress;
+    _params.lockFeePercent = _lockFeePerc;
+    _msgSender();
+    IOutwavePublicLock(newLock).initialize(_params);
 
     // Assign the new Lock
     locks[newLock] = LockBalances({
@@ -793,9 +801,8 @@ contract OutwaveUnlock is
   {
     // First claim the template so that no-one else could
     // this will revert if the template was already initialized.
-    IOutwavePublicLock(_publicLockAddress).initialize(
-      address(this), 0, address(0), 0, 0, '', '', payable(address(0)), 0
-    );
+    PublicLockInitParams memory _params;
+    IOutwavePublicLock(_publicLockAddress).initialize(_params);
     IOutwavePublicLock(_publicLockAddress).renounceLockManager();
 
     publicLockAddress = _publicLockAddress;

@@ -2325,26 +2325,18 @@ contract OutwavePublicLock is
   // MixinConvenienceOwnable
 {
   function initialize(
-    address payable _lockCreator,
-    uint _expirationDuration,
-    address _tokenAddress,
-    uint _keyPrice,
-    uint _maxNumberOfKeys,
-    string calldata _lockName,
-    string calldata _lockTokenURI,
-    address payable _outwavePaymentAddress,
-    uint8 _lockFeePerc
+    PublicLockInitParams calldata _params 
   ) public
     initializer()
   {
-    MixinFunds._initializeMixinFunds(_tokenAddress);
+    MixinFunds._initializeMixinFunds(_params.tokenAddress);
     MixinDisable._initializeMixinDisable();
-    MixinLockCore._initializeMixinLockCore(_lockCreator, _expirationDuration, _keyPrice, _maxNumberOfKeys);
-    MixinLockMetadata._initializeMixinLockMetadata(_lockName, _lockTokenURI);
+    MixinLockCore._initializeMixinLockCore(_params.lockCreator, _params.expirationDuration, _params.keyPrice, _params.maxNumberOfKeys);
+    MixinLockMetadata._initializeMixinLockMetadata(_params.lockName, _params.lockTokenURI);
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
-    MixinRoles._initializeMixinRoles(_lockCreator);
-    MixinPurchase._initializeMixinPurchase(_outwavePaymentAddress, _lockFeePerc);
+    MixinRoles._initializeMixinRoles(_params.lockCreator);
+    MixinPurchase._initializeMixinPurchase(_outwavePaymentAddress, _params.lockFeePercent);
     // registering the interface for erc721 with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x80ac58cd);
