@@ -13,7 +13,6 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./interfaces/IOutwaveUnlock.sol";
 import "./interfaces/IOutwavePublicLock.sol";
-import "./interfaces/IReadOutwave.sol";
 import "./interfaces/IKeyBurnerSendEvents.sol";
 
 /**
@@ -41,15 +40,13 @@ contract EventKeyBurner is
 
     mapping(uint256 => OriginalKey) private _originalKeys;
 
-    IReadOutwave private _outwave;
     IOutwaveUnlock private _unlock;
 
-    function initialize(address outwaveAddr, address unlockAddr)
+    function initialize(address unlockAddr)
         public
         initializer
     {
         super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
-        _outwave = IReadOutwave(outwaveAddr);
         _unlock = IOutwaveUnlock(unlockAddr);
     }
 
@@ -99,21 +96,21 @@ contract EventKeyBurner is
      */
     function burnKey(
         address parent,
-        uint256 tokenId,
-        bytes32 eventHash
+        uint256 tokenId
     ) external {
         (bool deployed, , ) = _unlock.locks(parent);
+        require(deployed, "LOCK_NOT_DEPLOYED");
         IOutwavePublicLock parentLock = IOutwavePublicLock(parent);
-        require(
-            deployed && parentLock.isLockManager(address(_outwave)),
-            "NOT_PUBLIC_LOCK"
-        );
+        // require(
+        //     deployed && parentLock.isLockManager(address(_outwave)),
+        //     "NOT_PUBLIC_LOCK"
+        // );
 
-        address eventOwner = _outwave.eventOwner(eventHash);
-        require(eventOwner != address(0), "OWNER_NOT_FOUND");
-
-        bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
-        require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
+        // NOTE: this checks will be probably moved to backend application
+        // address eventOwner = _outwave.eventOwner(eventHash);
+        // require(eventOwner != address(0), "OWNER_NOT_FOUND");
+        // bytes32 retrievedEventHash = _outwave.eventByLock(parent, eventOwner);
+        // require(retrievedEventHash != bytes32(0), "EVENT_LOCK_MISMATCH");
 
         // generate tokenId for OPA
         uint256 newOpaTokenId = _tokenIdCounter.current();
@@ -206,10 +203,6 @@ contract EventKeyBurner is
 
     function readUnlock() external view returns (address) {
         return address(_unlock);
-    }
-
-    function readOutwave() external view returns (address) {
-        return address(_outwave);
     }
 
     function readOriginalKey(uint256 tokenId)

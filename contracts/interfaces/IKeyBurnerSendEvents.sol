@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity >=0.5.17 <0.9.0;
 
 // interface that stores centrally all events emmited by KeyBurner
