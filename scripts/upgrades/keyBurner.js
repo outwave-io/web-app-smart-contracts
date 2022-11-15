@@ -1,7 +1,7 @@
 const { ethers, upgrades } = require('hardhat')
 
 async function main({ keyburnerAddress, unlockAddress }) {
-  const factory = await ethers.getContractFactory('EventKeyBurner')
+  const factory = await ethers.getContractFactory('OutwaveKeyBurner')
   const keyBurner = await upgrades.upgradeProxy(keyburnerAddress, factory, [
     unlockAddress,
   ])

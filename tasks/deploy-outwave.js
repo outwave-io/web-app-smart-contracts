@@ -155,7 +155,7 @@ task('outwave:deploy:keyburner', 'deploys key burner')
     if (verify) {
       console.log(" * verify with hardhat-tenderly");
       await hre.tenderly.persistArtifacts({
-        name: "EventKeyBurner",
+        name: "OutwaveKeyBurner",
         address: keyBurnerDeployerAddress,
       })
     }

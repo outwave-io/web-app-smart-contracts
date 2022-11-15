@@ -4,7 +4,7 @@ async function main({ unlockAddress }) {
   // eslint-disable-next-line no-console
   // console.log('KEYBURNER DEPLOY > creating a new keyBurner...')
 
-  const factory = await ethers.getContractFactory('EventKeyBurner')
+  const factory = await ethers.getContractFactory('OutwaveKeyBurner')
   const proxy = await upgrades.deployProxy(factory, [unlockAddress])
 
   await proxy.deployed()
