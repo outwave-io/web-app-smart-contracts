@@ -15,7 +15,7 @@ task('outwave:upgrade:unlock', 'upgrades outwave unlock infrastructure')
     outwaveAddress,
     unlockAddress,
     baseTokenURI
-  }, { ethers }) => {
+  }) => {
 
     console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
     console.log("!!! Outwave payments are set to: " + paymentAddress);
@@ -38,7 +38,7 @@ task('outwave:upgrade:unlock', 'upgrades outwave unlock infrastructure')
     // console.log("- event keyburner upgraded at: " + eventKeyburnerAddress);
 
     if (verify) {
-      console.log(" * verify with hardhat-tenderly..");
+      console.log(" * verify with hardhat-tenderly");
 
       await hre.tenderly.persistArtifacts({
         name: "OutwaveUnlock",
@@ -98,21 +98,19 @@ task('outwave:upgrade:unlock', 'upgrades outwave unlock infrastructure')
 
 task('outwave:upgrade:keyburner', 'upgrades keyburner')
   .addParam('keyburneraddr', 'the outwave key burner address')
-  .addParam('outwaveaddr', 'the outwave facade address')
   .addParam('unlockaddr', 'the unlock factory address')
   .addOptionalParam('verify', 'verify with hardhat-tenderly')
-  .setAction(async ({ keyburneraddr, outwaveaddr, unlockaddr, verify }, { run }) => {
+  .setAction(async ({ keyburneraddr, unlockaddr, verify }) => {
     // eslint-disable-next-line global-require
-    const keyBurnerUpgrader = require('../scripts/upgrades/eventKeyBurner')
+    const keyBurnerUpgrader = require('../scripts/upgrades/keyBurner')
     var addressResult = await keyBurnerUpgrader({
       keyburnerAddress: keyburneraddr,
-      outwaveAddress: outwaveaddr,
       unlockAddress: unlockaddr
     })
-    console.log("- event keyburner upgraded at: " + addressResult);
+    console.log("- Key Burner upgraded at: " + addressResult);
 
     if (verify) {
-      console.log(" * verify with hardhat-tenderly..");
+      console.log(" * verify with hardhat-tenderly");
       await hre.tenderly.persistArtifacts({
         name: "EventKeyBurner",
         address: outwave.address,
