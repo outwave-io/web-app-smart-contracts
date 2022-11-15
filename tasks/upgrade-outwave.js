@@ -4,31 +4,30 @@
 const { task } = require('hardhat/config')
 require("@tenderly/hardhat-tenderly");
 
-task('outwave:upgrade', 'deploys unlock infrastructure')
+task('outwave:upgrade:unlock', 'upgrades outwave unlock infrastructure')
   .addOptionalParam('verify', 'verify with hardhat-tenderly')
   .addOptionalParam('paymentAddress', 'the address where fees will be sent')
-  .addParam('outwaveAddress', 'actual outwave address')
   .addParam('unlockAddress', 'the unlock factory address')
-  .addOptionalParam('basetokenuri', 'sets the baseTokenUri for nfts')
+  .addOptionalParam('baseTokenURI', 'sets the baseTokenUri for nfts')
   .setAction(async ({ 
     verify = false,
     paymentAddress =  "0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877",
     outwaveAddress,
     unlockAddress,
-    basetokenuri
+    baseTokenURI
   }, { ethers }) => {
 
     console.log("!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!");
     console.log("!!! Outwave payments are set to: " + paymentAddress);
 
-    const outwaveUpgrader = require('../scripts/upgrades/outwave.js')
-    outwaveAddress = await outwaveUpgrader({ outwaveAddress, unlockAddress, paymentAddress, basetokenuri })
+    const unlockUpgrader = require('../scripts/upgrades/outwaveUnlock.js')
+    upgradedAddress = await unlockUpgrader({ unlockAddress, paymentAddress, baseTokenURI })
 
-    console.log("- outwave org upgraded at: " + outwaveAddress);
+    console.log("- Outwave Unlock upgraded at: " + upgradedAddress);
 
-    // if(basetokenuri){
-    //   await outwave.setBaseTokenUri(basetokenuri);
-    //   console.log("- eventmanager:setBaseTokenUri has been set to: " + basetokenuri);
+    // if(baseTokenURI){
+    //   await outwave.setBaseTokenUri(baseTokenURI);
+    //   console.log("- eventmanager:setBaseTokenUri has been set to: " + baseTokenURI);
     // }
 
     // const keyBurnerDeployer = require('../scripts/upgrades/eventKeyBurner')
@@ -42,18 +41,18 @@ task('outwave:upgrade', 'deploys unlock infrastructure')
       console.log(" * verify with hardhat-tenderly..");
 
       await hre.tenderly.persistArtifacts({
-        name: "OutwaveEvent",
-        address: outwaveAddress,
+        name: "OutwaveUnlock",
+        address: upgradedAddress,
       })
 
       await hre.tenderly.verify({
-        name: "OutwaveEvent",
-        address: outwaveAddress,
+        name: "OutwaveUnlock",
+        address: upgradedAddress,
       })
 
       await hre.tenderly.push({
-        name: "OutwaveEvent",
-        address: outwaveAddress,
+        name: "OutwaveUnlock",
+        address: upgradedAddress,
       })
 
 
@@ -126,12 +125,5 @@ task('outwave:upgrade:keyburner', 'upgrades keyburner')
     }
 
   })
-
-
-
-
-
-
-
 
 /* eslint-enable */
