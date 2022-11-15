@@ -1,22 +1,20 @@
 const { ethers, upgrades } = require('hardhat')
 
-async function main({ outwaveAddress, unlockAddress }) {
+async function main({ unlockAddress }) {
   // eslint-disable-next-line no-console
   // console.log('KEYBURNER DEPLOY > creating a new keyBurner...')
 
-  const KeyBurner = await ethers.getContractFactory('EventKeyBurner')
-  const keyBurner = await upgrades.deployProxy(KeyBurner, [
-    outwaveAddress,
-    unlockAddress,
-  ])
-  await keyBurner.deployed()
+  const factory = await ethers.getContractFactory('EventKeyBurner')
+  const proxy = await upgrades.deployProxy(factory, [unlockAddress])
+
+  await proxy.deployed()
 
   // eslint-disable-next-line no-console
   // console.log(
-  //   `KEYBURNER DEPLOY > deployed to: ${keyBurner.address} (tx: ${keyBurner.deployTransaction.hash})`
+  //   `KEYBURNER DEPLOY > deployed to: ${proxy.address} (tx: ${proxy.deployTransaction.hash})`
   // )
 
-  return keyBurner.address
+  return proxy.address
 }
 
 // execute as standalone
