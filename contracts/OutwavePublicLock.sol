@@ -71,7 +71,6 @@ contract MixinFunds
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 /**
  * @title The OutwaveUnlock Interface
 **/
@@ -289,16 +288,6 @@ interface IOutwaveUnlock
   // The Outwave earned percentage computed on NTFs sell
   function lockFeePercent() external view returns(uint8);
 
-  /**
-   * @notice allows the owner to set the oracle address to use for value conversions
-   * setting the _oracleAddress to address(0) removes support for the token
-   * @dev This will also call update to ensure at least one datapoint has been recorded.
-   */
-  function setOracle(
-    address _tokenAddress,
-    address _oracleAddress
-  ) external;
-
   // Initialize the Ownable contract, granting contract ownership to the specified sender
   function __initializeOwnable(address sender) external;
 
@@ -407,7 +396,6 @@ contract MixinRoles is AccessControlUpgradeable {
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 /**
  * @title Mixin allowing the Lock owner to disable a Lock (preventing new purchases)
  * and then destroy it.
@@ -450,7 +438,6 @@ contract MixinDisable is
   
   uint256[1000] private __safe_upgrade_gap;
 }
-
 
 /**
  * @title Mixin for core lock data and functions.
@@ -664,7 +651,6 @@ contract MixinLockCore is
 
   uint256[1000] private __safe_upgrade_gap;
 }
-
 
 /**
  * @title Mixin for managing `Key` data, as well as the * Approval related functions needed to meet the ERC721
@@ -1206,7 +1192,6 @@ contract MixinKeys is
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 /**
  * @title Implements the ERC-721 Enumerable extension.
  */
@@ -1274,7 +1259,6 @@ contract MixinERC721Enumerable is
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 /**
  * @title Mixin allowing the Lock owner to grant / gift keys to users.
  * @author HardlyDifficult
@@ -1329,7 +1313,6 @@ contract MixinGrantKeys is
 
   uint256[1000] private __safe_upgrade_gap;
 }
-
 
 // This contract provides some utility methods for use with the unlock protocol smart contracts.
 // Borrowed from:
@@ -1393,9 +1376,6 @@ library UnlockUtils {
     return string(str);
   }
 }
-
-
-// File contracts/mixins/MixinLockMetadata.sol
 
 /**
  * @title Mixin for metadata about the Lock.
@@ -1535,7 +1515,6 @@ contract MixinLockMetadata is
 
   uint256[1000] private __safe_upgrade_gap;
 }
-
 
 /**
  * @title Mixin for the purchase-related functions.
@@ -1784,7 +1763,6 @@ contract MixinPurchase is
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 contract MixinRefunds is
   MixinRoles,
   MixinFunds,
@@ -1944,7 +1922,6 @@ contract MixinRefunds is
 
   uint256[1000] private __safe_upgrade_gap;
 }
-
 
 /**
  * @title Mixin for the transfer-related functions needed to meet the ERC721
@@ -2250,7 +2227,6 @@ contract MixinTransfer is
   uint256[1000] private __safe_upgrade_gap;
 }
 
-
 // /**
 //  * @title Mixin to add support for `ownable()`
 //  * @dev `Mixins` are a design pattern seen in the 0x contracts.  It simply
@@ -2299,7 +2275,6 @@ contract MixinTransfer is
 //   uint256[1000] private __safe_upgrade_gap;
 
 // }
-
 
 /**
  * @title The Lock contract
@@ -2365,5 +2340,4 @@ contract OutwavePublicLock is
     {
     return super.supportsInterface(interfaceId);
   }
-
 }
