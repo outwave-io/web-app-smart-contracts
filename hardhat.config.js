@@ -72,7 +72,6 @@ module.exports = {
   etherscan: {
     apiKey: {
       polygonMumbai: 'IES3ED9IU77E9TEWYUEJKTJEQG2DYFW4UF',
-      optimisticGoerli: 'A9TT7428AZR29X2NXGRTGPVDTXFTMTZVQS',
     },
   },
   gasReporter: {
