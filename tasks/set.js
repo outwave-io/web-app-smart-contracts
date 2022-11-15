@@ -60,23 +60,24 @@ task('set', 'Various setters for Unlock contracts')
     }
   )
 
-task('set:template', 'Set PublicLock address in Unlock contract')
+task(
+  'outwave:set:template',
+  'Set Outwave Public Lock address in Unlock contract'
+)
   .addOptionalParam(
     'unlockAddress',
-    'the address of an existing Unlock contract'
+    'the address of the Outwave Unlock contract'
   )
   .addOptionalParam(
     'publicLockAddress',
-    'the address of an existing public Lock contract'
+    'the address of an existing Outeave Public Lock contract'
   )
-  .addOptionalParam('unlockVersion', 'the version of Unlock to deploy')
-  .setAction(async ({ publicLockAddress, unlockAddress, unlockVersion }) => {
+  .setAction(async ({ publicLockAddress, unlockAddress }) => {
     // eslint-disable-next-line global-require
     const templateSetter = require('../scripts/setters/set-template')
     await templateSetter({
       publicLockAddress,
       unlockAddress,
-      unlockVersion,
     })
   })
 
@@ -113,22 +114,22 @@ task('set:unlock-config', 'Configure Unlock contract')
     }
   )
 
-task('set:unlock-oracle', 'Set UDT <> WETH oracle address in Unlock contract')
-  .addOptionalParam(
-    'unlockAddress',
-    'the address of an existing Unlock contract'
-  )
-  .addOptionalParam('udtAddress', 'the address of an existing UDT contract')
-  .addOptionalParam(
-    'oracleAddress',
-    'the address of the Uniswap Oracle contract'
-  )
-  .setAction(async ({ unlockAddress, udtAddress, oracleAddress }) => {
-    // eslint-disable-next-line global-require
-    const unlockOracleSetter = require('../scripts/setters/unlock-oracle')
-    await unlockOracleSetter({
-      unlockAddress,
-      udtAddress,
-      oracleAddress,
-    })
-  })
+// task('set:unlock-oracle', 'Set UDT <> WETH oracle address in Unlock contract')
+//   .addOptionalParam(
+//     'unlockAddress',
+//     'the address of an existing Unlock contract'
+//   )
+//   .addOptionalParam('udtAddress', 'the address of an existing UDT contract')
+//   .addOptionalParam(
+//     'oracleAddress',
+//     'the address of the Uniswap Oracle contract'
+//   )
+//   .setAction(async ({ unlockAddress, udtAddress, oracleAddress }) => {
+//     // eslint-disable-next-line global-require
+//     const unlockOracleSetter = require('../scripts/setters/unlock-oracle')
+//     await unlockOracleSetter({
+//       unlockAddress,
+//       udtAddress,
+//       oracleAddress,
+//     })
+//   })

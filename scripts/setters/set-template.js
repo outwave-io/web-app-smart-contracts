@@ -1,48 +1,41 @@
 const { ethers } = require('hardhat')
 
-const CURRENT_VERSION = 10
-
-async function main({ publicLockAddress, unlockAddress, unlockVersion }) {
+async function main({ publicLockAddress, unlockAddress }) {
   if (!publicLockAddress) {
     // eslint-disable-next-line no-console
     throw new Error(
-      'UNLOCK SET TEMPLATE > Missing template address... aborting.'
+      'OUTWAVE UNLOCK SET TEMPLATE > Missing template address... aborting.'
     )
   }
   if (!unlockAddress) {
     // eslint-disable-next-line no-console
-    throw new Error('UNLOCK SET TEMPLATE > Missing Unlock address... aborting.')
+    throw new Error(
+      'OUTWAVE UNLOCK SET TEMPLATE > Missing Unlock address... aborting.'
+    )
   }
 
-  // get unlock instance
-  let unlock
-  if (unlockVersion < CURRENT_VERSION) {
-    // eslint-disable-next-line import/no-dynamic-require, global-require
-    const contracts = require('@unlock-protocol/contracts')
-    const { abi } = contracts[`UnlockV${unlockVersion}`]
-    unlock = await ethers.getContractAt(abi, unlockAddress)
-  } else {
-    unlock = await ethers.getContractAt('Unlock', unlockAddress)
-    unlockVersion = await unlock.unlockVersion()
-  }
+  // get outwave unlock instance
+  const unlock = await ethers.getContractAt('OutwaveUnlock', unlockAddress)
+  const unlockVersion = await unlock.unlockVersion()
 
   // set lock template
-  const publicLock = await ethers.getContractAt('PublicLock', publicLockAddress)
-  const version = await publicLock.publicLockVersion()
-  if (unlockVersion > 9) {
-    // eslint-disable-next-line no-console
-    // console.log(
-    //   `LOCK TEMPLATE SETUP > Setting up PublicLock version ${version}`
-    // )
-    const txVersion = await unlock.addLockTemplate(publicLockAddress, version)
-    await txVersion.wait()
+  const publicLock = await ethers.getContractAt(
+    'OutwavePublicLock',
+    publicLockAddress
+  )
+  const publicLockversion = await publicLock.publicLockVersion()
+
+  if (unlockVersion !== publicLockversion) {
+    throw new Error(
+      'OUTWAVE UNLOCK SET TEMPLATE > Unlock and template versions mismatch... aborting.'
+    )
   }
 
   // set lock template
   const tx = await unlock.setLockTemplate(publicLockAddress)
-  const { transactionHash } = await tx.wait()
+  await tx.wait()
   // eslint-disable-next-line no-console
-  //console.log(`UNLOCK SETUP> Template set for Lock (tx: ${transactionHash})`)
+  // console.log(`UNLOCK SETUP> Template set for Lock (tx: ${transactionHash})`)
 }
 
 // execute as standalone
