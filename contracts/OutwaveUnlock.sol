@@ -656,6 +656,7 @@ contract OutwaveUnlock is
     override(IOutwaveUnlock)
     initializer()
   {
+    __Ownable_init();
   }
 
   /**

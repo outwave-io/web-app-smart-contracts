@@ -46,6 +46,7 @@ contract EventKeyBurner is
         public
         initializer
     {
+        __Ownable_init();
         super.__ERC721_init("OutwavePartecipantAttestation", "OPA");
         _unlock = IOutwaveUnlock(unlockAddr);
     }
