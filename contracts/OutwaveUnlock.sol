@@ -760,7 +760,7 @@ contract OutwaveUnlock is
   ) external pure
     returns (uint16)
   {
-    return 9;
+    return 1;
   }
 
   /**
