@@ -106,6 +106,24 @@ require("@tenderly/hardhat-tenderly");
 //    	console.log("[onchain] To verify on blockchain: yarn verify " + outwaveAddress + " " + unlockAddress + " " + eventKeyburnerAddress + " --network XXXXXXXXXXXXX")
 //   });
 
+
+task('outwave:deploy:template', 'deploys outwave public lock')
+  .addOptionalParam('verify', 'verify with hardhat-tenderly')
+  .setAction (async ({verify}) => {
+  // eslint-disable-next-line global-require
+  const templateDeployer = require('../scripts/deployments/template')
+  const templateAddress = await templateDeployer()
+    console.log("- Outwave Public Lock published at: " + templateAddress);
+
+  if (verify) {
+    console.log(" * verify with hardhat-tenderly");
+    await hre.tenderly.persistArtifacts({
+      name: "OutwavePublicLock",
+      address: templateAddress,
+    })
+    }    
+  })
+
 task('outwave:deploy:unlock', 'deploys outwave unlock factory')
   .addOptionalParam('verify', 'verify with hardhat-tenderly')
   .setAction (async ({verify}) => {
@@ -114,12 +132,12 @@ task('outwave:deploy:unlock', 'deploys outwave unlock factory')
   const unlockAddress = await unlockDeployer()
     console.log("- Outwave Unlock Factory published at: " + unlockAddress);
 
-    if (verify) {
-      console.log(" * verify with hardhat-tenderly");
-      await hre.tenderly.persistArtifacts({
-        name: "OutwaveUnlock",
-        address: unlockAddress,
-      })
+  if (verify) {
+    console.log(" * verify with hardhat-tenderly");
+    await hre.tenderly.persistArtifacts({
+      name: "OutwaveUnlock",
+      address: unlockAddress,
+    })
     }    
   })
 

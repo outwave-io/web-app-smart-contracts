@@ -2,13 +2,25 @@ const { ethers } = require('hardhat')
 const { addDeployment } = require('../../helpers/deployments')
 
 async function main() {
-  const PublicLock = await ethers.getContractFactory('PublicLock')
-  const publicLock = await PublicLock.deploy()
-  await publicLock.deployed()
+  const factory = await ethers.getContractFactory('OutwavePublicLock')
+  const contract = await factory.deploy()
+  await contract.deployed()
+  const initParams = {
+    lockCreator: ethers.constants.AddressZero,
+    expirationDuration: 0,
+    tokenAddress: ethers.constants.AddressZero,
+    keyPrice: 0,
+    maxNumberOfKeys: 0,
+    lockName: '',
+    lockTokenURI: '',
+    outwavePaymentAddress: ethers.constants.AddressZero,
+    lockFeePercent: 0,
+  }
+  contract.initialize(initParams)
 
   // eslint-disable-next-line no-console
   // console.log(
-  //   `PUBLIC LOCK > deployed to : ${publicLock.address} (tx: ${publicLock.deployTransaction.hash})`
+  //   `PUBLIC LOCK > deployed to : ${contract.address} (tx: ${contract.deployTransaction.hash})`
   // )
   // eslint-disable-next-line no-console
   // console.log(
@@ -16,9 +28,9 @@ async function main() {
   // )
 
   // save deployment info
-  await addDeployment('PublicLock', publicLock, false)
+  await addDeployment('OutwavePublicLock', contract, false)
 
-  return publicLock.address
+  return contract.address
 }
 
 // execute as standalone
