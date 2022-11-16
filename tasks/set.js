@@ -79,6 +79,9 @@ task(
       publicLockAddress,
       unlockAddress,
     })
+    console.log(
+      `- Template ${publicLockAddress} set to Factory: ${unlockAddress}`
+    )
   })
 
 // task('set:unlock-config', 'Configure Unlock contract')
