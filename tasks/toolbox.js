@@ -4,81 +4,38 @@
 const { task } = require('hardhat/config')
 require("@tenderly/hardhat-tenderly");
 
+// task('tool:event:addErc20', 'Adds support for specific USDC token payment. if not ecr20addr is specified, USDC on mumbai is used')
+//   .addParam('outwaveaddr', 'the outwave facade address')
+//   .addOptionalParam('erc20addr', 'the ERC20 Address to add')
+//   .setAction(async ({ outwaveaddr, erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554' }, { ethers }) => {
 
+//     let Outwave = await ethers.getContractFactory('OutwaveEvent')
+//     let outwave = await Outwave.attach(outwaveaddr)
+//     await outwave.erc20PaymentTokenAdd(erc20addr)
+//     console.log('erc20 address can be used in creating lock: ' + erc20addr);
+//   });
 
-task('tool:event:addErc20', 'Adds support for specific USDC token payment. if not ecr20addr is specified, USDC on mumbai is used')
-  .addParam('outwaveaddr', 'the outwave facade address')
-  .addOptionalParam('erc20addr', 'the ERC20 Address to add')
-  .setAction(async ({ outwaveaddr, erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554' }, { ethers }) => {
+// task('tool:erc20:approve', 'Approve spending')
+//   .addParam('lockaddr', 'the address of the contract to approve spending')
+//   .addOptionalParam('erc20addr', 'the ERC20 Address to add')
+//   .addOptionalParam('amount', 'the amount to approve')
+//   .setAction(async ({
+//     lockaddr,
+//     erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554',
+//     amount = 9000000000000000
+//   }, { ethers }) => {
 
-    let Outwave = await ethers.getContractFactory('OutwaveEvent')
-    let outwave = await Outwave.attach(outwaveaddr)
-    await outwave.erc20PaymentTokenAdd(erc20addr)
-    console.log('erc20 address can be used in creating lock: ' + erc20addr);
-  });
+//     let [user1] = await ethers.getSigners()
+//     const abi = [
+//       'function approve(address speder, uint256 amount) external returns (bool)',
+//       'function balanceOf(address account) external view returns (uint256)'
+//     ]
+//     let tokenContract = new ethers.Contract(erc20addr, abi, user1);
 
-task('tool:erc20:approve', 'Approve spending')
-  .addParam('lockaddr', 'the address of the contract to approve spending')
-  .addOptionalParam('erc20addr', 'the ERC20 Address to add')
-  .addOptionalParam('amount', 'the amount to approve')
-  .setAction(async ({
-    lockaddr,
-    erc20addr = '0x2b8920cBdDCc3e85753423eEceCd179cb9232554',
-    amount = 9000000000000000
-  }, { ethers }) => {
-
-    let [user1] = await ethers.getSigners()
-    const abi = [
-      'function approve(address speder, uint256 amount) external returns (bool)',
-      'function balanceOf(address account) external view returns (uint256)'
-    ]
-    let tokenContract = new ethers.Contract(erc20addr, abi, user1);
-
-    await tokenContract.approve(lockaddr, amount)
-    console.log('user balance is ' + await tokenContract.balanceOf(user1.address));
-    console.log('approved max ' + amount + ' for ' + lockaddr);
-  });
-
-
-task('tool:event:createEvent', 'create Event and returns lock address')
-  .addParam('outwaveaddr', 'the address of the outwave organization')
-  .addOptionalParam('eventid', 'the eventId ')
-  .addOptionalParam('lockid', 'the lockid ')
-  .addOptionalParam('lockname', 'the lock name')
-  .addOptionalParam('keytokenaddr', 'token address')
-  .addOptionalParam('keyprice', 'key price')
-  .addOptionalParam('keyquantity', 'key quantity')
-  .setAction(async ({
-    outwaveaddr,
-    eventid = 'event1',
-    lockid = 'lock1',
-    lockname = 'New Outwave Lock',
-    keytokenaddr = web3.utils.padLeft(0, 40), //address(0)
-    keyprice = web3.utils.toWei('0.000001', 'ether'),
-    keyquantity = 100000,
-  }, { ethers }) => {
-
-
-    let Outwave = await ethers.getContractFactory('OutwaveEvent')
-    let outwave = await Outwave.attach(outwaveaddr)
-
-
-    const eventHash = web3.utils.padLeft(web3.utils.asciiToHex(eventid), 64);
-    const lockHash = web3.utils.padLeft(web3.utils.asciiToHex(lockid), 64);
-    const txEv = await outwave
-      .eventCreate(
-        eventHash,
-        lockname,
-        keytokenaddr,
-        keyprice,
-        keyquantity,
-        lockHash
-      )
-
-    let evRec = await txEv.wait()
-    let evtLock = evRec.events.find((v) => v.event === 'LockRegistered')
-    console.log("event created. lock address is: " + evtLock.args.lockAddress)
-  })
+//     await tokenContract.approve(lockaddr, amount)
+//     console.log('user balance is ' + await tokenContract.balanceOf(user1.address));
+//     console.log('approved max ' + amount + ' for ' + lockaddr);
+//   });
 
 task('tool:lock:purchase', 'purchase NFT with erc20 from lockaddress')
   .addParam('lockaddr', 'the address of the outwave organization')
@@ -134,7 +91,6 @@ task('tool:lock:purchase', 'purchase NFT with erc20 from lockaddress')
 
   })
 
-
 task('tool:keyburner:burn', 'mint some keys and burn them ??')
   .addParam('keyburnaddr', 'the key burner address')
   .addParam('lockaddr', 'the public lock address')
@@ -177,4 +133,5 @@ task('tool:keyburner:burn', 'mint some keys and burn them ??')
 
     console.log('-----------------------------')
   })
+
 /* eslint-enable */
