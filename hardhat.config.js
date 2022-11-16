@@ -53,7 +53,7 @@ const networks = getHardhatNetwork()
 require('./tasks/accounts')
 require('./tasks/balance')
 require('./tasks/config')
-require('./tasks/deploy')
+// require('./tasks/deploy')
 require('./tasks/set')
 require('./tasks/toolbox')
 
