@@ -84,7 +84,7 @@ abstract contract IOutwavePublicLock
    * @param _tokenAddress specifies the token address to withdraw or 0 for ETH. This is usually
    * the same as `tokenAddress` in MixinFunds.
    * @param _amount specifies the max amount to withdraw, which may be reduced when
-   * considering the available balance. Set to 0 or MAX_UINT to withdraw everything.
+   * considering the available balance. \ to 0 or MAX_UINT to withdraw everything.
    *  -- however be wary of draining funds as it breaks the `cancelAndRefund` and `expireAndRefundFor`
    * use cases.
    */
@@ -798,11 +798,8 @@ contract OutwaveUnlock is
   ) external
     onlyOwner
   {
-    // // First claim the template so that no-one else could
-    // // this will revert if the template was already initialized.
-    // PublicLockInitParams memory _params;
-    // IOutwavePublicLock(_publicLockAddress).initialize(_params);
-    // IOutwavePublicLock(_publicLockAddress).renounceLockManager();
+    require(_publicLockAddress != address(0), 'PUBLIC_LOCK_CANT_BE_ADDRESS_ZERO');
+    require(publicLockAddress == address(0), "PUBLIC_LOCK_ALREADY_SET");
 
     publicLockAddress = _publicLockAddress;
 
