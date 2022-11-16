@@ -798,11 +798,11 @@ contract OutwaveUnlock is
   ) external
     onlyOwner
   {
-    // First claim the template so that no-one else could
-    // this will revert if the template was already initialized.
-    PublicLockInitParams memory _params;
-    IOutwavePublicLock(_publicLockAddress).initialize(_params);
-    IOutwavePublicLock(_publicLockAddress).renounceLockManager();
+    // // First claim the template so that no-one else could
+    // // this will revert if the template was already initialized.
+    // PublicLockInitParams memory _params;
+    // IOutwavePublicLock(_publicLockAddress).initialize(_params);
+    // IOutwavePublicLock(_publicLockAddress).renounceLockManager();
 
     publicLockAddress = _publicLockAddress;
 
