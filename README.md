@@ -34,37 +34,31 @@ Outwave have developed several tasks that helps to start transactions on localho
 Below you can see an example on how this tasks allow a full deployment on network mumbai
 
 ```shell
-# deploy everything
+# deploy complete infrastructure
 $ npx hardhat outwave:deploy --network mumbai
-- unlock deployed: 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
-- publiclock template deployed: 0x634bc360D6988396D14E6b1b0369A44f6Bb6C7B2
-- outwave org deployed: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
-- event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+!!! DO NOT USE THIS IN PRODUCTION YET: PARAMS HARDCODED!
+!!! Outwave payments are set to: 0xB2B2be136eB0b137Fa58F70E24E1A0AC90bAD877
+- Outwave Unlock Factory published at: 0xB06C6de617723FA58A4D3FE99A785aeFFE679ba6
+- Outwave Public Lock published at: 0xB8f318199380E8AA5B2551C83b9E75aa9E22c947
+- Template 0xB8f318199380E8AA5B2551C83b9E75aa9E22c947 set to Factory: 0xB06C6de617723FA58A4D3FE99A785aeFFE679ba6
+- Key Burner published at: 0x8d90827D7A138B34F111B3475284f3e9B13E3b72
+[onchain] To verify on blockchain: yarn verify 0xB06C6de617723FA58A4D3FE99A785aeFFE679ba6 0x8d90827D7A138B34F111B3475284f3e9B13E3b72 --network SOME_NETWORK
 
-# upgrade outwave (note: keyburner must be upgraded individually)
-$ npx hardhat outwave:upgrade --unlock-address 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --outwave-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
-- outwave org upgraded at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
+# deploy unlock
+$ npx hardhat outwave:deploy:unlock --network mumbai
+- Outwave Unlock published at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 
-# deploy keyburner
-$ npx hardhat outwave:deploy:keyburner --network mumbai --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
-- event keyburner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+# upgrade unlock
+$ npx hardhat outwave:deploy:unlock --network mumbai --unlock-address 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
+- Outwave Unlock upgraded at: 0x6C4c1421036aa77245A365fDcD464a271f5D24BC
 
-# upgrade keyburnder
-$ npx hardhat outwave:deploy:keyburner --network mumbai --keyburnerAddr 0x11e48668d6db234F4EAE814360916E4f0Be61ff3 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e
-- event keyburner upgraded at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
+# deploy key burner
+$ npx hardhat outwave:deploy:keyburner --network mumbai --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
+- Key Burner published at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
-# allow outwave to create events using erc20 (usdc on mubai)
-$ npx hardhat tool:event:addErc20 --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --network mumbai
-- erc20 address can be used in creating lock: 0x2b8920cBdDCc3e85753423eEceCd179cb9232554
-
-# lets create out first event named technoEvent1
-$ npx hardhat tool:event:createEvent --outwaveaddr 0x6C4c1421036aa77245A365fDcD464a271f5D24BC --eventid technoEvent1  --keytokenaddr 0x2b8920cBdDCc3e85753423eEceCd179cb9232554 --keyprice 100  --network mumbai
-- event created. lock address is: 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D
-
-# approve erc20 spending on lock
-$ npx hardhat tool:erc20:approve --lockaddr 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D  --network mumbai
-- user balance is 7999999902
-- approved max 9000000000000000 for 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D
+# upgrade key burner
+$ npx hardhat outwave:deploy:keyburner --network mumbai --unlockaddr 0xb868eF5D3183348B7F001d8f3d8A37CC14d2531e --keyburnerAddr 0x389A229aCe1016FAdAcfb07b5CB96277366eC3b8
+- Key Burner upgraded at: 0x11e48668d6db234F4EAE814360916E4f0Be61ff3
 
 # purchase an NFT directly from lock
 $ npx hardhat tool:lock:purchase --lockaddr 0x449dF2567E1E07F0790980D8E8Dd49a2e0Ca584D  --network mumbai --erc20 true
