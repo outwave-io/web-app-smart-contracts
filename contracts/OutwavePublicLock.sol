@@ -1497,6 +1497,7 @@ contract MixinLockMetadata is
     view
     returns(string memory)
   {
+    // todo: tokenUri should be {functionAppURI}/{chain}/{assetKind}/{contractAddress}/{tokenId:?}
     return lockTokenURI;
   }
 
