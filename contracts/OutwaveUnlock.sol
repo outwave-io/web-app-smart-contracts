@@ -630,7 +630,8 @@ contract OutwaveUnlock is
   // Events
   event NewLock(
     address indexed lockOwner,
-    address indexed newLockAddress
+    address indexed newLockAddress,
+    bytes12 indexed salt
   );
 
   event ConfigUnlock(
@@ -717,7 +718,7 @@ contract OutwaveUnlock is
     });
 
     // trigger event
-    emit NewLock(msg.sender, newLock);
+    emit NewLock(msg.sender, newLock, _salt);
 
     return address(newLock);
   }
