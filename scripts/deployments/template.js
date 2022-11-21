@@ -15,6 +15,7 @@ async function main() {
     lockTokenURI: '',
     outwavePaymentAddress: ethers.constants.AddressZero,
     lockFeePercent: 0,
+    maxKeysPerAddress: 0,
   }
   contract.initialize(initParams)
 
