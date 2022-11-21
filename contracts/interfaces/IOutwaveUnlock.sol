@@ -29,7 +29,8 @@ interface IOutwaveUnlock
     string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
-    uint8 _lockFeePerc
+    uint16 _lockFeePerc,
+    uint _maxKeysPerAddress
   ) external returns(address);
 
 //     /**
@@ -182,11 +183,11 @@ interface IOutwaveUnlock
    * This function will set the percentage earned by Outwave for each NFT sold,
    * computed on its price.
    */  
-  function setLockFee(uint8 percent) external;
+  function setLockFee(uint16 percent) external;
 
     /**
    * This function will return the percentage earned by Outwave for each NFT sold,
    * computed on its price.
    */  
-  function getLockFee() external view returns (uint8);
+  function getLockFee() external view returns (uint16);
 }

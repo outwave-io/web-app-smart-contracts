@@ -17,6 +17,7 @@ struct PublicLockInitParams
     string lockTokenURI;
     address payable outwavePaymentAddress;
     uint8 lockFeePercent;   
+    uint maxKeysPerAddress;
 }
 
 /**

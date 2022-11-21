@@ -526,7 +526,8 @@ contract MixinLockCore is
     address payable _beneficiary,
     uint _expirationDuration,
     uint _keyPrice,
-    uint _maxNumberOfKeys
+    uint _maxNumberOfKeys,
+    uint _maxNumberOfKeysPerAddress
   ) internal
   {
     require(_expirationDuration <= 100 * 365 * 24 * 60 * 60, 'MAX_EXPIRATION_100_YEARS');
@@ -535,9 +536,7 @@ contract MixinLockCore is
     expirationDuration = _expirationDuration == 0 ? type(uint).max : _expirationDuration;
     keyPrice = _keyPrice;
     maxNumberOfKeys = _maxNumberOfKeys;
-
-    // only a single key per address is allowed by default
-    _maxKeysPerAddress = 1;    
+    _maxKeysPerAddress = _maxNumberOfKeysPerAddress;
   }
 
   // The version number of the current implementation on this network
@@ -1545,9 +1544,9 @@ contract MixinPurchase is
 
   address payable _outwavePaymentAddress;
 
-  uint8 private _lockFeePercent;
+  uint16 private _lockFeePercent;
 
-  function _initializeMixinPurchase(address payable outwavePaymentAddr, uint8 lockFeePerc) internal
+  function _initializeMixinPurchase(address payable outwavePaymentAddr, uint16 lockFeePerc) internal
   {
     _outwavePaymentAddress = outwavePaymentAddr;
     _lockFeePercent = lockFeePerc;
@@ -1574,7 +1573,10 @@ contract MixinPurchase is
   function _payFee(uint pricePaid)
     private
   {
-    uint feePaid = _lockFeePercent.div(pricePaid).mul(100);
+    // fee = pricePaid - (((10000 - _lockFeePercent) * pricePaid) / 10000)
+    uint inverseFee = uint(10000).sub(_lockFeePercent);
+    uint feePaid = pricePaid.sub(inverseFee.mul(pricePaid).div(10000));
+
     if (tokenAddress != address(0)) {
       IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);
       bool success = token.transferFrom(msg.sender, _outwavePaymentAddress, feePaid);
@@ -1749,7 +1751,7 @@ contract MixinPurchase is
 
   // The Outwave earned percentage computed on NTFs sell
   function lockFeePercent()
-    external view returns(uint8)
+    external view returns(uint16)
   {
     return _lockFeePercent;
   }
@@ -2307,7 +2309,7 @@ contract OutwavePublicLock is
   {
     MixinFunds._initializeMixinFunds(_params.tokenAddress);
     MixinDisable._initializeMixinDisable();
-    MixinLockCore._initializeMixinLockCore(_params.lockCreator, _params.expirationDuration, _params.keyPrice, _params.maxNumberOfKeys);
+    MixinLockCore._initializeMixinLockCore(_params.lockCreator, _params.expirationDuration, _params.keyPrice, _params.maxNumberOfKeys, _params.maxKeysPerAddress);
     MixinLockMetadata._initializeMixinLockMetadata(_params.lockName, _params.lockTokenURI);
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();

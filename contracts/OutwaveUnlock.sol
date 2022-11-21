@@ -23,7 +23,8 @@ struct PublicLockInitParams
     string lockName;
     string lockTokenURI;
     address payable outwavePaymentAddress;
-    uint8 lockFeePercent;   
+    uint16 lockFeePercent;   
+    uint maxKeysPerAddress;
 }
 
 /**
@@ -624,7 +625,7 @@ contract OutwaveUnlock is
   uint public chainId;
 
   // Fee percentage, applied to NTFs sell price, earned by Outwave 
-  uint8 private _lockFeePercent;
+  uint16 private _lockFeePercent;
 
   // Events
   event NewLock(
@@ -677,7 +678,8 @@ contract OutwaveUnlock is
     string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
-    uint8 _lockFeePerc
+    uint16 _lockFeePerc,
+    uint _maxKeysPerAddress
   ) public returns(address)
   {
     require(publicLockAddress != address(0), 'MISSING_LOCK_TEMPLATE');
@@ -705,6 +707,7 @@ contract OutwaveUnlock is
     _params.lockTokenURI = _lockTokenURI;
     _params.outwavePaymentAddress = _outwavePaymentAddress;
     _params.lockFeePercent = _lockFeePerc;
+    _params.maxKeysPerAddress = _maxKeysPerAddress;
     _msgSender();
     IOutwavePublicLock(newLock).initialize(_params);
 
@@ -845,7 +848,7 @@ contract OutwaveUnlock is
    * This function will set the percentage earned by Outwave for each NFT sold,
    * computed on its price.
    */  
-  function setLockFee(uint8 percent)
+  function setLockFee(uint16 percent)
     external
     onlyOwner
   {
@@ -859,7 +862,7 @@ contract OutwaveUnlock is
   function getLockFee()
     external
     view
-    returns (uint8)
+    returns (uint16)
   {
     return _lockFeePercent;  
   }
