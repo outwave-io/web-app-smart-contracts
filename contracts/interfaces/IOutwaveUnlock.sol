@@ -26,7 +26,6 @@ interface IOutwaveUnlock
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
-    string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
     uint16 _lockFeePerc,

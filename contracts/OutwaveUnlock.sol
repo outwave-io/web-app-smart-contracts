@@ -676,7 +676,6 @@ contract OutwaveUnlock is
     uint _keyPrice,
     uint _maxNumberOfKeys,
     string calldata _lockName,
-    string calldata _lockTokenURI,
     bytes12 _salt,
     address payable _outwavePaymentAddress,
     uint16 _lockFeePerc,
@@ -705,7 +704,6 @@ contract OutwaveUnlock is
     _params.keyPrice = _keyPrice;
     _params.maxNumberOfKeys = _maxNumberOfKeys;
     _params.lockName = _lockName;
-    _params.lockTokenURI = _lockTokenURI;
     _params.outwavePaymentAddress = _outwavePaymentAddress;
     _params.lockFeePercent = _lockFeePerc;
     _params.maxKeysPerAddress = _maxKeysPerAddress;

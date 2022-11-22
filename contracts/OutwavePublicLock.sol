@@ -1399,8 +1399,8 @@ contract MixinLockMetadata is
   /// An abbreviated name for NFTs in this contract. Defaults to "KEY" but is settable by lock owner
   string private lockSymbol;
 
-  // // the base Token URI for this Lock. If not set by lock owner, the global URI stored in Unlock is used.
-  // string private baseTokenURI;
+  // the base Token URI for this Lock. If not set by lock owner, the global URI stored in Unlock is used.
+  string private baseTokenURI;
 
   // the Token URI for this Lock. Set in intialize function
   string private lockTokenURI;
@@ -1410,13 +1410,11 @@ contract MixinLockMetadata is
   );
 
   function _initializeMixinLockMetadata(
-    string calldata _lockName,
-    string calldata _lockTokenURI
+    string calldata _lockName
   ) internal
   {
     ERC165StorageUpgradeable.__ERC165Storage_init();
     name = _lockName;
-    lockTokenURI = _lockTokenURI;
     // registering the optional erc721 metadata interface with ERC165.sol using
     // the ID specified in the standard: https://eips.ethereum.org/EIPS/eip-721
     _registerInterface(0x5b5e139f);
@@ -1460,34 +1458,24 @@ contract MixinLockMetadata is
     }
   }
 
-//   /**
-//    * Allows the Lock owner to update the baseTokenURI for this Lock.
-//    */
-//   function setBaseTokenURI(
-//     string calldata _baseTokenURI
-//   ) external
-//     onlyLockManager
-//   {
-//     baseTokenURI = _baseTokenURI;
-//   }
-
   /**
-    * Allows a Lock owner to update the tokenURI for this Lock
-    * @dev Throws if called by other than a Lock owner
-    * @param _tokenURI String representing of the URI for this lock
-  */
-  function setTokenURI(
-    string calldata _tokenURI
+   * Allows the Lock owner to update the baseTokenURI for this Lock.
+   */
+  function setBaseTokenURI(
+    string calldata _baseTokenURI
   ) external
-    onlyOwner
+    onlyLockManager
   {
-    lockTokenURI = _tokenURI;
+    baseTokenURI = _baseTokenURI;
   }
 
-  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset
-   * @param _tokenId The iD of the token. Ignored in our actual implementation
+  /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
+   * @param _tokenId The iD of the token  for which we want to retrieve the URI.
+   * If 0 is passed here, we just return the appropriate baseTokenURI.
+   * If a custom URI has been set we don't return the lock address.
+   * It may be included in the custom baseTokenURI if needed.
    * @dev  URIs are defined in RFC 3986. The URI may point to a JSON file
-   * that conforms to the "ERC721 Metadata JSON Schema":
+   * that conforms to the "ERC721 Metadata JSON Schema".
    * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md
    */
   function tokenURI(
@@ -1496,8 +1484,45 @@ contract MixinLockMetadata is
     view
     returns(string memory)
   {
-    // todo: tokenUri should be {functionAppURI}/{chain}/{assetKind}/{contractAddress}/{tokenId:?}
-    return lockTokenURI;
+    string memory URI;
+    string memory tokenId;
+    string memory lockAddress = address(this).address2Str();
+    string memory seperator;
+
+    if(_tokenId != 0) {
+      tokenId = _tokenId.uint2Str();
+    } else {
+      tokenId = '';
+    }
+
+    // if(address(onTokenURIHook) != address(0))
+    // {
+    //   address tokenOwner = ownerOf(_tokenId);
+    //   uint expirationTimestamp = keyExpirationTimestampFor(tokenOwner);
+
+    //   return onTokenURIHook.tokenURI(
+    //     address(this),
+    //     msg.sender,
+    //     tokenOwner,
+    //     _tokenId,
+    //     expirationTimestamp
+    //     );
+    // }
+
+    if(bytes(baseTokenURI).length == 0) {
+      URI = unlockProtocol.globalBaseTokenURI();
+      seperator = '/';
+    } else {
+      URI = baseTokenURI;
+      seperator = '';
+      lockAddress = '';
+    }
+
+    return URI.strConcat(
+        lockAddress,
+        seperator,
+        tokenId
+      );
   }
 
   function supportsInterface(bytes4 interfaceId) 
@@ -2310,7 +2335,7 @@ contract OutwavePublicLock is
     MixinFunds._initializeMixinFunds(_params.tokenAddress);
     MixinDisable._initializeMixinDisable();
     MixinLockCore._initializeMixinLockCore(_params.lockCreator, _params.expirationDuration, _params.keyPrice, _params.maxNumberOfKeys, _params.maxKeysPerAddress);
-    MixinLockMetadata._initializeMixinLockMetadata(_params.lockName, _params.lockTokenURI);
+    MixinLockMetadata._initializeMixinLockMetadata(_params.lockName);
     MixinERC721Enumerable._initializeMixinERC721Enumerable();
     MixinRefunds._initializeMixinRefunds();
     MixinRoles._initializeMixinRoles(_params.lockCreator);

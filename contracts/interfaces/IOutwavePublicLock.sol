@@ -176,12 +176,12 @@ interface IOutwavePublicLock
 //   ) external;
 
   /**
-    * Allows a Lock owner to update the tokenURI for this Lock
-    * @dev Throws if called by other than a Lock owner
-    * @param _tokenURI String representing of the URI for this lock
+  * Allows a Lock manager to update the baseTokenURI for this Lock.
+  * @dev Throws if called by other than a Lock manager
+  * @param _baseTokenURI String representing the base of the URI for this lock.
   */
-  function setTokenURI(
-    string calldata _tokenURI
+  function setBaseTokenURI(
+    string calldata _baseTokenURI
   ) external;
 
   /**  @notice A distinct Uniform Resource Identifier (URI) for a given asset.
