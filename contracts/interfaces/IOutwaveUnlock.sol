@@ -12,24 +12,16 @@ interface IOutwaveUnlock
   // Use initialize instead of a constructor to support proxies(for upgradeability via zos).
   function initialize() external;
 
-  /**
-  * @dev Create lock
-  * This deploys a lock for a creator. It also keeps track of the deployed lock.
-  * @param _tokenAddress set to the ERC20 token address, or 0 for ETH.
-  * @param _salt an identifier for the Lock, which is unique for the user.
-  * This may be implemented as a sequence ID or with RNG. It's used with `create2`
-  * to know the lock's address before the transaction is mined.
-  */
   function createLock(
     uint _expirationDuration,
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string calldata _lockName,
-    bytes12 _salt,
-    address payable _outwavePaymentAddress,
-    uint16 _lockFeePerc,
-    uint _maxKeysPerAddress
+    string calldata _lockName
+    // bytes12 _salt,
+    // address payable _outwavePaymentAddress,
+    // uint16 _lockFeePerc,
+    // uint _maxKeysPerAddress
   ) external returns(address);
 
 //     /**

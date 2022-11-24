@@ -661,64 +661,56 @@ contract OutwaveUnlock is
     __Ownable_init();
   }
 
-  /**
-  * @dev Create lock
-  * This deploys a lock for a creator. It also keeps track of the deployed lock.
-  * @param _tokenAddress set to the ERC20 token address, or 0 for ETH.
-  * @param _salt an identifier for the Lock, which is unique for the user.
-  * This may be implemented as a sequence ID or with RNG. It's used with `create2`
-  * to know the lock's address before the transaction is mined.
-  * @return the address of the new lock
-  */
   function createLock(
     uint _expirationDuration,
     address _tokenAddress,
     uint _keyPrice,
     uint _maxNumberOfKeys,
-    string calldata _lockName,
-    bytes12 _salt,
-    address payable _outwavePaymentAddress,
-    uint16 _lockFeePerc,
-    uint _maxKeysPerAddress
+    string calldata _lockName
+    // bytes12 _salt,
+    // address payable _outwavePaymentAddress,
+    // uint16 _lockFeePerc,
+    // uint _maxKeysPerAddress
   ) public returns(address)
   {
-    require(publicLockAddress != address(0), 'MISSING_LOCK_TEMPLATE');
+    return address(0);
+    // require(publicLockAddress != address(0), 'MISSING_LOCK_TEMPLATE');
 
-    // create lock
-    bytes32 salt;
-    // solium-disable-next-line
-    assembly
-    {
-      let pointer := mload(0x40)
-      // The salt is the msg.sender
-      mstore(pointer, shl(96, caller()))
-      // followed by the _salt provided
-      mstore(add(pointer, 0x14), _salt)
-      salt := mload(pointer)
-    }
-    address payable newLock = payable(publicLockAddress.createClone2(salt));
-    PublicLockInitParams memory _params;
-    _params.lockCreator = payable(msg.sender);
-    _params.expirationDuration = _expirationDuration;
-    _params.tokenAddress = _tokenAddress;
-    _params.keyPrice = _keyPrice;
-    _params.maxNumberOfKeys = _maxNumberOfKeys;
-    _params.lockName = _lockName;
-    _params.outwavePaymentAddress = _outwavePaymentAddress;
-    _params.lockFeePercent = _lockFeePerc;
-    _params.maxKeysPerAddress = _maxKeysPerAddress;
-    _msgSender();
-    IOutwavePublicLock(newLock).initialize(_params);
+    // // create lock
+    // bytes32 salt;
+    // // solium-disable-next-line
+    // assembly
+    // {
+    //   let pointer := mload(0x40)
+    //   // The salt is the msg.sender
+    //   mstore(pointer, shl(96, caller()))
+    //   // followed by the _salt provided
+    //   mstore(add(pointer, 0x14), _salt)
+    //   salt := mload(pointer)
+    // }
+    // address payable newLock = payable(publicLockAddress.createClone2(salt));
+    // PublicLockInitParams memory _params;
+    // _params.lockCreator = payable(msg.sender);
+    // _params.expirationDuration = _expirationDuration;
+    // _params.tokenAddress = _tokenAddress;
+    // _params.keyPrice = _keyPrice;
+    // _params.maxNumberOfKeys = _maxNumberOfKeys;
+    // _params.lockName = _lockName;
+    // _params.outwavePaymentAddress = _outwavePaymentAddress;
+    // _params.lockFeePercent = _lockFeePerc;
+    // _params.maxKeysPerAddress = _maxKeysPerAddress;
+    // _msgSender();
+    // IOutwavePublicLock(newLock).initialize(_params);
 
-    // Assign the new Lock
-    locks[newLock] = LockBalances({
-      deployed: true, totalSales: 0, yieldedDiscountTokens: 0
-    });
+    // // Assign the new Lock
+    // locks[newLock] = LockBalances({
+    //   deployed: true, totalSales: 0, yieldedDiscountTokens: 0
+    // });
 
-    // trigger event
-    emit NewLock(msg.sender, newLock, _salt);
+    // // trigger event
+    // emit NewLock(msg.sender, newLock, _salt);
 
-    return address(newLock);
+    // return address(newLock);
   }
 
   /**

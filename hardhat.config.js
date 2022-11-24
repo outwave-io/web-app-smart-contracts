@@ -60,6 +60,7 @@ require('./tasks/toolbox')
 // outwave
 require('./tasks/deploy-outwave')
 require('./tasks/upgrade-outwave')
+require('./tasks/create-lock')
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
